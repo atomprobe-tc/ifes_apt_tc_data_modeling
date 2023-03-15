@@ -42,11 +42,18 @@ import numpy as np
 from ase.data import atomic_numbers
 from ase.data import chemical_symbols
 from ase.data.isotopes import download_isotope_data
-isotopes = download_isotope_data()
 
 from ifes_apt_tc_data_modeling.utils.definitions import MAX_NUMBER_OF_ION_SPECIES
 from ifes_apt_tc_data_modeling.utils.definitions import MAX_NUMBER_OF_ATOMS_PER_ION
 from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
+
+isotopes = None
+
+def get_isotopes():
+    global isotopes
+    if isotopes is None:
+        isotopes = download_isotope_data()
+    return isotopes
 
 
 def isotope_to_hash(proton_number: int = 0,
@@ -93,6 +100,8 @@ def create_isotope_vector(building_blocks: list) -> np.ndarray:
 
     if len(building_blocks) == 0:  # special case unknown ion type
         return ivec
+    
+    get_isotopes()
 
     for block in building_blocks:
         assert isinstance(block, str), \
