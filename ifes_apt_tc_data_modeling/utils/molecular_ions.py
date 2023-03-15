@@ -38,7 +38,6 @@ import radioactivedecay as rd
 import ase
 from ase.data import atomic_numbers, atomic_masses, atomic_names
 from ase.data.isotopes import download_isotope_data
-isotopes = download_isotope_data()
 
 from ifes_apt_tc_data_modeling.utils.utils import \
     isotope_to_hash, hash_to_isotope, isotope_vector_to_dict_keyword
@@ -61,6 +60,15 @@ PRACTICAL_MIN_HALF_LIFE = np.inf
 # with first principles theory possible...
 SACRIFICE_ISOTOPIC_UNIQUENESS = True
 VERBOSE=False
+
+
+isotopes = None
+
+def get_isotopes():
+    global isotopes
+    if isotopes is None:
+        isotopes = download_isotope_data()
+    return isotopes
 
 
 class MolecularIonCandidate:
@@ -86,6 +94,7 @@ class MolecularIonBuilder:
                  min_half_life=np.inf,
                  sacrifice_uniqueness=True,
                  verbose=False):
+        get_isotopes()
         self.nuclids = np.asarray([], np.uint16)
         self.element_isotopes = {}
         self.nuclid_mass = {}
