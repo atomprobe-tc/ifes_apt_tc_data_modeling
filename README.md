@@ -50,6 +50,46 @@ via issues serves the more long-term aim. This is to arrive at a detailed techni
 specification rather than more robust parsers only so that atom probe data can be
 exchanged across tools irrespective of their formatting.
 
+# Getting started as developer
+
+You should create a virtual environment. We tested on Ubuntu with Python 3.7.
+Newer versions of Python should work similarly (for this change 3.7) to the
+desired version tag.
+
+If you don't have Python 3.7 installed on your computer, follow these commands:
+```
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt install python3.7 python3-dev libpython3.7-dev python3.7-venv
+```
+
+In some cases when using Python3.7 it was necessary to install python-numpy in others
+not. So consider this if you run into issues when continuing this manual.
+The following steps will install the ifes_apt_tc_data_modeling module in the
+latest version.
+
+```
+mkdir <your-brand-new-folder>
+cd <your-brand-new-folder>
+pip install virtualenv
+virtualenv --python=python3.7 .py37
+source .py37/bin/activate
+
+git clone git@github.com:atomprobe-tc/ifes_apt_tc_data_modeling.git
+cd ifes_apt_tc_data_modeling
+pip install .
+pip install --upgrade pip
+pip list
+```
+
+You can find instructions about how to use this tool in the tests/data jupyter notebook.
+This notebook can be started from the command line inside the ifes_apt_tc_data_modeling
+directory simply by calling.
+
+```
+jupyter-lab
+```
+
+
 ## Support us with this work
 Thank you very much for supporting this activity and your time.
 
