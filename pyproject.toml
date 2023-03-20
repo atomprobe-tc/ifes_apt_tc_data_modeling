@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ifes_apt_tc_data_modeling"
-version = "0.0.1"
+version = "0.0.5"
 authors = [
     { name = "The NOMAD Authors" },
 ]
