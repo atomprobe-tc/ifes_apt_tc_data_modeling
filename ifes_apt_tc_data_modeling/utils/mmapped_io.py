@@ -1,12 +1,9 @@
-#!/usr/bin/env python3
-"""Utility for parsing files via memory mapping."""
-
+# Utility for parsing files via memory mapping.
+#
 # Also convenience functions are included which translate human-readable ion
 # names into the isotope_vector description proposed by Kuehbach et al. in
 # DOI: 10.1017/S1431927621012241 to the human-readable ion names which are use
 # in P. Felfer et al.'s atom probe toolbox
-
-# -*- coding: utf-8 -*-
 #
 # Copyright The NOMAD Authors.
 #
@@ -43,7 +40,7 @@ def get_memory_mapped_data(file_name: str, data_type: str, oset: int,
     # https://stackoverflow.com/questions/60493766/ \
     #       read-binary-flatfile-and-skip-bytes for I/O access details
 
-    with open(file_name, 'rb') as file_handle, \
+    with open(file_name, "rb") as file_handle, \
             mmap.mmap(file_handle.fileno(), length=0, access=mmap.ACCESS_READ) as memory_mapped:
         return np.ndarray(buffer=memory_mapped, dtype=data_type,
                           offset=oset, strides=strd, shape=shp).copy()

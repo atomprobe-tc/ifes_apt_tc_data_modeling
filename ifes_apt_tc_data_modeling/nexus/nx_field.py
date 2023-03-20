@@ -1,12 +1,9 @@
-#!/usr/bin/env python3
-"""Set of utility tools for parsing file formats used by atom probe."""
-
+# Set of utility tools for parsing file formats used by atom probe.
+#
 # Also convenience functions are included which translate human-readable ion
 # names into the isotope_vector description proposed by Kuehbach et al. in
 # DOI: 10.1017/S1431927621012241 to the human-readable ion names which are use
 # in P. Felfer et al.'s atom probe toolbox
-
-# -*- coding: utf-8 -*-
 #
 # Copyright The NOMAD Authors.
 #

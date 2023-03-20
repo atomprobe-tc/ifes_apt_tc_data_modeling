@@ -1,7 +1,4 @@
-#!/usr/bin/env python3
-"""AMETEK APT(6) data exchange file reader used by atom probe microscopists."""
-
-# -*- coding: utf-8 -*-
+# AMETEK APT(6) data exchange file reader used by atom probe microscopists.
 #
 # Copyright The NOMAD Authors.
 #

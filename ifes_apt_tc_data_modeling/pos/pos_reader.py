@@ -1,7 +1,4 @@
-#!/usr/bin/env python3
-"""POS file format reader used by atom probe microscopists."""
-
-# -*- coding: utf-8 -*-
+# POS file format reader used by atom probe microscopists.
 #
 # Copyright The NOMAD Authors.
 #
@@ -35,53 +32,53 @@ class ReadPosFileFormat():
     """Read *.pos file format."""
 
     def __init__(self, filename: str):
-        assert len(filename) > 4, 'POS file incorrect filename ending!'
-        assert filename.lower().endswith('.pos'), \
-            'POS file incorrect file type!'
+        assert len(filename) > 4, "POS file incorrect filename ending!"
+        assert filename.lower().endswith(".pos"), \
+            "POS file incorrect file type!"
         self.filename = filename
 
         self.filesize = os.path.getsize(self.filename)
         assert self.filesize % 4 * 4 == 0, \
-            'POS filesize not integer multiple of 4*4B!'
+            "POS filesize not integer multiple of 4*4B!"
         assert np.uint32(self.filesize / (4 * 4)) < np.iinfo(np.uint32).max, \
-            'POS file is too large, currently only 2*32 supported!'
+            "POS file is too large, currently only 2*32 supported!"
         self.number_of_events = np.uint32(self.filesize / (4 * 4))
-        # print('Initialized access to ' + self.filename + ' successfully')
+        # print("Initialized access to " + self.filename + " successfully")
 
         # https://doi.org/10.1007/978-1-4614-3436-8 for file format details
-        # dtyp_names = ['Reconstructed position along the x-axis (nm)',
-        #               'Reconstructed position along the y-axis (nm)',
-        #               'Reconstructed position along the z-axis (nm)',
-        #               'Reconstructed mass-to-charge-state ratio (Da)']
+        # dtyp_names = ["Reconstructed position along the x-axis (nm)",
+        #               "Reconstructed position along the y-axis (nm)",
+        #               "Reconstructed position along the z-axis (nm)",
+        #               "Reconstructed mass-to-charge-state ratio (Da)"]
 
     def get_reconstructed_positions(self):  # pylint: disable=R0801
         """Read xyz columns."""  # pylint: disable=R0801
-                                                         
+
         xyz = NxField()  # pylint: disable=R0801
         xyz.typed_value = np.zeros(
             [self.number_of_events, 3], np.float32)  # pylint: disable=R0801
-        xyz.unit = 'nm'  # pylint: disable=R0801
+        xyz.unit = "nm"  # pylint: disable=R0801
 
         xyz.typed_value[:, 0] = \
-            get_memory_mapped_data(self.filename, '>f4',
+            get_memory_mapped_data(self.filename, ">f4",
                                    0 * 4, 4 * 4, self.number_of_events)  # x
         xyz.typed_value[:, 1] = \
-            get_memory_mapped_data(self.filename, '>f4',
+            get_memory_mapped_data(self.filename, ">f4",
                                    1 * 4, 4 * 4, self.number_of_events)  # y
         xyz.typed_value[:, 2] = \
-            get_memory_mapped_data(self.filename, '>f4',
+            get_memory_mapped_data(self.filename, ">f4",
                                    2 * 4, 4 * 4, self.number_of_events)  # z
         return xyz
 
     def get_mass_to_charge(self):  # pylint: disable=R0801
         """Read mass-to-charge column."""  # pylint: disable=R0801
-                                                             
+
         m_n = NxField()  # pylint: disable=R0801
         m_n.typed_value = np.zeros(
             [self.number_of_events, 1], np.float32)  # pylint: disable=R0801
-        m_n.unit = 'Da'  # pylint: disable=R0801
+        m_n.unit = "Da"  # pylint: disable=R0801
 
         m_n.typed_value[:, 0] = \
-            get_memory_mapped_data(self.filename, '>f4',
+            get_memory_mapped_data(self.filename, ">f4",
                                    3 * 4, 4 * 4, self.number_of_events)
         return m_n

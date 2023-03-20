@@ -1,6 +1,4 @@
-"""init file
-
-"""
+# Init
 #
 # Copyright The NOMAD Authors.
 #

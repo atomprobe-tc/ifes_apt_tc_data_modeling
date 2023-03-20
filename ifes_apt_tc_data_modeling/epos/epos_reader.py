@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""ePOS file format reader used by atom probe microscopists."""
-
-# -*- coding: utf-8 -*-
+# ePOS file format reader used by atom probe microscopists.
 #
 # Copyright The NOMAD Authors.
 #
@@ -35,49 +33,49 @@ class ReadEposFileFormat():
     """Read *.epos file format."""
 
     def __init__(self, filename: str):
-        assert len(filename) > 5, 'ePOS file incorrect filename ending!'
-        assert filename.lower().endswith('.epos'), \
-            'ePOS file incorrect file type!'
+        assert len(filename) > 5, "ePOS file incorrect filename ending!"
+        assert filename.lower().endswith(".epos"), \
+            "ePOS file incorrect file type!"
         self.filename = filename
 
         self.filesize = os.path.getsize(self.filename)
         assert self.filesize % 11 * 4 == 0, \
-            'ePOS filesize not integer multiple of 11*4B!'
+            "ePOS filesize not integer multiple of 11*4B!"
         assert np.uint32(self.filesize / (11 * 4)) < np.iinfo(np.uint32).max, \
-            'ePOS file is too large, currently only 2*32 supported!'
+            "ePOS file is too large, currently only 2*32 supported!"
         self.number_of_events = np.uint32(self.filesize / (11 * 4))
 
         # https://doi.org/10.1007/978-1-4614-3436-8 for file format details
-        # dtyp_names = ['Reconstructed position along the x-axis (nm)',
-        #               'Reconstructed position along the y-axis (nm)',
-        #               'Reconstructed position along the z-axis (nm)',
-        #               'Reconstructed mass-to-charge-state ratio (Da)',
-        #               'Raw time-of-flight (ns)',
-        #               'Standing voltage (V)',
-        #               'Pulsed voltage (V)',
-        #               'Ion impact x-coordinate at the detector (mm)',
-        #               'Ion impact y-coordinate at the detector (mm)',
-        #               'Number of pulses since the last detected ion (pulses)',
-        #               'Hit multiplicity (ions)']
-        # raw = np.fromfile( fnm, dtype= {'names': dtyp_names,
-        # 'formats': (, '>f4','>f4','>f4','>f4','>f4','>f4','>u4','>u4') } )
+        # dtyp_names = ["Reconstructed position along the x-axis (nm)",
+        #               "Reconstructed position along the y-axis (nm)",
+        #               "Reconstructed position along the z-axis (nm)",
+        #               "Reconstructed mass-to-charge-state ratio (Da)",
+        #               "Raw time-of-flight (ns)",
+        #               "Standing voltage (V)",
+        #               "Pulsed voltage (V)",
+        #               "Ion impact x-coordinate at the detector (mm)",
+        #               "Ion impact y-coordinate at the detector (mm)",
+        #               "Number of pulses since the last detected ion (pulses)",
+        #               "Hit multiplicity (ions)"]
+        # raw = np.fromfile( fnm, dtype= {"names": dtyp_names,
+        # "formats": (, ">f4",">f4",">f4",">f4",">f4",">f4",">u4",">u4") } )
 
     def get_reconstructed_positions(self):  # pylint: disable=R0801
         """Read xyz columns."""  # pylint: disable=R0801
-                                                          
+
         xyz = NxField()  # pylint: disable=R0801
         xyz.typed_value = np.zeros(
             [self.number_of_events, 3], np.float32)  # pylint: disable=R0801
-        xyz.unit = 'nm'  # pylint: disable=R0801
+        xyz.unit = "nm"  # pylint: disable=R0801
 
         xyz.typed_value[:, 0] = \
-            get_memory_mapped_data(self.filename, '>f4',
+            get_memory_mapped_data(self.filename, ">f4",
                                    0 * 4, 11 * 4, self.number_of_events)  # x
         xyz.typed_value[:, 1] = \
-            get_memory_mapped_data(self.filename, '>f4',
+            get_memory_mapped_data(self.filename, ">f4",
                                    1 * 4, 11 * 4, self.number_of_events)  # y
         xyz.typed_value[:, 2] = \
-            get_memory_mapped_data(self.filename, '>f4',
+            get_memory_mapped_data(self.filename, ">f4",
                                    2 * 4, 11 * 4, self.number_of_events)  # z
         return xyz
 
@@ -86,10 +84,10 @@ class ReadEposFileFormat():
         m_n = NxField()  # pylint: disable=R0801
         m_n.typed_value = np.zeros(
             [self.number_of_events, 1], np.float32)  # pylint: disable=R0801
-        m_n.unit = 'Da'  # pylint: disable=R0801
+        m_n.unit = "Da"  # pylint: disable=R0801
 
         m_n.typed_value[:, 0] = \
-            get_memory_mapped_data(self.filename, '>f4',
+            get_memory_mapped_data(self.filename, ">f4",
                                    3 * 4, 11 * 4, self.number_of_events)
         return m_n
 
@@ -98,14 +96,14 @@ class ReadEposFileFormat():
         raw_tof = NxField()
         raw_tof.typed_value = np.zeros(
             [self.number_of_events, 1], np.float32)
-        raw_tof.unit = 'ns'
+        raw_tof.unit = "ns"
 
         # according to DOI: 10.1007/978-1-4899-7430-3 raw time-of-flight
         # i.e. this is an uncorrected time-of-flight
         # for which effects uncorrect?
         # Only the proprietary IVAS/APSuite source code knows for sure
         raw_tof.typed_value[:, 0] = \
-            get_memory_mapped_data(self.filename, '>f4',
+            get_memory_mapped_data(self.filename, ">f4",
                                    4 * 4, 11 * 4, self.number_of_events)
         return raw_tof
 
@@ -117,12 +115,12 @@ class ReadEposFileFormat():
         dc_voltage = NxField()
         dc_voltage.typed_value = np.zeros(
             [self.number_of_events, 1], np.float32)
-        dc_voltage.unit = 'kV'
+        dc_voltage.unit = "kV"
         # different to the above-mentioned references Gault et al. state
         # that standing and pulse_voltage are in V instead of kV
 
         dc_voltage.typed_value[:, 0] = \
-            get_memory_mapped_data(self.filename, '>f4',
+            get_memory_mapped_data(self.filename, ">f4",
                                    5 * 4, 11 * 4, self.number_of_events)
         return dc_voltage
 
@@ -134,10 +132,10 @@ class ReadEposFileFormat():
         pu_voltage = NxField()
         pu_voltage.typed_value = np.zeros(
             [self.number_of_events, 1], np.float32)
-        pu_voltage.unit = 'kV'
+        pu_voltage.unit = "kV"
 
         pu_voltage.typed_value[:, 0] = \
-            get_memory_mapped_data(self.filename, '>f4',
+            get_memory_mapped_data(self.filename, ">f4",
                                    6 * 4, 11 * 4, self.number_of_events)
         return pu_voltage
 
@@ -146,13 +144,13 @@ class ReadEposFileFormat():
         hit_positions = NxField()
         hit_positions.typed_value = np.zeros(
             [self.number_of_events, 2], np.float32)
-        hit_positions.unit = 'mm'
+        hit_positions.unit = "mm"
 
         hit_positions.typed_value[:, 0] = \
-            get_memory_mapped_data(self.filename, '>f4',
+            get_memory_mapped_data(self.filename, ">f4",
                                    7 * 4, 11 * 4, self.number_of_events)  # x
         hit_positions.typed_value[:, 1] = \
-            get_memory_mapped_data(self.filename, '>f4',
+            get_memory_mapped_data(self.filename, ">f4",
                                    8 * 4, 11 * 4, self.number_of_events)  # y
         return hit_positions
 
@@ -165,10 +163,10 @@ class ReadEposFileFormat():
         npulses = NxField()
         npulses.typed_value = np.zeros(
             [self.number_of_events, 1], np.uint32)
-        npulses.unit = ''
+        npulses.unit = ""
 
         npulses.typed_value[:, 0] = \
-            get_memory_mapped_data(self.filename, '>u4',
+            get_memory_mapped_data(self.filename, ">u4",
                                    9 * 4, 11 * 4, self.number_of_events)
         return npulses
 
@@ -179,9 +177,9 @@ class ReadEposFileFormat():
         ions_per_pulse = NxField()
         ions_per_pulse.typed_value = np.zeros(
             [self.number_of_events, 1], np.uint32)
-        ions_per_pulse.unit = ''
+        ions_per_pulse.unit = ""
 
         ions_per_pulse.typed_value[:, 0] = \
-            get_memory_mapped_data(self.filename, '>u4',
+            get_memory_mapped_data(self.filename, ">u4",
                                    10 * 4, 11 * 4, self.number_of_events)
         return ions_per_pulse

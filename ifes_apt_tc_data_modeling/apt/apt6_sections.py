@@ -1,7 +1,4 @@
-#!/usr/bin/env python3
-"""AMETEK APT(6) data exchange file reader used by atom probe microscopists."""
-
-# -*- coding: utf-8 -*-
+# AMETEK APT(6) data exchange file reader used by atom probe microscopists.
 #
 # Copyright The NOMAD Authors.
 #
@@ -24,7 +21,8 @@
 
 import numpy as np
 
-from ifes_apt_tc_data_modeling.apt.apt6_utils import np_uint16_to_string, string_to_typed_nparray
+from ifes_apt_tc_data_modeling.apt.apt6_utils import np_uint16_to_string
+from ifes_apt_tc_data_modeling.apt.apt6_utils import string_to_typed_nparray
 
 
 class AptFileSectionMetadata():
