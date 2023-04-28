@@ -1,31 +1,33 @@
 .ipynb_checkpoints
 .py37
 .py38
+.py39
+.py310
 *.pyc
 *__pycache__*
 
 dist
-*egg*
+*.egg-info*
 
-*.rrng
-*.RRNG
-*.rng
-*.RNG
-*.FIG.txt
-*.FIG.TXT
-*.fig.txt
-*.fig.TXT
-*.pos
-*.POS
-*.epos
-*.EPOS
-*.ePOS
-*.apt
-*.APT
-*.h5
-*.H5
-*.hdf5
-*.HDF5
-*.nxs
-*.NXS
-
+# *.rrng
+# *.RRNG
+# *.rng
+# *.RNG
+# *.FIG.txt
+# *.FIG.TXT
+# *.fig.txt
+# *.fig.TXT
+# *.pos
+# *.POS
+# *.epos
+# *.EPOS
+# *.ePOS
+# *.apt
+# *.APT
+# *.h5
+# *.H5
+# *.hdf5
+# *.HDF5
+# *.nxs
+# *.NXS
+tests/data/rrng/examples_without_provenance/aut_leoben_reichmann/

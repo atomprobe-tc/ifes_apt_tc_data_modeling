@@ -52,17 +52,16 @@ exchanged across tools irrespective of their formatting.
 
 # Getting started as developer
 
-You should create a virtual environment. We tested on Ubuntu with Python 3.7.
-Newer versions of Python should work similarly (for this change 3.7) to the
-desired version tag.
+You should create a virtual environment. We tested on Ubuntu with Python 3.8.
+Newer versions of Python should work similarly when using the desired version tag.
 
-If you don't have Python 3.7 installed on your computer, follow these commands:
+If you don't have Python 3.8 installed on your computer, follow these commands:
 ```
 sudo add-apt-repository ppa:deadsnakes/ppa
-sudo apt install python3.7 python3-dev libpython3.7-dev python3.7-venv
+sudo apt install python3.8 python3-dev libpython3.8-dev python3.8-venv
 ```
 
-In some cases when using Python3.7 it was necessary to install python-numpy in others
+In some cases when using Python3.8 it was necessary to install python-numpy in others
 not. So consider this if you run into issues when continuing this manual.
 The following steps will install the ifes_apt_tc_data_modeling module in the
 latest version.
@@ -71,14 +70,15 @@ latest version.
 mkdir <your-brand-new-folder>
 cd <your-brand-new-folder>
 pip install virtualenv
-virtualenv --python=python3.7 .py37
-source .py37/bin/activate
+virtualenv --python=python3.8 .py38
+source .py38/bin/activate
 
 git clone git@github.com:atomprobe-tc/ifes_apt_tc_data_modeling.git
 cd ifes_apt_tc_data_modeling
-pip install .
-pip install --upgrade pip
-pip list
+python -m pip install --upgrade pip
+python -m pip install -e .
+python -m pip install -e ".[dev]"
+python -m pip list
 ```
 
 You can find instructions about how to use this tool in the tests/data jupyter notebook.

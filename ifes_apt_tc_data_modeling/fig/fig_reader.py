@@ -65,8 +65,8 @@ class ReadFigTxtFileFormat():
                         if line.strip() != "" and line.startswith("#") is False]
         for molecular_ion in txt_stripped:
             tmp = molecular_ion.split(" ")
-            mqmin = tmp[len(tmp)-2:-1][0]
-            mqmax = tmp[len(tmp)-1:][0]
+            mqmin = np.float64(tmp[len(tmp)-2:-1][0])
+            mqmax = np.float64(tmp[len(tmp)-1:][0])
             ionname = " ".join(tmp[:-2])
             # print(f"{ionname} [{mqmin}, {mqmax}]")
             # ionname = '16O 1H2 + + +  + '
