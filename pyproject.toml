@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ifes_apt_tc_data_modeling"
-version = "0.0.6"
+version = "0.0.7"
 authors = [
     { name = "The NOMAD Authors" },
 ]
@@ -28,4 +28,4 @@ dependencies = [
 ]
 
 # [tool.setuptools]
-# packages = ["apt", "epos", "nexus", "pos", "rng", "rrng", "utils"]
+# packages = ["apt", "epos", "nexus", "pos", "rng", "rrng", "fig", "utils"]

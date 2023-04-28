@@ -1,5 +1,6 @@
 .ipynb_checkpoints
 .py37
+.py38
 *.pyc
 *__pycache__*
 
@@ -10,6 +11,10 @@ dist
 *.RRNG
 *.rng
 *.RNG
+*.FIG.txt
+*.FIG.TXT
+*.fig.txt
+*.fig.TXT
 *.pos
 *.POS
 *.epos
@@ -18,6 +23,9 @@ dist
 *.apt
 *.APT
 *.h5
+*.H5
 *.hdf5
+*.HDF5
 *.nxs
+*.NXS
 

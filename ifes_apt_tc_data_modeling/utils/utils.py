@@ -130,9 +130,7 @@ def isotope_vector_to_nuclid_list(ivec: np.ndarray) -> np.ndarray:
     for idx in np.arange(0, MAX_NUMBER_OF_ATOMS_PER_ION):
         if ivec[idx] != 0:
             protons, neutrons = hash_to_isotope(int(ivec[idx]))
-            if neutrons != 0:
-                nuclid_list[0, idx] = protons + neutrons
-            # else: leave only element name, i.e. number of protons
+            nuclid_list[0, idx] = protons + neutrons
             nuclid_list[1, idx] = protons
     return nuclid_list
 
