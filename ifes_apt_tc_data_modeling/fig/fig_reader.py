@@ -104,6 +104,7 @@ class ReadFigTxtFileFormat():
             ivec = np.sort(np.asarray(ivec, np.uint16))[::-1]
             ivector = np.zeros((MAX_NUMBER_OF_ATOMS_PER_ION,), np.uint16)
             ivector[0:len(ivec)] = ivec
+            # print(ivector)
 
             m_ion = NxIon(isotope_vector=ivector, charge=charge_state)
             m_ion.add_range(mqmin, mqmax)
@@ -130,10 +131,10 @@ class ReadFigTxtFileFormat():
                  "sacrifice_isotopic_uniqueness": SACRIFICE_ISOTOPIC_UNIQUENESS},
                 m_ion_candidates)
 
-            self.rng["molecular_ions"].append(m_ion)
+            self.fig["molecular_ions"].append(m_ion)
         print(self.filename + " parsed successfully")
 
 if __name__ == "main":
     pass
     # testing
-    # parsedFile = ReadFigTxtFileFormat("../../02763-v01.RRNG.fig")
+    # parsedFile = ReadFigTxtFileFormat("../../02763-v01.rng.fig.txt")

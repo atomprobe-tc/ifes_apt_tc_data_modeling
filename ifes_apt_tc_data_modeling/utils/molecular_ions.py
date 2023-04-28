@@ -222,12 +222,8 @@ class MolecularIonBuilder:
         max_depth = 0  # number of non-zero entries in element_arr
         for hashvalue in element_arr:
             n_protons, n_neutrons = hash_to_isotope(hashvalue)
-            assert n_neutrons == 0, \
-                str(hashvalue) + " in element_arr_in has n_neutrons != 0 !"
             if hashvalue != 0:
                 max_depth += 1
-            # else:
-            #     break
         if self.parms["verbose"] is True:
             print(f"Maximum recursion depth {max_depth}")
         self.candidates = []
