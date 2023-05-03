@@ -22,7 +22,7 @@
 # limitations under the License.
 #
 
-# pylint: disable=E1101
+# pylint: disable=no-member,duplicate-code
 
 import typing
 
@@ -67,23 +67,17 @@ class NxIon():
             self.isotope_vector = NxField(create_isotope_vector([]), "")
         self.nuclid_list = NxField(
             isotope_vector_to_nuclid_list(self.isotope_vector.typed_value), "")
-        if "charge" in kwargs:
-            assert isinstance(kwargs["charge"], int), \
-                "kwargs charge needs to be an int !"
-            assert kwargs["charge"] > -8, \
-                "kwargs charge needs to be at least -7 !"
-            assert kwargs["charge"] < +8, \
-                "kwargs charge needs to be at most +7 !"
-            self.charge = NxField(np.int8(kwargs["charge"]), "")
+        if "charge_state" in kwargs:
+            if isinstance(kwargs["charge_state"], int) \
+                    and (-8 < kwargs["charge_state"] < +8):
+                self.charge_state = NxField(np.int8(kwargs["charge_state"]), "")
         else:
-            # try to identify the charge state, will return NxField
-            # with typed_value for charge on [0, +7]
-            # here 0 flags and warns that it was impossible to recover
+            # charge_state 0 flags and warns that it was impossible to recover
             # the relevant charge which is usually a sign that the range
             # is not matching the theoretically expect peak location
-            self.charge = NxField(np.int8(0), "")
+            self.charge_state = NxField(np.int8(0), "")
         self.name = NxField(isotope_vector_to_human_readable_name(
-            self.isotope_vector.typed_value, self.charge.typed_value))
+            self.isotope_vector.typed_value, self.charge_state.typed_value))
         self.ranges = NxField(np.empty((0, 2), np.float64), "amu")
 
     def add_range(self, mqmin: np.float64, mqmax: np.float64):
@@ -103,7 +97,7 @@ class NxIon():
     def update_human_readable_name(self):
         """Reevaluate charge and isotope_vector for name."""
         self.name = NxField(isotope_vector_to_human_readable_name(
-            self.isotope_vector.typed_value, self.charge.typed_value))
+            self.isotope_vector.typed_value, self.charge_state.typed_value))
 
     def report(self):
         """Report values."""
@@ -115,8 +109,8 @@ class NxIon():
         print(self.nuclid_list.typed_value)
         print("human-readable name")
         print(self.name.typed_value)
-        print("charge")
-        print(self.charge.typed_value)
+        print("charge_state")
+        print(self.charge_state.typed_value)
         print("ranges")
         print(self.ranges.typed_value)
         print("comment")
@@ -126,11 +120,11 @@ class NxIon():
         print("volume")
         print(self.volume.typed_value)
 
-    def add_charge_model(self,
+    def add_charge_state_model(self,
                          parameters={},
                          candidates=[]):
-        """Add details about the model how self.charge was defined."""
-        self.charge_model = {}
+        """Add details about the model how self.charge_state was defined."""
+        self.charge_state_model = {}
         assert "min_abundance" in parameters.keys(), \
             "Parameter min_abundance not defined!"
         assert "min_abundance_product" in parameters.keys(), \
@@ -139,41 +133,41 @@ class NxIon():
             "Parameter min_half_life not defined!"
         assert "sacrifice_isotopic_uniqueness" in parameters.keys(), \
             "Parameter sacrifice_isotopic_uniqueness not defined!"
-        self.charge_model = {
+        self.charge_state_model = {
             "isotope_matrix": [],
-            "charge_vector": [],
+            "charge_state_vector": [],
             "mass_vector": [],
             "nat_abun_prod_vector": [],
             "min_half_life_vector": []}
         for key, val in parameters.items():
-            if key not in self.charge_model.keys():
-                self.charge_model[key] = val
+            if key not in self.charge_state_model.keys():
+                self.charge_state_model[key] = val
         n_cand = len(candidates)
         # print("n_cand " + str(n_cand))
         if n_cand > 0:
-            self.charge_model["isotope_matrix"] = np.zeros(
+            self.charge_state_model["isotope_matrix"] = np.zeros(
                 (n_cand, MAX_NUMBER_OF_ATOMS_PER_ION), np.uint16)
-            self.charge_model["charge_vector"] = np.zeros(
+            self.charge_state_model["charge_state_vector"] = np.zeros(
                 (n_cand, ), np.int8)
-            self.charge_model["mass_vector"] = np.zeros(
+            self.charge_state_model["mass_vector"] = np.zeros(
                 (n_cand, ), np.float64)
-            self.charge_model["nat_abun_prod_vector"] = np.zeros(
+            self.charge_state_model["nat_abun_prod_vector"] = np.zeros(
                 (n_cand, ), np.float64)
-            self.charge_model["min_half_life_vector"] = np.zeros(
+            self.charge_state_model["min_half_life_vector"] = np.zeros(
                 (n_cand, ), np.float64)
             row = 0
             for cand in candidates:
                 if isinstance(cand, MolecularIonCandidate):
-                    self.charge_model["isotope_matrix"][row, 0:len(cand.isotope_vector)] \
+                    self.charge_state_model["isotope_matrix"][row, 0:len(cand.isotope_vector)] \
                         = cand.isotope_vector
-                    self.charge_model["charge_vector"][row] = cand.charge
-                    self.charge_model["mass_vector"][row] = cand.mass
-                    self.charge_model["nat_abun_prod_vector"][row] \
+                    self.charge_state_model["charge_state_vector"][row] = cand.charge_state
+                    self.charge_state_model["mass_vector"][row] = cand.mass
+                    self.charge_state_model["nat_abun_prod_vector"][row] \
                         = cand.abundance_product
-                    self.charge_model["min_half_life_vector"][row] \
+                    self.charge_state_model["min_half_life_vector"][row] \
                         = cand.shortest_half_life
                     row += 1
                 else:
                     print(__name__ + " found cand which is not a MolecularIonCandidate!")
         # else:
-        #     print("Not enough candidates to report as a charge model")
+        #     print("Not enough candidates to report as a charge_state model")

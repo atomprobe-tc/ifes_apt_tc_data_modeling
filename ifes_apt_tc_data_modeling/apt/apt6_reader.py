@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-# pylint: disable=E1101
+# pylint: disable=no-member,duplicate-code
 
 import os
 
@@ -196,10 +196,16 @@ class ReadAptFileFormat():
         data_frame = pd.DataFrame(columns=column_names)
 
         for keyword, value in self.available_sections.items():
-            row = {'section': keyword}
-            row = {**row, **value.get_metadata()}
-            data_frame = data_frame.append(row, ignore_index=True)
+            row_dct = {'section': keyword}
+            # print(f"{keyword}")
+            row_dct = {**row_dct, **value.get_metadata()}
+            # print(value.get_metadata())
+            row_df = pd.DataFrame(row_dct, index=[0])
+            # print(row_df)
+            data_frame = pd.concat([data_frame, row_df], ignore_index=True)
 
+        data_frame.style.format(precision=3, thousands=",", decimal=".") \
+            .format_index(str.upper, axis=1)
         return data_frame
 
     def get_named_quantity(self, keyword: str):
@@ -227,7 +233,7 @@ class ReadAptFileFormat():
 
         return NxField()
 
-    def get_mass_to_charge_state_ratios(self):
+    def get_mass_to_charge_state_ratio(self):
         """Read mass-to-charge."""
         return self.get_named_quantity('Mass')
 

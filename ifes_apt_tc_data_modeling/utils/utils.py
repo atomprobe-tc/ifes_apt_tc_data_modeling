@@ -22,7 +22,7 @@
 # limitations under the License.
 #
 
-# pylint: disable=E1101
+# pylint: disable=no-member,duplicate-code
 
 import re
 
@@ -148,7 +148,7 @@ def isotope_vector_to_dict_keyword(ivec: np.ndarray) -> str:
     return "0"  # "_".join(np.asarray(np.zeros((MAX_NUMBER_OF_ATOMS_PER_ION,)), np.uint16))
 
 
-def isotope_vector_to_human_readable_name(ivec: np.ndarray, charge: np.int8) -> str:
+def isotope_vector_to_human_readable_name(ivec: np.ndarray, charge_state: np.int8) -> str:
     """Get human-readable name from an isotope_vector."""
     assert len(ivec) <= MAX_NUMBER_OF_ATOMS_PER_ION, \
         "Argument isotope_vector len <= MAX_NUMBER_OF_ATOMS_PER_ION !"
@@ -163,10 +163,10 @@ def isotope_vector_to_human_readable_name(ivec: np.ndarray, charge: np.int8) -> 
                 else:
                     human_readable += chemical_symbols[protons]
                 human_readable += " "
-        if charge > 0 and charge < 8:
-            human_readable += "+" * charge
-        elif charge > -8 and charge < 0:
-            human_readable += "-" * -charge
+        if 0 < charge_state < 8:
+            human_readable += "+" * charge_state
+        elif -8 < charge_state < 0:
+            human_readable += "-" * -charge_state
         else:
             human_readable = human_readable.rstrip()
         return human_readable

@@ -22,7 +22,7 @@
 # limitations under the License.
 #
 
-# pylint: disable=E1101
+# pylint: disable=no-member,duplicate-code
 
 import numpy as np
 

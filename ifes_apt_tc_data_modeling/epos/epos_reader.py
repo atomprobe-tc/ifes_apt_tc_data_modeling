@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-# pylint: disable=E1101
+# pylint: disable=no-member,duplicate-code
 
 import os
 
@@ -60,13 +60,13 @@ class ReadEposFileFormat():
         # raw = np.fromfile( fnm, dtype= {"names": dtyp_names,
         # "formats": (, ">f4",">f4",">f4",">f4",">f4",">f4",">u4",">u4") } )
 
-    def get_reconstructed_positions(self):  # pylint: disable=R0801
-        """Read xyz columns."""  # pylint: disable=R0801
+    def get_reconstructed_positions(self):
+        """Read xyz columns."""
 
-        xyz = NxField()  # pylint: disable=R0801
+        xyz = NxField()
         xyz.typed_value = np.zeros(
-            [self.number_of_events, 3], np.float32)  # pylint: disable=R0801
-        xyz.unit = "nm"  # pylint: disable=R0801
+            [self.number_of_events, 3], np.float32)
+        xyz.unit = "nm"
 
         xyz.typed_value[:, 0] = \
             get_memory_mapped_data(self.filename, ">f4",
@@ -79,12 +79,12 @@ class ReadEposFileFormat():
                                    2 * 4, 11 * 4, self.number_of_events)  # z
         return xyz
 
-    def get_mass_to_charge(self):  # pylint: disable=R0801
-        """Read mass-to-charge column."""  # pylint: disable=R0801
-        m_n = NxField()  # pylint: disable=R0801
+    def get_mass_to_charge_state_ratio(self):
+        """Read mass-to-charge-state-ratio column."""
+        m_n = NxField()
         m_n.typed_value = np.zeros(
-            [self.number_of_events, 1], np.float32)  # pylint: disable=R0801
-        m_n.unit = "Da"  # pylint: disable=R0801
+            [self.number_of_events, 1], np.float32)
+        m_n.unit = "Da"
 
         m_n.typed_value[:, 0] = \
             get_memory_mapped_data(self.filename, ">f4",

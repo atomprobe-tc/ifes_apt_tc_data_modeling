@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-# pylint: disable=E1101,R0801
+# pylint: disable=no-member,duplicate-code
 
 import re
 
@@ -106,7 +106,7 @@ class ReadFigTxtFileFormat():
             ivector[0:len(ivec)] = ivec
             # print(ivector)
 
-            m_ion = NxIon(isotope_vector=ivector, charge=charge_state)
+            m_ion = NxIon(isotope_vector=ivector, charge_state=charge_state)
             m_ion.add_range(mqmin, mqmax)
             m_ion.comment = NxField(ionname, "")
             # m_ion.report()
@@ -117,14 +117,14 @@ class ReadFigTxtFileFormat():
                 min_half_life=PRACTICAL_MIN_HALF_LIFE,
                 sacrifice_uniqueness=SACRIFICE_ISOTOPIC_UNIQUENESS,
                 verbose=VERBOSE)
-            recovered_charge, m_ion_candidates = crawler.combinatorics(
+            recovered_charge_state, m_ion_candidates = crawler.combinatorics(
                 m_ion.isotope_vector.typed_value,
                 m_ion.ranges.typed_value[0, 0],
                 m_ion.ranges.typed_value[0, 1])
-            # print(" " + str(recovered_charge))
-            m_ion.charge = NxField(np.int8(recovered_charge), "")
+            # print(f"{recovered_charge_state}")
+            m_ion.charge_state = NxField(np.int8(recovered_charge_state), "")
             m_ion.update_human_readable_name()
-            m_ion.add_charge_model(
+            m_ion.add_charge_state_model(
                 {"min_abundance": PRACTICAL_ABUNDANCE,
                  "min_abundance_product": PRACTICAL_ABUNDANCE_PRODUCT,
                  "min_half_life": PRACTICAL_MIN_HALF_LIFE,

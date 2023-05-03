@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-# pylint: disable=E1101
+# pylint: disable=no-member,duplicate-code
 
 import re
 
@@ -117,11 +117,11 @@ class ReadRngFileFormat():
         with open(self.filename, mode="r", encoding="utf8") as rngf:
             txt = rngf.read()
 
-        txt = txt.replace("\r\n", "\n")  # pylint: disable=R0801 # windows to unix EOL conversion
-        txt = txt.replace(",", ".")  # pylint: disable=R0801 # use decimal dots instead of comma
-        txt_stripped = [line for line in txt.split("\n")  # pylint: disable=R0801
-                        if line.strip() != "" and line.startswith("#") is False]  # pylint: disable=R0801
-        del txt  # pylint: disable=R0801
+        txt = txt.replace("\r\n", "\n")  # windows to unix EOL conversion
+        txt = txt.replace(",", ".")  # use decimal dots instead of comma
+        txt_stripped = [line for line in txt.split("\n")
+                        if line.strip() != "" and line.startswith("#") is False]
+        del txt
 
         # see DOI: 10.1007/978-1-4899-7430-3 for further details to this
         # Oak Ridge National Lab / Oxford *.rng file format
@@ -160,7 +160,7 @@ class ReadRngFileFormat():
                 "Line " + txt_stripped[i] + " is corrupted!"
 
             m_ion = NxIon(isotope_vector=create_isotope_vector(
-                dct["atoms"]), charge=0)
+                dct["atoms"]), charge_state=0)
             m_ion.add_range(dct["range"][0], dct["range"][1])
             m_ion.comment = NxField(dct["name"], "")
             m_ion.color = NxField(dct["color"], "")
@@ -173,14 +173,14 @@ class ReadRngFileFormat():
                 min_half_life=PRACTICAL_MIN_HALF_LIFE,
                 sacrifice_uniqueness=SACRIFICE_ISOTOPIC_UNIQUENESS,
                 verbose=VERBOSE)
-            recovered_charge, m_ion_candidates = crawler.combinatorics(
+            recovered_charge_state, m_ion_candidates = crawler.combinatorics(
                 m_ion.isotope_vector.typed_value,
                 m_ion.ranges.typed_value[0, 0],
                 m_ion.ranges.typed_value[0, 1])
-            # print(" " + str(recovered_charge))
-            m_ion.charge = NxField(np.int8(recovered_charge), "")
+            # print(f"{recovered_charge_state}")
+            m_ion.charge_state = NxField(np.int8(recovered_charge_state), "")
             m_ion.update_human_readable_name()
-            m_ion.add_charge_model(
+            m_ion.add_charge_state_model(
                 {"min_abundance": PRACTICAL_ABUNDANCE,
                  "min_abundance_product": PRACTICAL_ABUNDANCE_PRODUCT,
                  "min_half_life": PRACTICAL_MIN_HALF_LIFE,

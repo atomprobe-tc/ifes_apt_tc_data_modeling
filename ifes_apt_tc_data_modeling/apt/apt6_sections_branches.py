@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-# pylint: disable=E1101
+# pylint: disable=no-member,duplicate-code
 
 from ifes_apt_tc_data_modeling.apt.apt6_sections import AptFileSectionMetadata
 

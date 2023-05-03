@@ -22,7 +22,7 @@
 # limitations under the License.
 #
 
-# pylint: disable=E1101
+# pylint: disable=no-member,duplicate-code
 
 import typing
 
@@ -61,9 +61,9 @@ VERBOSE=False
 
 
 class MolecularIonCandidate:
-    def __init__(self, ivec=[], charge=0, mass_sum=0., nat_abun_prod=0., min_half_life=np.inf):
+    def __init__(self, ivec=[], charge_state=0, mass_sum=0., nat_abun_prod=0., min_half_life=np.inf):
         self.isotope_vector = np.asarray(np.atleast_1d(ivec), np.uint16)
-        self.charge = np.int8(charge)
+        self.charge_state = np.int8(charge_state)
         self.mass = np.float64(mass_sum)
         self.abundance_product = np.float64(nat_abun_prod)
         self.shortest_half_life = np.float64(min_half_life)
@@ -72,7 +72,7 @@ class MolecularIonCandidate:
         keyword = ""
         keyword += isotope_vector_to_dict_keyword(
             np.sort(np.asarray(self.isotope_vector, np.uint16), kind="stable")[::-1])
-        keyword += "__" + str(self.charge)
+        keyword += "__" + str(self.charge_state)
         return keyword
 
 
@@ -178,7 +178,7 @@ class MolecularIonBuilder:
     def get_isotope_mass_sum(self, nuclid_arr=[]):
         """Evaluate cumulated atomic_mass of isotopes in ivec."""
         # assuming no relativistic effects or other quantum effects
-        # mass loss due to charge state considered insignificant
+        # mass loss due to charge_state considered insignificant
         mass = 0.
         for hashvalue in nuclid_arr:
             if hashvalue != 0:
@@ -240,7 +240,7 @@ class MolecularIonBuilder:
             if self.parms["verbose"] is True:
                 print(f"Found {len(self.candidates)} candidates!")
             return self.try_to_reduce_to_unique_solution()
-            # will return a tuple of charge and list of relevant_candidates
+            # will return a tuple of charge_state and list of relevant_candidates
         else:
             return (0, [])
 
@@ -320,7 +320,7 @@ class MolecularIonBuilder:
                 if isinstance(key, str):
                     keywords.append(key)
             assert len(keywords) >= 1, "List of relevant keywords is empty!"
-            return (self.relevant[keywords[0]].charge, relevant_candidates)
+            return (self.relevant[keywords[0]].charge_state, relevant_candidates)
         else:
             if self.parms["verbose"] is True:
                 print("Multiple relevant candidates meet all selection criteria")
@@ -329,23 +329,23 @@ class MolecularIonBuilder:
                 if isinstance(key, str):
                     keywords.append(key)
             assert len(keywords) >= 1, "List of relevant keywords is empty!"
-            charge = self.relevant[keywords[0]].charge
+            charge_state = self.relevant[keywords[0]].charge_state
             for key, val in self.relevant.items():
-                if val.charge == charge:
+                if val.charge_state == charge_state:
                     continue
                 else:
                     if self.parms["verbose"] is True:
-                        print("WARNING::Multiple relevant candidates differ in charge!")
+                        print("WARNING::Multiple relevant candidates differ in charge_state!")
                         print("WARNING::No unique solution possible for given criteria!")
                     return (0, relevant_candidates)
-            # not returned yet, so all relevant candidates have the same charge
+            # not returned yet, so all relevant candidates have the same charge_state
             if self.parms["verbose"] is True:
-                print(f"Multiple relevant candidates have all the same charge {charge}")
+                print(f"Multiple relevant candidates have all the same charge_state {charge_state}")
             if self.parms["sacrifice_isotopic_uniqueness"] is True:
-                return (charge, relevant_candidates)
+                return (charge_state, relevant_candidates)
 
             if self.parms["verbose"] is True:
                 print("WARNING::Multiple relevant candidates differ in isotopes!")
-                print("WARNING::But these have the same charge!")
+                print("WARNING::But these have the same charge_state!")
                 print("WARNING::No unique solution possible for given criteria!")
             return (0, relevant_candidates)
