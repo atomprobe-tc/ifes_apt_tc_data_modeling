@@ -61,6 +61,10 @@ class ReadAtoFileFormat():
         # Cameca/AMETEK's runrootl/FileConvert utility know two ATO flavours:
         # CamecaRoot v18.46.533g built Marc, 21, 2022 against ROOT 5.34/36
         # v3 LAWATOP and v5 current GPM
+        # specifically an earlier parser
+        # https://hg.sr.ht/~mycae/libatomprobe/browse/src/io/dataFiles.cpp?rev=tip
+        # mentions that storage format may not be robust enough against overflow and
+        # suggests that additional polishing of results is needed
 
     def get_ato_version(self):
         header = get_memory_mapped_data(self.filename, "<u4", 0, 4, 2)
