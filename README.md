@@ -5,10 +5,13 @@ Foster exchange about data models and work towards specifications
 of file formats from the research field of atom probe microscopy.
 
 # Getting started
-You should create a virtual environment. We tested on Ubuntu with Python 3.8.
-Newer versions of Python should work similarly when using the desired version tag.
+You should create a virtual environment. We tested on Ubuntu with Python 3.8 and newer version.
+In what follows the version (tag) 3.8 is a placeholder whereby we show how to proceed when using
+Python 3.8. Using newer versions of Python should work the same by replacing 3.8 with the respective
+version (tag).
 
-If you don't have Python 3.8 installed on your computer, follow these commands:
+Older versions of Python like 3.8 and 3.9 are available e.g. via the deadsnakes repository or via
+conda. For using deadsnakes proceed with the following commands:
 ```
 sudo add-apt-repository ppa:deadsnakes/ppa
 sudo apt install python3.8 python3-dev libpython3.8-dev python3.8-venv
