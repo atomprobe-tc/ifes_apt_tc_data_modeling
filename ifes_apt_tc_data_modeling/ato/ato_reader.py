@@ -24,7 +24,6 @@ import os
 import numpy as np
 
 from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
-
 from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
 
 
