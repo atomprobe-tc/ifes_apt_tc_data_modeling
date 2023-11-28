@@ -34,6 +34,9 @@ from ifes_apt_tc_data_modeling.utils.molecular_ions import \
 
 from ase.data import atomic_numbers, atomic_masses, chemical_symbols
 
+# there are specific examples for unusual range files here:
+# https://hg.sr.ht/~mycae/libatomprobe/browse/test/samples/ranges?rev=tip
+
 
 def evaluate_rng_range_line(
         i: int, line: str, column_id_to_label: dict, n_columns: int) -> dict:

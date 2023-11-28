@@ -41,7 +41,8 @@ class ReadAtoFileFormat():
         self.number_of_events = None
         self.version = None
         retval = self.get_ato_version()
-        if retval in [3, 4, 5]:
+        if retval in [3, 5]:
+            # there also seems to exist a version 4 but I have never seen an example for it
             self.version = retval
             print(f"ATO file is in a supported version {self.version}")
             if self.version == 3:
@@ -81,25 +82,26 @@ class ReadAtoFileFormat():
         xyz.unit = "nm"
 
         if self.version == 3:
-            xyz.typed_value[:, 0] = \
-                get_memory_mapped_data(self.filename, "<f4",
-                                    2 * 4 + 0 * 4, 14 * 4, self.number_of_events)  # wpx -> x
-            xyz.typed_value[:, 1] = \
-                get_memory_mapped_data(self.filename, "<f4",
-                                    2 * 4 + 1 * 4, 14 * 4, self.number_of_events)  # wpy -> y
-            xyz.typed_value[:, 2] = \
-                get_memory_mapped_data(self.filename, "<f4",
-                                    2 * 4 + 2 * 4, 14 * 4, self.number_of_events)  # fpz -> z
+            for dim in [0, 1, 2]:
+                xyz.typed_value[:, dim] = \
+                    get_memory_mapped_data(self.filename, "<f4",
+                        2 * 4 + dim * 4, 14 * 4, self.number_of_events)
+                # wpx -> x, wpy -> y, fpz -> z
         if self.version == 5:
+            # publicly available sources are inconclusive whether coordinates are in angstroem or nm
+            # based on the evidence of usa_denton_smith Si.epos converted to v5 ATO via CamecaRoot
+            # the resulting x, y coordinates suggests that v5 ATO stores in angstroem, while fpz is stored in nm?
+            # however https://zenodo.org/records/8382828 reports the reconstructed positions to be named
+            # not at all wpx, wpy and fpz but x, y, z instead and here claims the nm
             xyz.typed_value[:, 0] = \
                 np.float32(get_memory_mapped_data(self.filename, "<i2",
-                                    5000 + 0, 40, self.number_of_events))  # wpx -> x
+                           5000 + 0, 40, self.number_of_events) * 0.1)  # wpx -> x
             xyz.typed_value[:, 1] = \
                 np.float32(get_memory_mapped_data(self.filename, "<i2",
-                                    5000 + 2, 40, self.number_of_events))  # wpy -> y
+                           5000 + 2, 40, self.number_of_events) * 0.1)  # wpy -> y
             xyz.typed_value[:, 2] = \
                 get_memory_mapped_data(self.filename, "<f4",
-                                    5000 + 4, 40, self.number_of_events)  # fpz -> z
+                                       5000 + 4, 40, self.number_of_events)  # fpz -> z
         return xyz
 
     def get_mass_to_charge_state_ratio(self):
