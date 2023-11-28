@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ifes_apt_tc_data_modeling"
-version = "0.0.9"
+version = "0.1"
 authors = [
     { name = "The NOMAD Authors" },
 ]
-description = "Foster exchange about data models and work towards clear specifications of file formats and data models in the research field of atom probe microscopy."
+description = "Foster exchange about data models and work towards clear specifications of file formats and data models in the research fields of atom probe tomography and related field-ion microscopy (atom probe microscopy)."
 readme = "README.md"
 license = { file = "LICENSE.txt" }
 requires-python = ">=3.8"
@@ -38,4 +38,4 @@ dev = [
 ]
 
 # [tool.setuptools]
-# packages = ["apt", "epos", "nexus", "pos", "rng", "rrng", "fig", "utils"]
+# packages = ["apt", "ato", "epos", "fig", "nexus", "pos", "pyccapt", "rng", "rrng", "utils"]
