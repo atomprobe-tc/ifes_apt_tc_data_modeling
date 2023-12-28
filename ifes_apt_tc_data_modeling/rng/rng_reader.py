@@ -159,8 +159,9 @@ class ReadRngFileFormat():
                 i - current_line_id, txt_stripped[i],
                 header["column_id_to_label"],
                 n_element_symbols + 3)
-            assert dct is not None, \
-                "Line " + txt_stripped[i] + " is corrupted!"
+            if dct is None:
+                print("WARNING::RNG line {txt_stripped[i]} is corrupted!")
+                continue
 
             m_ion = NxIon(isotope_vector=create_isotope_vector(
                 dct["atoms"]), charge_state=0)
@@ -191,7 +192,7 @@ class ReadRngFileFormat():
                 m_ion_candidates)
 
             self.rng["molecular_ions"].append(m_ion)
-        print(self.filename + " parsed successfully")
+        print(f"{self.filename} parsed successfully")
 
 if __name__ == "main":
     pass
