@@ -1,4 +1,3 @@
-# POS file format reader used by atom probe microscopists.
 #
 # Copyright The NOMAD Authors.
 #
@@ -17,14 +16,14 @@
 # limitations under the License.
 #
 
+"""POS file format reader used by atom probe microscopists."""
+
 # pylint: disable=no-member,duplicate-code
 
 import os
-
 import numpy as np
 
 from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
-
 from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
 
 
@@ -32,9 +31,9 @@ class ReadPosFileFormat():
     """Read *.pos file format."""
 
     def __init__(self, filename: str):
-        assert len(filename) > 4, "POS file incorrect filename ending!"
-        assert filename.lower().endswith(".pos"), \
-            "POS file incorrect file type!"
+        """Initialize the reader."""
+        if (len(filename) <= 4) or (filename.lower().endswith(".pos") is False):
+            raise ImportError("WARNING::POS file incorrect filename ending or file type!")
         self.filename = filename
 
         self.filesize = os.path.getsize(self.filename)

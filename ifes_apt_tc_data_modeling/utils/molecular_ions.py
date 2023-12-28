@@ -1,9 +1,3 @@
-# Utility tool to work with molecular ions in atom probe microscopy.
-#
-# Also convenience functions are included which translate human-readable ion
-# names into the isotope_vector description proposed by Kuehbach et al. in
-# DOI: 10.1017/S1431927621012241 to the human-readable ion names which are use
-# in P. Felfer et al.'s atom probe toolbox
 #
 # Copyright The NOMAD Authors.
 #
@@ -22,22 +16,16 @@
 # limitations under the License.
 #
 
+"""Utility tool to work with molecular ions in atom probe microscopy."""
+
 # pylint: disable=no-member,duplicate-code
 
-import typing
-
-from typing import Tuple
-
 import numpy as np
-
 import radioactivedecay as rd
 
-import ase
-from ase.data import atomic_numbers, atomic_masses, atomic_names
-
+from ase.data import atomic_numbers
 from ifes_apt_tc_data_modeling.utils.utils import \
     isotope_to_hash, hash_to_isotope, isotope_vector_to_dict_keyword
-
 from ifes_apt_tc_data_modeling.utils.nist_isotope_data import isotopes
 
 # do not consider isotopes with a very low natural abundance
@@ -57,11 +45,16 @@ PRACTICAL_MIN_HALF_LIFE = np.inf
 # molecular ion candidate (which is non-trivial and maybe not even
 # with first principles theory possible...
 SACRIFICE_ISOTOPIC_UNIQUENESS = True
-VERBOSE=False
+VERBOSE = False
 
 
 class MolecularIonCandidate:
-    def __init__(self, ivec=[], charge_state=0, mass_sum=0., nat_abun_prod=0., min_half_life=np.inf):
+    def __init__(self,
+                 ivec=[],
+                 charge_state=0,
+                 mass_sum=0.,
+                 nat_abun_prod=0.,
+                 min_half_life=np.inf):
         self.isotope_vector = np.asarray(np.atleast_1d(ivec), np.uint16)
         self.charge_state = np.int8(charge_state)
         self.mass = np.float64(mass_sum)
@@ -97,6 +90,7 @@ class MolecularIonBuilder:
         self.parms["min_half_life"] = min_half_life
         self.parms["sacrifice_isotopic_uniqueness"] = sacrifice_uniqueness
         self.parms["verbose"] = verbose
+        self.relevant = {}
 
         for symbol, atomic_number in atomic_numbers.items():
             if symbol != "X":
@@ -110,10 +104,10 @@ class MolecularIonBuilder:
                     unclear_half_life = False
 
                     # test if half-life data available
-                    trial_nuclid_name = symbol + "-" + str(mass_number)
+                    trial_nuclid_name = f"{symbol}-{mass_number}"
                     try:
                         tmp = rd.Nuclide(trial_nuclid_name)
-                    except:
+                    except ValueError:
                         tmp = None
                     if tmp is not None:
                         half_life = tmp.half_life()
@@ -131,8 +125,8 @@ class MolecularIonBuilder:
                         # do not consider exotic isotopes with unclear
                         # half-life as they are likely anyway irrelevant
                         # for practical atom probe experiments
-                        half_life = np.nan
-                        unclear_half_life = True
+                        # half_life = np.nan
+                        # unclear_half_life = True
 
                     # get ase abundance data
                     n_protons = atomic_numbers[symbol]
@@ -152,7 +146,7 @@ class MolecularIonBuilder:
                     self.nuclid_stable[hashvalue] = observationally_stable
                     self.nuclid_unclear[hashvalue] = unclear_half_life
                     self.nuclid_halflife[hashvalue] = half_life
-                    assert np.uint16(0) not in self.nuclid_mass.keys(), \
+                    assert np.uint16(0) not in self.nuclid_mass, \
                         "0 must not be a key in nuclid_mass dict!"
                     element_isotopes = np.append(element_isotopes, hashvalue)
                 self.element_isotopes[atomic_number] = np.sort(
@@ -221,7 +215,6 @@ class MolecularIonBuilder:
         # as an example the molecular ion C:2 H:1 will map to 6, 6, 1
         max_depth = 0  # number of non-zero entries in element_arr
         for hashvalue in element_arr:
-            n_protons, n_neutrons = hash_to_isotope(hashvalue)
             if hashvalue != 0:
                 max_depth += 1
         if self.parms["verbose"] is True:
@@ -241,8 +234,7 @@ class MolecularIonBuilder:
                 print(f"Found {len(self.candidates)} candidates!")
             return self.try_to_reduce_to_unique_solution()
             # will return a tuple of charge_state and list of relevant_candidates
-        else:
-            return (0, [])
+        return (0, [])
 
     def iterate_molecular_ion(self,
                               element_arr, jth_nuclids, cand_arr_prev,
@@ -265,7 +257,7 @@ class MolecularIonBuilder:
                 new_halflife = self.get_shortest_half_life(cand_arr_curr)
 
                 for new_chrg in np.arange(1, 8):
-                    mass_to_charge = new_mass / new_chrg;
+                    mass_to_charge = new_mass / new_chrg
                     if mass_to_charge < low:
                         break
                     # we can break the entire charge state generation here already instead of continue
@@ -275,28 +267,32 @@ class MolecularIonBuilder:
                     if mass_to_charge > high:
                         # can be optimized and broken out of earlier if testing first chrg == 1
                         # and then chrg == APTMOLECULARION_MAX_CHANGE
-                        continue;
+                        continue
                         # must not be break here because with adding more charge
                         # we usually walk from right to left eventually into [low, high] !
                     # molecular ion is within user-specified bounds
                     self.candidates.append(
-                        MolecularIonCandidate(cand_arr_curr, new_chrg, new_mass, new_abun_prod, new_halflife))
+                        MolecularIonCandidate(cand_arr_curr,
+                                              new_chrg,
+                                              new_mass,
+                                              new_abun_prod,
+                                              new_halflife))
                 # do not start a new recursion
         else:
             # break the recursion
             return
 
     def try_to_reduce_to_unique_solution(self):
-        """Hueristics to identify if current candidates are unique."""
+        """Heuristics to identify if current candidates are unique."""
         if self.parms["verbose"] is True:
             print(f"Reduce set of {len(self.candidates)} candidates to a unique...")
         self.relevant = {}
         for cand in self.candidates:
             if cand.abundance_product >= self.parms["min_abundance_product"]:
-                if np.isnan(cand.shortest_half_life) == False:
+                if np.isnan(cand.shortest_half_life) is False:
                     if cand.shortest_half_life >= self.parms["min_half_life"]:
                         keyword = cand.unique_keyword()
-                        if keyword not in self.relevant.keys():
+                        if keyword not in self.relevant:
                             self.relevant[keyword] = cand
         relevant_candidates = []
         if self.parms["verbose"] is True:
@@ -312,40 +308,38 @@ class MolecularIonBuilder:
                 print("WARNING::No relevant candidate meets all criteria!")
                 print("WARNING::No solution possible for given criteria!")
             return (0, relevant_candidates)
-        elif len(self.relevant) == 1:
+        if len(self.relevant) == 1:
             if self.parms["verbose"] is True:
                 print("One relevant candidate which meets all criteria")
             keywords = []
-            for key in self.relevant.keys():
+            for key in self.relevant:
                 if isinstance(key, str):
                     keywords.append(key)
             assert len(keywords) >= 1, "List of relevant keywords is empty!"
             return (self.relevant[keywords[0]].charge_state, relevant_candidates)
-        else:
-            if self.parms["verbose"] is True:
-                print("Multiple relevant candidates meet all selection criteria")
-            keywords = []
-            for key in self.relevant.keys():
-                if isinstance(key, str):
-                    keywords.append(key)
-            assert len(keywords) >= 1, "List of relevant keywords is empty!"
-            charge_state = self.relevant[keywords[0]].charge_state
-            for key, val in self.relevant.items():
-                if val.charge_state == charge_state:
-                    continue
-                else:
-                    if self.parms["verbose"] is True:
-                        print("WARNING::Multiple relevant candidates differ in charge_state!")
-                        print("WARNING::No unique solution possible for given criteria!")
-                    return (0, relevant_candidates)
-            # not returned yet, so all relevant candidates have the same charge_state
-            if self.parms["verbose"] is True:
-                print(f"Multiple relevant candidates have all the same charge_state {charge_state}")
-            if self.parms["sacrifice_isotopic_uniqueness"] is True:
-                return (charge_state, relevant_candidates)
 
+        if self.parms["verbose"] is True:
+            print("Multiple relevant candidates meet all selection criteria")
+        keywords = []
+        for key in self.relevant:
+            if isinstance(key, str):
+                keywords.append(key)
+        assert len(keywords) >= 1, "List of relevant keywords is empty!"
+        charge_state = self.relevant[keywords[0]].charge_state
+        for key, val in self.relevant.items():
+            if val.charge_state == charge_state:
+                continue
             if self.parms["verbose"] is True:
-                print("WARNING::Multiple relevant candidates differ in isotopes!")
-                print("WARNING::But these have the same charge_state!")
+                print("WARNING::Multiple relevant candidates differ in charge_state!")
                 print("WARNING::No unique solution possible for given criteria!")
             return (0, relevant_candidates)
+        # not returned yet, so all relevant candidates have the same charge_state
+        if self.parms["verbose"] is True:
+            print(f"Multiple relevant candidates have all the same charge_state {charge_state}")
+        if self.parms["sacrifice_isotopic_uniqueness"] is True:
+            return (charge_state, relevant_candidates)
+        if self.parms["verbose"] is True:
+            print("WARNING::Multiple relevant candidates differ in isotopes!")
+            print("WARNING::But these have the same charge_state!")
+            print("WARNING::No unique solution possible for given criteria!")
+        return (0, relevant_candidates)

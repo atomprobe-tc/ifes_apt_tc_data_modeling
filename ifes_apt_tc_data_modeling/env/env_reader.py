@@ -1,4 +1,3 @@
-# Reader for GPM/Rouen ENV system configuration and range file
 #
 # Copyright The NOMAD Authors.
 #
@@ -17,9 +16,12 @@
 # limitations under the License.
 #
 
+"""ENV file format reader for GPM/Rouen ENV system configuration and range files"""
+
 
 import re
 import numpy as np
+from ase.data import chemical_symbols
 from ifes_apt_tc_data_modeling.nexus.nx_ion import NxField, NxIon
 from ifes_apt_tc_data_modeling.utils.utils import \
     create_isotope_vector, is_range_significant
@@ -28,7 +30,6 @@ from ifes_apt_tc_data_modeling.utils.molecular_ions import MolecularIonBuilder
 from ifes_apt_tc_data_modeling.utils.molecular_ions import \
     PRACTICAL_ABUNDANCE, PRACTICAL_ABUNDANCE_PRODUCT, \
     PRACTICAL_MIN_HALF_LIFE, VERBOSE, SACRIFICE_ISOTOPIC_UNIQUENESS
-from ase.data import atomic_numbers, atomic_masses, chemical_symbols
 
 
 def get_smart_chemical_symbols():
@@ -67,7 +68,7 @@ def evaluate_env_range_line(line: str) -> dict:
         print(f"WARNING::ENV file ranging definition {line} has insignificant range!")
         return None
 
-    lst = []
+    lst: list = []
     if tmp[0] == "Hyd":
         lst = []
     elif tmp[0] in get_smart_chemical_symbols():
@@ -83,8 +84,7 @@ def evaluate_env_range_line(line: str) -> dict:
                         if (tokens[jdx][kdx:] == sym) and (tokens[jdx + 1].isdigit() is True):
                             mult = int(tokens[jdx + 1])
                             kdx += len(tokens[jdx + 1])
-                    for cnt in np.arange(0, mult):
-                        lst.append(sym)
+                    lst.extend([sym] * mult)
                     kdx += len(sym)
     info["atoms"] = lst
     return info
@@ -95,7 +95,7 @@ class ReadEnvFileFormat():
 
     def __init__(self, filename: str):
         if (len(filename) <= 4) or (filename.lower().endswith(".env") is False):
-            raise ImportError(f"WARNING::ENV file incorrect filename ending or file type!")
+            raise ImportError("WARNING::ENV file incorrect filename ending or file type!")
         self.filename = filename
         self.env: dict = {}
         self.env["ranges"] = {}
@@ -117,15 +117,13 @@ class ReadEnvFileFormat():
             for idx in np.arange(0, len(txt_stripped)):
                 if txt_stripped[idx].startswith("# Definition of") is False:
                     continue
-                else:
-                    rng_s = idx
-                    break
+                rng_s = idx
+                break
             for idx in np.arange(rng_s + 1, len(txt_stripped)):
                 if txt_stripped[idx].startswith("# Atom probe definition") is False:
                     continue
-                else:
-                    rng_e = idx
-                    break
+                rng_e = idx
+                break
             if rng_s is None or rng_e is None:
                 print("WARNING:: No ranging definitions were found!")
                 return
@@ -156,12 +154,11 @@ class ReadEnvFileFormat():
                 # print(f"{recovered_charge_state}")
                 m_ion.charge_state = NxField(np.int8(recovered_charge_state), "")
                 m_ion.update_human_readable_name()
-                m_ion.add_charge_state_model(
-                    {"min_abundance": PRACTICAL_ABUNDANCE,
-                    "min_abundance_product": PRACTICAL_ABUNDANCE_PRODUCT,
-                    "min_half_life": PRACTICAL_MIN_HALF_LIFE,
-                    "sacrifice_isotopic_uniqueness": SACRIFICE_ISOTOPIC_UNIQUENESS},
-                    m_ion_candidates)
+                m_ion.add_charge_state_model({"min_abundance": PRACTICAL_ABUNDANCE,
+                                              "min_abundance_product": PRACTICAL_ABUNDANCE_PRODUCT,
+                                              "min_half_life": PRACTICAL_MIN_HALF_LIFE,
+                                              "sacrifice_isotopic_uniqueness": SACRIFICE_ISOTOPIC_UNIQUENESS},
+                                             m_ion_candidates)
 
                 self.env["molecular_ions"].append(m_ion)
             print(f"{self.filename} parsed successfully")

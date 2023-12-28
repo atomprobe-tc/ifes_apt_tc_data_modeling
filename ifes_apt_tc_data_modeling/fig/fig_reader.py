@@ -1,4 +1,3 @@
-# FIG.TXT range file reader used by atom probe microscopists.
 #
 # Copyright The NOMAD Authors.
 #
@@ -17,35 +16,30 @@
 # limitations under the License.
 #
 
-# pylint: disable=no-member,duplicate-code
+"""Reader for ranging defs extracted from FAU/Erlangen Atom Probe Toolbox Matlab figures FIG.TXT."""
+
+
+# pylint: disable=no-member,duplicate-code,too-few-public-methods
 
 import re
-
 import numpy as np
 
+from ase.data import atomic_numbers, chemical_symbols
 from ifes_apt_tc_data_modeling.nexus.nx_ion import NxField, NxIon
-
-from ifes_apt_tc_data_modeling.utils.utils import \
-    create_isotope_vector, is_range_significant
-
 from ifes_apt_tc_data_modeling.utils.definitions import \
-    MQ_EPSILON, MAX_NUMBER_OF_ATOMS_PER_ION
-
+    MAX_NUMBER_OF_ATOMS_PER_ION
 from ifes_apt_tc_data_modeling.utils.molecular_ions import \
     isotope_to_hash, MolecularIonBuilder, \
     PRACTICAL_ABUNDANCE, PRACTICAL_ABUNDANCE_PRODUCT, \
     PRACTICAL_MIN_HALF_LIFE, VERBOSE, SACRIFICE_ISOTOPIC_UNIQUENESS
-
-from ase.data import atomic_numbers, atomic_masses, chemical_symbols
 
 
 class ReadFigTxtFileFormat():
     """Read *.fig.txt file format."""
 
     def __init__(self, filename: str):
-        assert len(filename) > 7, "FIG.TXT file incorrect filename ending!"
-        assert filename.lower().endswith(".fig.txt"), \
-            "FIG.TXT file incorrect file type!"
+        if (len(filename) <= 7) or (filename.lower().endswith(".fig.txt") is False):
+            raise ImportError("WARNING::FIG.TXT file incorrect filename ending or file type!")
         self.filename = filename
 
         self.fig: dict = {}
@@ -65,8 +59,8 @@ class ReadFigTxtFileFormat():
                         if line.strip() != "" and line.startswith("#") is False]
         for molecular_ion in txt_stripped:
             tmp = molecular_ion.split(" ")
-            mqmin = np.float64(tmp[len(tmp)-2:-1][0])
-            mqmax = np.float64(tmp[len(tmp)-1:][0])
+            mqmin = np.float64(tmp[len(tmp) - 2:-1][0])
+            mqmax = np.float64(tmp[len(tmp) - 1:][0])
             ionname = " ".join(tmp[:-2])
             # print(f"{ionname} [{mqmin}, {mqmax}]")
             # ionname = '16O 1H2 + + +  + '
@@ -93,14 +87,11 @@ class ReadFigTxtFileFormat():
                     multiplier = 1
                     if len(suffix) == 1:
                         multiplier = int(suffix[0])
-                    symbol = isotope.replace( \
-                        str(mass_number), "").replace( \
-                        str(multiplier), "").replace(" ", "")
+                    symbol = isotope.replace(f"{mass_number}", "").replace(f"{multiplier}", "").replace(" ", "")
                     if (symbol != "X") and (symbol in chemical_symbols):
-                        for cnt in np.arange(0, multiplier):
-                            proton_number = atomic_numbers[symbol]
-                            neutron_number = mass_number - proton_number
-                            ivec.append(isotope_to_hash(proton_number, neutron_number))
+                        proton_number = atomic_numbers[symbol]
+                        neutron_number = mass_number - proton_number
+                        ivec.extend([isotope_to_hash(proton_number, neutron_number)] * multiplier)
             ivec = np.sort(np.asarray(ivec, np.uint16))[::-1]
             ivector = np.zeros((MAX_NUMBER_OF_ATOMS_PER_ION,), np.uint16)
             ivector[0:len(ivec)] = ivec
@@ -132,9 +123,4 @@ class ReadFigTxtFileFormat():
                 m_ion_candidates)
 
             self.fig["molecular_ions"].append(m_ion)
-        print(self.filename + " parsed successfully")
-
-if __name__ == "main":
-    pass
-    # testing
-    # parsedFile = ReadFigTxtFileFormat("../../02763-v01.rng.fig.txt")
+        print(f"{self.filename} parsed successfully")

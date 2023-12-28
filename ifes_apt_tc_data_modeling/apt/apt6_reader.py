@@ -1,4 +1,3 @@
-# AMETEK APT(6) data exchange file reader used by atom probe microscopists.
 #
 # Copyright The NOMAD Authors.
 #
@@ -17,24 +16,19 @@
 # limitations under the License.
 #
 
+"""AMETEK APT(6) data exchange file reader used by atom probe microscopists."""
+
 # pylint: disable=no-member,duplicate-code
 
 import os
-
 import numpy as np
-
 import pandas as pd
 
 from ifes_apt_tc_data_modeling.apt.apt6_utils import np_uint16_to_string
-
 from ifes_apt_tc_data_modeling.apt.apt6_headers import AptFileHeaderMetadata
-
 from ifes_apt_tc_data_modeling.apt.apt6_sections import AptFileSectionMetadata
-
 from ifes_apt_tc_data_modeling.apt.apt6_sections_branches import EXPECTED_SECTIONS
-
 from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
-
 from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
 
 
@@ -115,14 +109,14 @@ class ReadAptFileFormat():
 
                 print(keyword)
                 print(found_section)
-                assert keyword not in self.available_sections.keys(), \
+                assert keyword not in self.available_sections, \
                     'Found a duplicate of an already parsed section! Please \
                     contact the development team as we have never encountered \
                     an example of such a section duplication and here seems \
                     to be an example to inspect the matter.'
 
                 if keyword not in ['Delta Pulse', 'Epos ToF']:
-                    assert keyword in EXPECTED_SECTIONS.keys(), \
+                    assert keyword in EXPECTED_SECTIONS, \
                         'Found an unknown section, seems like an unknown/new \
                         branch! Please contact the development team to enable us \
                         to contact AMETEK and discuss the situation.'
@@ -175,20 +169,19 @@ class ReadAptFileFormat():
         # 9714475f1b3bc224ea063af81566d873 repo
         # for converting Windows/MSDN time to Python time
         for key, value in iter(metadata_dict.items()):
-            print(key + ': ' + str(value))
+            print(f"{key}: {value}")
 
     def get_metadata(self, keyword: str):
         """Report available metadata for quantity if it exists."""
-        if keyword in self.available_sections.keys() \
-           and keyword in self.byte_offsets.keys():
+        if (keyword in self.available_sections) and (keyword in self.byte_offsets):
             metadata_dict = self.available_sections[keyword].get_metadata()
             for key, value in iter(metadata_dict.items()):
-                print(key + ': ' + str(value))
+                print(f"{key}: {value}")
 
     def get_metadata_table(self):
         """Create table from all metadata for each section."""
         column_names = ['section']  # header
-        assert 'Mass' in self.available_sections.keys(), \
+        assert 'Mass' in self.available_sections, \
             'Cannot create table, Mass section not available to guide \
                 the creation of the table header!'
         for key in self.available_sections['Mass'].get_metadata().keys():
@@ -210,11 +203,10 @@ class ReadAptFileFormat():
 
     def get_named_quantity(self, keyword: str):
         """Read quantity with name in keyword from APT file if it exists."""
-        if keyword in self.available_sections.keys() \
-           and keyword in self.byte_offsets.keys():
+        if (keyword in self.available_sections) and (keyword in self.byte_offsets):
             byte_position_start = self.byte_offsets[keyword] \
                 - self.available_sections[keyword].get_ametek_size()
-            print('Reading section ' + keyword + ' at ' + str(byte_position_start))
+            print(f"Reading section {keyword} at {byte_position_start}")
 
             dtype = self.available_sections[keyword].get_ametek_type()
             offset = byte_position_start

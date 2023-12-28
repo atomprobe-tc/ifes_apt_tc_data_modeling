@@ -1,4 +1,3 @@
-# POS file format reader used by atom probe microscopists.
 #
 # Copyright The NOMAD Authors.
 #
@@ -17,10 +16,11 @@
 # limitations under the License.
 #
 
+"""ATO file format reader used by atom probe microscopists."""
+
 # pylint: disable=no-member,duplicate-code
 
 import os
-
 import numpy as np
 
 from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
@@ -83,7 +83,8 @@ class ReadAtoFileFormat():
             for dim in [0, 1, 2]:
                 xyz.typed_value[:, dim] = \
                     get_memory_mapped_data(self.filename, "<f4",
-                        2 * 4 + dim * 4, 14 * 4, self.number_of_events)
+                                           2 * 4 + dim * 4,
+                                           14 * 4, self.number_of_events)
                 # wpx -> x, wpy -> y, fpz -> z
         if self.version == 5:
             # publicly available sources are inconclusive whether coordinates are in angstroem or nm
@@ -93,10 +94,12 @@ class ReadAtoFileFormat():
             # not at all wpx, wpy and fpz but x, y, z instead and here claims the nm
             xyz.typed_value[:, 0] = \
                 np.float32(get_memory_mapped_data(self.filename, "<i2",
-                           5000 + 0, 40, self.number_of_events) * 0.1)  # wpx -> x
+                                                  5000 + 0,
+                                                  40, self.number_of_events) * 0.1)  # wpx -> x
             xyz.typed_value[:, 1] = \
                 np.float32(get_memory_mapped_data(self.filename, "<i2",
-                           5000 + 2, 40, self.number_of_events) * 0.1)  # wpy -> y
+                                                  5000 + 2,
+                                                  40, self.number_of_events) * 0.1)  # wpy -> y
             xyz.typed_value[:, 2] = \
                 get_memory_mapped_data(self.filename, "<f4",
                                        5000 + 4, 40, self.number_of_events)  # fpz -> z
@@ -113,9 +116,9 @@ class ReadAtoFileFormat():
         if self.version == 3:
             m_n.typed_value[:, 0] = \
                 get_memory_mapped_data(self.filename, "<f4",
-                                    2 * 4 + 3 * 4, 14 * 4, self.number_of_events)
+                                       2 * 4 + 3 * 4, 14 * 4, self.number_of_events)
         if self.version == 5:
             m_n.typed_value[:, 0] = \
                 get_memory_mapped_data(self.filename, "<f4",
-                                    5000 + 8, 40, self.number_of_events)
+                                       5000 + 8, 40, self.number_of_events)
         return m_n

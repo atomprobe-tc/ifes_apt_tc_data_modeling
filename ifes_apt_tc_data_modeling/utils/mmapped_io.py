@@ -1,4 +1,3 @@
-# Utility for parsing files via memory mapping.
 #
 # Also convenience functions are included which translate human-readable ion
 # names into the isotope_vector description proposed by Kuehbach et al. in
@@ -22,14 +21,13 @@
 # limitations under the License.
 #
 
+"""Utility for parsing files via memory mapping."""
+
+
 # pylint: disable=no-member,duplicate-code
 
 import typing
-
-from typing import Tuple
-
 import mmap
-
 import numpy as np
 
 

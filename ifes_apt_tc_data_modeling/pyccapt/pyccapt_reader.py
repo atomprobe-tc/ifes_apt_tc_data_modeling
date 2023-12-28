@@ -1,4 +1,3 @@
-# POS file format reader used by atom probe microscopists.
 #
 # Copyright The NOMAD Authors.
 #
@@ -17,15 +16,15 @@
 # limitations under the License.
 #
 
+"""Reader for FAU/Erlangen's HDF5-based formats introduced with the pyccapt library."""
+
 # pylint: disable=no-member,duplicate-code
 
 import os
-
 import h5py
-
 import numpy as np
-
 import pandas as pd
+from typing import Dict
 
 from ase.data import atomic_numbers, chemical_symbols
 from ifes_apt_tc_data_modeling.nexus.nx_ion import NxIon
@@ -44,9 +43,9 @@ from ifes_apt_tc_data_modeling.utils.utils import \
 # instructed as a set of Matlab live scripts this toolbox offers data analysis functionalities,
 # results are stored via an HDF5 file
 
-# specific comments 
+# specific comments
 # pyccapt/control
-# an HDF5 file keeping relevant quantities 
+# an HDF5 file keeping relevant quantities
 
 # pyccapt/calibration
 # unfortunately the generated HDF5 file has internally no provenance information
@@ -116,12 +115,12 @@ class ReadPyccaptCalibrationFileFormat():
 
         self.df = pd.read_hdf(self.filename)
         self.number_of_events = np.shape(self.df)[0]
-    
+
     def get_named_quantities(self, term: str):
         if term in self.df.keys():
             return self.df[term]
         return None
-    
+
     def get_reconstructed_positions(self):
         """Read xyz columns."""
 
@@ -179,7 +178,7 @@ class ReadPyccaptRangingFileFormat():
                 return
 
         self.df = pd.read_hdf(self.filename)
-        self.rng = {}
+        self.rng: Dict = {}
         self.rng["molecular_ions"] = []
         print(np.shape(self.df)[0])
         for idx in np.arange(0, np.shape(self.df)[0]):
@@ -201,7 +200,7 @@ class ReadPyccaptRangingFileFormat():
                     for mult in np.arange(0, complexs[idxj]):
                         hashvector.append(isotope_to_hash(proton_number, neutron_number))
             ivec[0:len(hashvector)] = np.sort(np.asarray(hashvector, np.uint16), kind="stable")[::-1]
-            
+
             m_ion = NxIon()
             m_ion.isotope_vector.typed_value = ivec
             m_ion.nuclid_list.typed_value = isotope_vector_to_nuclid_list(ivec)

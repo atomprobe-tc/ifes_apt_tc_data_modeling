@@ -1,4 +1,3 @@
-# AMETEK APT(6) data exchange file reader used by atom probe microscopists.
 #
 # Copyright The NOMAD Authors.
 #
@@ -16,6 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+"""AMETEK APT(6) data exchange file reader used by atom probe microscopists."""
 
 # pylint: disable=no-member,duplicate-code
 

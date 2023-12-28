@@ -34,7 +34,10 @@ dependencies = [
 dev = [
     "twine",
     "jupyterlab_h5web",
-    "jupyterlab"
+    "jupyterlab",
+    "mypy",
+    "pylint",
+    "pycodestyle"
 ]
 
 # [tool.setuptools]

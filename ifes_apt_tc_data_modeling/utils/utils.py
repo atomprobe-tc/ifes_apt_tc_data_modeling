@@ -24,27 +24,17 @@
 
 # pylint: disable=no-member,duplicate-code
 
-import re
-
-import typing
-
 from typing import Tuple
-
-import mmap
-
 import numpy as np
 
 from ase.data import atomic_numbers, chemical_symbols
-
 from ifes_apt_tc_data_modeling.utils.nist_isotope_data import isotopes
-
-from ifes_apt_tc_data_modeling.utils.definitions import MAX_NUMBER_OF_ION_SPECIES
-from ifes_apt_tc_data_modeling.utils.definitions import MAX_NUMBER_OF_ATOMS_PER_ION
-from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
+from ifes_apt_tc_data_modeling.utils.definitions import \
+    MAX_NUMBER_OF_ATOMS_PER_ION, MQ_EPSILON
 
 
 def isotope_to_hash(proton_number: int = 0,
-                 neutron_number: int = 0) -> int:
+                    neutron_number: int = 0) -> int:
     """Encode an isotope to a hashvalue."""
     n_protons = np.uint16(proton_number)
     n_neutrons = np.uint16(neutron_number)
@@ -110,7 +100,7 @@ def create_isotope_vector(building_blocks: list) -> np.ndarray:
             neutron_number = mass_number - proton_number
             assert proton_number in isotopes.keys(), \
                 "No isotopes for proton_number " + str(proton_number) + " via ase!"
-            assert mass_number in isotopes[proton_number].keys(), \
+            assert mass_number in isotopes[proton_number], \
                 "No isotope for mass_number " + str(mass_number) + " via ase!"
             hashvector.append(isotope_to_hash(proton_number, neutron_number))
         else:
@@ -170,12 +160,11 @@ def isotope_vector_to_human_readable_name(ivec: np.ndarray, charge_state: np.int
         else:
             human_readable = human_readable.rstrip()
         return human_readable
-    else:
-        return "unknown_iontype"
+    return "unknown_iontype"
 
 
 def is_range_overlapping(interval: np.ndarray,
-                        interval_set: np.float64) -> bool:
+                         interval_set: np.float64) -> bool:
     """Check if interval overlaps within with members of interval set."""
     assert np.shape(interval) == (2,), "Interval needs to have two columns!"
     assert np.shape(interval_set)[1] == 2, \

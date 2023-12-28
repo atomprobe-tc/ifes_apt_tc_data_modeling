@@ -22,12 +22,6 @@
 # limitations under the License.
 #
 
-# pylint: disable=no-member,duplicate-code
-
-import typing
-
-from typing import Tuple
-
 
 def rchop(string: str = "", suffix: str = "") -> str:
     """Right-chop a string."""

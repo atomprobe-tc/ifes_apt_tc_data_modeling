@@ -1,4 +1,3 @@
-# Set of utility tools for parsing file formats used by atom probe.
 #
 # Also convenience functions are included which translate human-readable ion
 # names into the isotope_vector description proposed by Kuehbach et al. in
@@ -22,13 +21,7 @@
 # limitations under the License.
 #
 
-# pylint: disable=no-member,duplicate-code
-
-import typing
-
-from typing import Tuple
-
-import numpy as np
+"""Set of utility tools for parsing file formats used by atom probe."""
 
 
 class NxField():

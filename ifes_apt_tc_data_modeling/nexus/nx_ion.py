@@ -1,4 +1,3 @@
-# Set of utility tools for parsing file formats used by atom probe.
 #
 # Also convenience functions are included which translate human-readable ion
 # names into the isotope_vector description proposed by Kuehbach et al. in
@@ -22,11 +21,9 @@
 # limitations under the License.
 #
 
+"""Set of utility tools for parsing file formats used by atom probe."""
+
 # pylint: disable=no-member,duplicate-code
-
-import typing
-
-from typing import Tuple
 
 import numpy as np
 
@@ -34,8 +31,7 @@ from ifes_apt_tc_data_modeling.utils.definitions import \
     MAX_NUMBER_OF_ATOMS_PER_ION
 from ifes_apt_tc_data_modeling.utils.utils import \
     create_isotope_vector, isotope_vector_to_nuclid_list, \
-    isotope_vector_to_human_readable_name, \
-    is_range_overlapping, is_range_significant
+    isotope_vector_to_human_readable_name, is_range_significant
 
 from ifes_apt_tc_data_modeling.utils.molecular_ions import MolecularIonCandidate
 
@@ -121,8 +117,8 @@ class NxIon():
         print(self.volume.typed_value)
 
     def add_charge_state_model(self,
-                         parameters={},
-                         candidates=[]):
+                               parameters={},
+                               candidates=[]):
         """Add details about the model how self.charge_state was defined."""
         self.charge_state_model = {}
         assert "min_abundance" in parameters.keys(), \

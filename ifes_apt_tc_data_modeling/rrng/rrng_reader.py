@@ -1,4 +1,3 @@
-# RRNG range file reader used by atom probe microscopists.
 #
 # Copyright The NOMAD Authors.
 #
@@ -17,12 +16,14 @@
 # limitations under the License.
 #
 
+"""RRNG range file reader used by atom probe microscopists."""
+
 # pylint: disable=no-member,duplicate-code
 
 import re
-
 import numpy as np
 
+from ase.data import chemical_symbols
 from ifes_apt_tc_data_modeling.nexus.nx_ion import NxField, NxIon
 from ifes_apt_tc_data_modeling.utils.utils import \
     create_isotope_vector, is_range_significant
@@ -31,8 +32,6 @@ from ifes_apt_tc_data_modeling.utils.molecular_ions import MolecularIonBuilder
 from ifes_apt_tc_data_modeling.utils.molecular_ions import \
     PRACTICAL_ABUNDANCE, PRACTICAL_ABUNDANCE_PRODUCT, \
     PRACTICAL_MIN_HALF_LIFE, VERBOSE, SACRIFICE_ISOTOPIC_UNIQUENESS
-
-from ase.data import atomic_numbers, atomic_masses, chemical_symbols
 
 
 def evaluate_rrng_range_line(i: int, line: str) -> dict:
@@ -63,7 +62,7 @@ def evaluate_rrng_range_line(i: int, line: str) -> dict:
     if tmp[3].lower().startswith("vol:"):
         info["volume"] = np.float64(re.split(r":", tmp[3])[1])
     if (tmp[-1].lower().startswith("color:")) and \
-        (len(re.split(r":", tmp[-1])[1]) == 6):
+       (len(re.split(r":", tmp[-1])[1]) == 6):
         info["color"] = "#" + re.split(r":", tmp[-1])[1]
     # HEX_COLOR_REGEX = r"^([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
     # replace r"^#( ...
@@ -73,7 +72,7 @@ def evaluate_rrng_range_line(i: int, line: str) -> dict:
     for information in tmp[4:-1]:
         element_multiplicity = re.split(r":+", information)
         assert len(element_multiplicity) == 2, \
-           "Element multiplicity is incorrectly formatted!"
+            "Element multiplicity is incorrectly formatted!"
         # skip vol, name, and color information
         if element_multiplicity[0].lower() == "name":
             info["name"] = str(element_multiplicity[1])
@@ -99,9 +98,9 @@ class ReadRrngFileFormat():
     """Read *.rrng file format."""
 
     def __init__(self, filename: str):
-        assert len(filename) > 5, "RRNG file incorrect filename ending!"
-        assert filename.lower().endswith(".rrng"), \
-            "RRNG file incorrect file type!"
+        """Initialize the class."""
+        if (len(filename) <= 5) or (filename.lower().endswith(".rrng") is False):
+            raise ImportError("WARNING::RRNG file incorrect filename ending or file type!")
         self.filename = filename
 
         self.rrng: dict = {}
@@ -201,8 +200,3 @@ class ReadRrngFileFormat():
 
             self.rrng["molecular_ions"].append(m_ion)
         print(self.filename + " parsed successfully")
-
-if __name__ == "main":
-    pass
-    # testing
-    # parsedFile = ReadRrngFileFormat("../../R31_06365-v02.rrng")

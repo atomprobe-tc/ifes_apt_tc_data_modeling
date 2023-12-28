@@ -1,4 +1,3 @@
-# RNG range file reader used by atom probe microscopists.
 #
 # Copyright The NOMAD Authors.
 #
@@ -17,22 +16,22 @@
 # limitations under the License.
 #
 
+"""RNG range file reader used by atom probe microscopists."""
+
 # pylint: disable=no-member,duplicate-code
 
 import re
-
 import numpy as np
 
+from ase.data import chemical_symbols
 from ifes_apt_tc_data_modeling.nexus.nx_ion import NxField, NxIon
 from ifes_apt_tc_data_modeling.utils.utils import \
     create_isotope_vector, is_range_significant
 from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
-from ifes_apt_tc_data_modeling.utils.molecular_ions import MolecularIonBuilder
-from ifes_apt_tc_data_modeling.utils.molecular_ions import \
+from ifes_apt_tc_data_modeling.utils.molecular_ions import MolecularIonBuilder, \
     PRACTICAL_ABUNDANCE, PRACTICAL_ABUNDANCE_PRODUCT, \
     PRACTICAL_MIN_HALF_LIFE, VERBOSE, SACRIFICE_ISOTOPIC_UNIQUENESS
 
-from ase.data import atomic_numbers, atomic_masses, chemical_symbols
 
 # there are specific examples for unusual range files here:
 # https://hg.sr.ht/~mycae/libatomprobe/browse/test/samples/ranges?rev=tip
@@ -66,14 +65,13 @@ def evaluate_rng_range_line(
         "Line " + line + " no element counts!"
     if np.sum(element_multiplicity) > 0:
         for j in np.arange(0, len(element_multiplicity)):
-            assert element_multiplicity[j] >= 0, "Line " + line \
-               + " no negative element counts!"
+            assert element_multiplicity[j] >= 0, \
+                f"Line {line} no negative element counts!"
             if element_multiplicity[j] > 0:
                 symbol = column_id_to_label[j + 1]
                 if (symbol in chemical_symbols) and (symbol != "X"):
-                    info["atoms"] = np.append(
-                        info["atoms"], [column_id_to_label[j + 1]] \
-                        * int(element_multiplicity[j]))
+                    info["atoms"] = np.append(info["atoms"],
+                                              [column_id_to_label[j + 1]] * int(element_multiplicity[j]))
                 else:
                     info["name"] = symbol
                     info["atoms"] = []  # will map to unknown type
@@ -91,7 +89,7 @@ def evaluate_rng_ion_type_header(line: str) -> dict:
     # line = "------------------- Fe Mg Al Mn Si V C Ga Ti Ca O Na Co H"
     # line = "---- a"
     # line = "----------------- Sc Fe O C Al Si Cr H unknown"
-    info = {}
+    info: dict = {}
     info["column_id_to_label"] = {}
     tmp = re.split(r"\s+", line)
     assert len(tmp) > 1, "RNG file does not contain iontype labels!"
@@ -104,9 +102,8 @@ class ReadRngFileFormat():
     """Read *.rng file format."""
 
     def __init__(self, filename: str):
-        assert len(filename) > 4, "RNG file incorrect filename ending!"
-        assert filename.lower().endswith(".rng"), \
-            "RNG file incorrect file type!"
+        if (len(filename) <= 4) or (filename.lower().endswith(".rng") is False):
+            raise ImportError("WARNING::RNG file incorrect filename ending or file type!")
         self.filename = filename
 
         self.rng: dict = {}
@@ -193,8 +190,3 @@ class ReadRngFileFormat():
 
             self.rng["molecular_ions"].append(m_ion)
         print(f"{self.filename} parsed successfully")
-
-if __name__ == "main":
-    pass
-    # testing
-    # parsedFile = ReadRngFileFormat("../../SeHoKim_R5076_44076_v02.rng")
