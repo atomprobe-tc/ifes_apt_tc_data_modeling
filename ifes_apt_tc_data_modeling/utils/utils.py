@@ -1,9 +1,3 @@
-# Utilities for parsing data and molecular ions in atom probe microscopy.
-#
-# Also convenience functions are included which translate human-readable ion
-# names into the isotope_vector description proposed by Kuehbach et al. in
-# DOI: 10.1017/S1431927621012241 to the human-readable ion names which are use
-# in P. Felfer et al.'s atom probe toolbox
 #
 # Copyright The NOMAD Authors.
 #
@@ -22,7 +16,14 @@
 # limitations under the License.
 #
 
+"""Utilities for parsing data and molecular ions in atom probe microscopy."""
+
 # pylint: disable=no-member,duplicate-code
+
+# Also convenience functions are included which translate human-readable ion
+# names into the isotope_vector description proposed by Kuehbach et al. in
+# DOI: 10.1017/S1431927621012241 to the human-readable ion names which are use
+# in P. Felfer et al.'s atom probe toolbox
 
 from typing import Tuple
 import numpy as np
@@ -38,9 +39,9 @@ def isotope_to_hash(proton_number: int = 0,
     """Encode an isotope to a hashvalue."""
     n_protons = np.uint16(proton_number)
     n_neutrons = np.uint16(neutron_number)
-    assert (n_protons >= np.uint16(0)) and (n_protons < np.uint16(256)), \
+    assert np.uint16(0) <= n_protons < np.uint16(256), \
         "Argument proton number on [0, 256) needed!"
-    assert (n_neutrons >= np.uint16(0)) and (n_neutrons < np.uint16(256)), \
+    assert np.uint(0) <= n_neutrons < np.uint16(256), \
         "Argument neutron number on [0, 256) needed!"
     hashvalue = int(n_protons + (np.uint16(256) * n_neutrons))
     return hashvalue
@@ -85,23 +86,23 @@ def create_isotope_vector(building_blocks: list) -> np.ndarray:
             "Argument block has to be a non-empty string!"
         if block.count("-") == 0:
             assert (block in symbol_to_proton_number) and (block != "X"), \
-                block + " is not a valid chemical symbol!"
+                f"{block} is not a valid chemical symbol!"
             proton_number = symbol_to_proton_number[block]
             neutron_number = 0
             hashvector.append(isotope_to_hash(proton_number, neutron_number))
         elif block.count("-") == 1:
             symb_mass = block.split("-")
             assert len(symb_mass) == 2, \
-                block + " is not properly formatted <symbol>-<mass_number>!"
+                f"{block} is not properly formatted <symbol>-<mass_number>!"
             assert (symb_mass[0] in symbol_to_proton_number) and (symb_mass[0] != "X"), \
-                symb_mass[0] + " is not a valid chemical symbol!"
+                f"{symb_mass[0]} is not a valid chemical symbol!"
             proton_number = symbol_to_proton_number[symb_mass[0]]
             mass_number = int(symb_mass[1])
             neutron_number = mass_number - proton_number
-            assert proton_number in isotopes.keys(), \
-                "No isotopes for proton_number " + str(proton_number) + " via ase!"
+            assert proton_number in isotopes, \
+                f"No isotopes for proton_number {proton_number} via ase!"
             assert mass_number in isotopes[proton_number], \
-                "No isotope for mass_number " + str(mass_number) + " via ase!"
+                f"No isotope for mass_number {mass_number} via ase!"
             hashvector.append(isotope_to_hash(proton_number, neutron_number))
         else:
             print(f"WARNING: {block} does not specify a unique element name!")

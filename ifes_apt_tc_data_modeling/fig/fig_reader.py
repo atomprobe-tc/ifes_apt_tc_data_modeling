@@ -87,7 +87,8 @@ class ReadFigTxtFileFormat():
                     multiplier = 1
                     if len(suffix) == 1:
                         multiplier = int(suffix[0])
-                    symbol = isotope.replace(f"{mass_number}", "").replace(f"{multiplier}", "").replace(" ", "")
+                    symbol = isotope.replace(
+                        f"{mass_number}", "").replace(f"{multiplier}", "").replace(" ", "")
                     if (symbol != "X") and (symbol in chemical_symbols):
                         proton_number = atomic_numbers[symbol]
                         neutron_number = mass_number - proton_number

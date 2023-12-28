@@ -136,7 +136,7 @@ class NxIon():
             "nat_abun_prod_vector": [],
             "min_half_life_vector": []}
         for key, val in parameters.items():
-            if key not in self.charge_state_model.keys():
+            if key not in self.charge_state_model:
                 self.charge_state_model[key] = val
         n_cand = len(candidates)
         # print("n_cand " + str(n_cand))

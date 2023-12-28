@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# ePOS file format reader used by atom probe microscopists.
 #
 # Copyright The NOMAD Authors.
 #
@@ -18,14 +16,14 @@
 # limitations under the License.
 #
 
+"""ePOS file format reader used by atom probe microscopists."""
+
 # pylint: disable=no-member,duplicate-code
 
 import os
-
 import numpy as np
 
 from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
-
 from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
 
 

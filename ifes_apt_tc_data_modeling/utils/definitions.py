@@ -1,4 +1,3 @@
-# Generic definitions when parsing molecular ions in atom probe microscopy.
 #
 # Also convenience functions are included which translate human-readable ion
 # names into the isotope_vector description proposed by Kuehbach et al. in
@@ -21,6 +20,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+"""Generic definitions when parsing molecular ions in atom probe microscopy."""
 
 # pylint: disable=no-member,duplicate-code
 

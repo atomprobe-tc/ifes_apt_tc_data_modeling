@@ -18,7 +18,7 @@
 
 """Utility tool to work with molecular ions in atom probe microscopy."""
 
-# pylint: disable=no-member,duplicate-code
+# pylint: disable=line-too-long
 
 import numpy as np
 import radioactivedecay as rd
@@ -49,6 +49,7 @@ VERBOSE = False
 
 
 class MolecularIonCandidate:
+    """Define """
     def __init__(self,
                  ivec=[],
                  charge_state=0,
@@ -62,14 +63,14 @@ class MolecularIonCandidate:
         self.shortest_half_life = np.float64(min_half_life)
 
     def unique_keyword(self):
-        keyword = ""
-        keyword += isotope_vector_to_dict_keyword(
-            np.sort(np.asarray(self.isotope_vector, np.uint16), kind="stable")[::-1])
-        keyword += "__" + str(self.charge_state)
+        """Generate unique keyword."""
+        keyword = f"{isotope_vector_to_dict_keyword(np.sort(np.asarray(self.isotope_vector, np.uint16), kind='stable')[::-1])}__{self.charge_state}"
         return keyword
 
 
 class MolecularIonBuilder:
+    """Class for holding properties of constructed molecular ions."""
+
     def __init__(self,
                  min_abundance=1.0e-6,
                  min_abundance_product=1.0e-6,
@@ -182,6 +183,7 @@ class MolecularIonBuilder:
         return mass
 
     def get_natural_abundance_product(self, nuclid_arr=[]):
+        """Get natural abundance product."""
         abun_prod = 1.
         for hashvalue in nuclid_arr:
             if hashvalue != 0:
@@ -189,6 +191,7 @@ class MolecularIonBuilder:
         return abun_prod
 
     def get_shortest_half_life(self, nuclid_arr=[]):
+        """Get shortest half life for set of nuclids."""
         min_half_life = self.parms["min_half_life"]
         for hashvalue in nuclid_arr:
             if hashvalue != 0:
@@ -207,6 +210,7 @@ class MolecularIonBuilder:
         return min_half_life
 
     def combinatorics(self, element_arr, low, high):
+        """Combinatorial analysis which (molecular) elements match within [low, high]."""
         # RNG/RRNG range files do store element information for each range
         # BUT not isotope information, correspondingly this can yield
         # only an isotope_vector whose hashvalues have ALL in common
@@ -239,6 +243,7 @@ class MolecularIonBuilder:
     def iterate_molecular_ion(self,
                               element_arr, jth_nuclids, cand_arr_prev,
                               i, max_n, low, high):
+        """Recursive analysis of combinatorics on molecular ions."""
         if i < (max_n - 1):
             for nuclid in jth_nuclids:
 
@@ -260,16 +265,20 @@ class MolecularIonBuilder:
                     mass_to_charge = new_mass / new_chrg
                     if mass_to_charge < low:
                         break
-                    # we can break the entire charge state generation here already instead of continue
-                    # because already the current mq is left out of interval [mqmin, mqmax]
-                    # and all mq in the next iterations will result in even lower mass-to-charge
-                    # you walk to the left increasing your distance to the left bound
+                    # we can break the entire charge state generation here already
+                    # instead of continue because already the current mq is left out
+                    # of interval [mqmin, mqmax]
+                    # and all mq in the next iterations will result in even lower
+                    # mass-to-charge you walk to the left increasing your
+                    # distance to the left bound
                     if mass_to_charge > high:
-                        # can be optimized and broken out of earlier if testing first chrg == 1
+                        # can be optimized and broken out of earlier
+                        # if testing first chrg == 1
                         # and then chrg == APTMOLECULARION_MAX_CHANGE
                         continue
                         # must not be break here because with adding more charge
-                        # we usually walk from right to left eventually into [low, high] !
+                        # we usually walk from right to left eventually into
+                        # [low, high] !
                     # molecular ion is within user-specified bounds
                     self.candidates.append(
                         MolecularIonCandidate(cand_arr_curr,

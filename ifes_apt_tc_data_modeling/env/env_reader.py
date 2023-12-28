@@ -33,6 +33,7 @@ from ifes_apt_tc_data_modeling.utils.molecular_ions import \
 
 
 def get_smart_chemical_symbols():
+    """Organize element symbols such that search H does not match He."""
     priority_queue = []
     for symbol in chemical_symbols:
         if len(symbol) == 2:

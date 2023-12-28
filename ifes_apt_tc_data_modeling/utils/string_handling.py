@@ -1,4 +1,3 @@
-# Utility string mangling when parsing data in atom probe microscopy.
 #
 # Also convenience functions are included which translate human-readable ion
 # names into the isotope_vector description proposed by Kuehbach et al. in
@@ -21,6 +20,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+"""Utility string mangling when parsing data in atom probe microscopy."""
 
 
 def rchop(string: str = "", suffix: str = "") -> str:
