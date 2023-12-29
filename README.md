@@ -1,17 +1,29 @@
-# atomprobe-data-modeling
+# ifes_apt_tc_data_modeling
 
 ## Mission:
-Foster exchange about data models and work towards specifications
-of file formats from the research field of atom probe microscopy.
+Foster exchange in the community of atom probe research to exchange about and
+document information content and formatting in their research field.
+Work towards ideally semantically specified file formats and data models.
 
-# Getting started
-You should create a virtual environment. We tested on Ubuntu with Python 3.8 and newer version.
-In what follows the version (tag) 3.8 is a placeholder whereby we show how to proceed when using
-Python 3.8. Using newer versions of Python should work the same by replacing 3.8 with the respective
-version (tag).
+## Getting started:
 
-Older versions of Python like 3.8 and 3.9 are available e.g. via the deadsnakes repository or via
-conda. For using deadsnakes proceed with the following commands:
+### Create an environment
+To use this library create a conda or a virtual environment. We tested on Ubuntu with Python 3.8 and newer version.
+In what follows the version (tag) 3.8 is a placeholder whereby we show how to proceed when using e.g. Python version 3.8.
+Using newer versions of Python should work the same by replacing 3.8 with the respective version (tag). As of 2024,
+using Python in versions higher than 3.9 becomes more and more common. The support for users to install modern
+Python version has also improved. Therefore, the following commands typically enable you to create a 
+specifically-versioned virtual environment:
+
+mkdir <your-brand-new-folder>
+cd <your-brand-new-folder>
+pip install virtualenv
+virtualenv --python=python3.8 .py38
+source .py38/bin/activate
+
+If you wish to use or still demand to use older versions of Python, like 3.8 or 3.9, you can conveniently install them
+via the deadsnakes repository (or via conda). For using deadsnakes proceed with the following commands:
+
 ```
 sudo add-apt-repository ppa:deadsnakes/ppa
 sudo apt install python3.8 python3-dev libpython3.8-dev python3.8-venv
@@ -19,15 +31,12 @@ sudo apt install python3.8 python3-dev libpython3.8-dev python3.8-venv
 
 In some cases when using Python3.8, it was necessary to install python-numpy.
 Please consider this if you run into issues when continuing with this manual.
-The following steps will install the ifes_apt_tc_data_modeling module in the
-latest version.
+
+### Install the ifes_apt_tc_data_modeling modules as a user
+
+This is how to achieve this:
 
 ```
-mkdir <your-brand-new-folder>
-cd <your-brand-new-folder>
-pip install virtualenv
-virtualenv --python=python3.8 .py38
-source .py38/bin/activate
 
 git clone git@github.com:atomprobe-tc/ifes_apt_tc_data_modeling.git
 cd ifes_apt_tc_data_modeling
@@ -37,76 +46,53 @@ python -m pip install -e .
 python -m pip list
 ```
 
-## Additional steps to do when working with jupyter notebooks
-By default the functionalities are offered as a library for Python programmers.
-For developers and users who would like to try using the library a convenient
-way is via jupyter notebooks. You can find instructions about how to use this tool
-in the tests/data jupyter notebook. This notebook can be started from the command
-line inside the ifes_apt_tc_data_modeling directory simply by calling.
-If you would like to use a jupyter notebook jupyter has to be installed as
-it will not be installed by default. To achieve this perform the following actions:
+### Additional steps to perform when you are a developer or wish to work with jupyter notebooks
 
 ```
 python -m pip install -e ".[dev]"
 python -m pip list
-
 jupyter-lab
 ```
 
 ## Documentation of file formats and data models in atom probe status quo
-Detailed technical specifications of the file formats and data models are not available for
-most formats in the field of atom probe microscopy. A practical solution to address this 
-limitation has been so far that scientists collect example files formatted in respective formats.
+Lack of detailed technical specifications of the file formats and a lack of usage of magic numbers as identifiers for specific file formats
+are a key blocker to parsing and semantic interpretation of information content stored in current file formats within the research field of
+atom probe microscopy. A practical solution to raise at least awareness of this problem has been that scientists collect examples (instances)
+of files in respective formats. Pieces of information about the content and formatting of atom probe file formats were reported in the literature
+(e.g. in the books by D. Larson et al. https://doi.org/10.1007/978-1-4614-8721-0 or B. Gault et al. http://dx.doi.org/10.1007/978-1-4614-3436-8 ).
+Atom probers like D. Haley have contributed substantially in that he raised awareness of the issue within the community.
+AMETEK/Cameca is the key technology partner in atom probe. AMETEK has developed an open file format called APT which has improved
+the accessibility of specific numerical data and some metadata. Individuals like M. Kühbach have driven the implementation and
+communication of parsers for this APT file format.
 
-These so-called instances were inspected and shared with colleagues. In summary, individual
-atom probers have contributed to formulate what can be considered likely candidates
-of specifications for several file formats via reverse engineering.
-This worked especially well for the POS and ePOS formats.
+Nowadays, there is a global desire, a push by research funding agencies, and an increased interest of atom probers
+to make their research data and knowledge generation process better matching and more completely aligned to the aims
+and practices of the F.A.I.R. principles of research data stewardship and FAIR4RS research software development.
+Therefore, it is useful to exchange more details about data models and file formats. Otherwise, it is not foreseeable
+how atom probe data can be made really interoperable with electronic lab notebooks, research data management
+systems (RDMS), and related software tools for data analyses, especially not if these tools ever should work
+with solutions from the stack of semantic web technologies to enable more substantiated, better reproducible, and 
+more automatically contextualized atom probe research with computational agents.
 
-Pieces of information about file formats were reported in the literature (e.g.
-the books by D. Larson et al. and B. Gault et al.). Atom probers like D. Haley have contributed
-substantially to make the community aware of existent limitations and these reverse engineering
-practices. AMETEK/Cameca is the key technology partner in atom probe. They have developed
-an open file format called APT which improves the accessibility of specific numerical data and
-some metadata. Individuals like M. Kühbach have driven the implementation and communication of
-parsers for this APT file format.
+In light of these challenges, the idea of understanding formats just by examples, showed to be a slow and error-prone route
+as e.g. source code and workflows which have been used to write such files lack provenance information. As an example,
+the POS files only store a table of number quadruples which mostly are interpreted as reconstructed position and mass-to-charge-
+state ratio values but often are hijacked to report conceptually different quantities like identifier used to distinguish clusters of
+atoms. Nowhere in the POS file the file has a magic number that identifies it as a POS file. Nowhere does the POS file
+document from which content and which tools it was generated. The situation similarly poor for RRNG range files:
+These merely store the resulting ranging definitions but no details based on which peak finding algorithm or even which
+mass-to-charge-state-ratio value array they were defined with. M. Kühbach et al. have summarized a more detailed discussion
+about these limitations https://doi.org/10.1017/S1431927621012241.
 
-Nowadays there is an increased interest and demand placed on atom probers by the funding agencies
-that researchers should or even have to make their research data management and data stewardship
-better matching and more completely aligned to the aims and practices of the F.A.I.R.
-principles of data stewardship. Therefore, it is useful to exchange more details about
-data models and file formats. Otherwise, it is not foreseeable how atom probe data can be made
-really interoperable with electronic lab notebooks, research data management
-systems (RDMS), and related software tools for data analyses.
-
-In light of these challenges, the idea of understanding formats just by examples, showed to be a
-slow and error-prone route as e.g. source code and workflows which have been useed to write such
-files, and the associated input, workflow, and provenance information has typically not been captured.
-Or the specific software tool(s) used might not have been shared or made accessible for review
-by the atom probe community.
-
-## Benefit and Next Steps
-You can easily imagine that the more people will support this work the more complete a public
-understanding and knowledge about the available file formats in atom probe microscopy will become.
-This can help all of us in the long run to build software tools which are more reliable, yield
-thrustworthy results and are technically more robust when it comes to parsing research data.
-Irrespective from which tools these data and metadata come or how one would like to used these data.
-
-The Python parsers in this repository are meant as a motivation to offer immediate benefit for users.
-The collection of examples and technical discussions via issues serves the more long-term aim.
-This is to arrive at a detailed technical specification rather than having more robust parsers only
-so that atom probe data can be exchanged across tools irrespective of their formatting.
-
-## Support us with this work
-Thank you very much for supporting this activity and your time.
+## How can you support this work?
+As a user with contacting us and providing examples of file formats. As a member of a company by documenting your file format
+and getting in contact to work together on improving the situation. Thank you very much for supporting this activity and your time.
 
 ## Feedback, questions
-Feel free to drop us a message via creating an issue or commenting on one.
-Feel invited to use the resources in this repository.
+Feel free to drop us a message via creating an issue or commenting on one. 
 
 ## Where to place your examples?
-There is a *examples_with_provenance* and *examples_without_provenance*
-sub-directory for each file format.
+There is a *examples_with_provenance* and *examples_without_provenance* sub-directory for each file format.
 
 When you do know with which software and measured dataset you have created a file,
 you should share the file and these pieces of information (software version). Do so by
