@@ -18,9 +18,6 @@
 
 """Reader for ranging defs extracted from FAU/Erlangen Atom Probe Toolbox Matlab figures FIG.TXT."""
 
-
-# pylint: disable=no-member,duplicate-code,too-few-public-methods
-
 import re
 import numpy as np
 

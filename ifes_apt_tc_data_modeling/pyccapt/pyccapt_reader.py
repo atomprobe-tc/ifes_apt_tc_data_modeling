@@ -18,8 +18,6 @@
 
 """Reader for FAU/Erlangen's HDF5-based formats introduced with the pyccapt library."""
 
-# pylint: disable=no-member,duplicate-code
-
 import os
 import h5py
 import numpy as np

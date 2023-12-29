@@ -23,9 +23,6 @@
 
 """Utility for parsing files via memory mapping."""
 
-
-# pylint: disable=no-member,duplicate-code
-
 import typing
 import mmap
 import numpy as np

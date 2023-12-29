@@ -1,4 +1,3 @@
-# Init
 #
 # Copyright The NOMAD Authors.
 #

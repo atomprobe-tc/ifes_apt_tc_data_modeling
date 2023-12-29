@@ -18,12 +18,10 @@
 
 """AMETEK APT(6) data exchange file reader used by atom probe microscopists."""
 
-# pylint: disable=no-member,duplicate-code
-
 import numpy as np
 
-from ifes_apt_tc_data_modeling.apt.apt6_utils import np_uint16_to_string
-from ifes_apt_tc_data_modeling.apt.apt6_utils import string_to_typed_nparray
+from ifes_apt_tc_data_modeling.apt.apt6_utils import \
+    np_uint16_to_string, string_to_typed_nparray
 
 
 class AptFileSectionMetadata():
@@ -250,7 +248,7 @@ class AptFileSectionMetadata():
             + ' get_ametek_type() unsupported e_record_data_type!'
         if self.meta['e_record_data_type'] == 1:
             integer_dtypes = {2: '<i2', 4: '<i4', 8: '<i8'}
-            assert byte_length in integer_dtypes.keys(), 'Section ' \
+            assert byte_length in integer_dtypes, 'Section ' \
                 + np_uint16_to_string(self.meta['wc_section_type']) \
                 + ' get_ametek_type() detected unsupported integer type!'
             return integer_dtypes[byte_length]

@@ -18,8 +18,6 @@
 
 """Utility tool to work with molecular ions in atom probe microscopy."""
 
-# pylint: disable=line-too-long
-
 import numpy as np
 import radioactivedecay as rd
 

@@ -18,8 +18,6 @@
 
 """POS file format reader used by atom probe microscopists."""
 
-# pylint: disable=no-member,duplicate-code
-
 import os
 import numpy as np
 

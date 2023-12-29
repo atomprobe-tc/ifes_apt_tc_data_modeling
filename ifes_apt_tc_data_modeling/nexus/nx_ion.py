@@ -23,8 +23,6 @@
 
 """Set of utility tools for parsing file formats used by atom probe."""
 
-# pylint: disable=no-member,duplicate-code
-
 import numpy as np
 
 from ifes_apt_tc_data_modeling.utils.definitions import \
@@ -32,9 +30,7 @@ from ifes_apt_tc_data_modeling.utils.definitions import \
 from ifes_apt_tc_data_modeling.utils.utils import \
     create_isotope_vector, isotope_vector_to_nuclid_list, \
     isotope_vector_to_human_readable_name, is_range_significant
-
 from ifes_apt_tc_data_modeling.utils.molecular_ions import MolecularIonCandidate
-
 from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
 
 
@@ -95,24 +91,15 @@ class NxIon():
 
     def report(self):
         """Report values."""
-        print("ion_type")
-        print(self.ion_type.typed_value)
-        print("isotope_vector")
-        print(self.isotope_vector.typed_value)
-        print("nuclid_list")
-        print(self.nuclid_list.typed_value)
-        print("human-readable name")
-        print(self.name.typed_value)
-        print("charge_state")
-        print(self.charge_state.typed_value)
-        print("ranges")
-        print(self.ranges.typed_value)
-        print("comment")
-        print(self.comment.typed_value)
-        print("color")
-        print(self.color.typed_value)
-        print("volume")
-        print(self.volume.typed_value)
+        print(f"ion_type: {self.ion_type.typed_value}\n" \
+              f"isotope_vector: {self.isotope_vector.typed_value}\n" \
+              f"nuclid_list: {self.nuclid_list.typed_value}\n" \
+              f"human-readable name: {self.name.typed_value}\n" \
+              f"charge_state: {self.charge_state.typed_value}\n" \
+              f"ranges: {self.ranges.typed_value}\n" \
+              f"comment: {self.comment.typed_value}\n" \
+              f"color: {self.color.typed_value}\n" \
+              f"volume: {self.volume.typed_value}\n")
 
     def add_charge_state_model(self,
                                parameters={},

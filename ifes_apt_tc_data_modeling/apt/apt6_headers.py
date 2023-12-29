@@ -18,8 +18,6 @@
 
 """AMETEK APT(6) data exchange file reader used by atom probe microscopists."""
 
-# pylint: disable=no-member,duplicate-code
-
 import numpy as np
 
 from ifes_apt_tc_data_modeling.apt.apt6_utils import string_to_typed_nparray

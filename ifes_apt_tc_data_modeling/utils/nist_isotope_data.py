@@ -18,8 +18,6 @@
 
 """Look-up table of stable and radioactive nuclids for all elements."""
 
-# pylint: disable=too-many-lines
-
 # this is a copy of downloadable data from ase
 # from ase.data.isotopes import download_isotope_data
 # isotopes = download_isotope_data()

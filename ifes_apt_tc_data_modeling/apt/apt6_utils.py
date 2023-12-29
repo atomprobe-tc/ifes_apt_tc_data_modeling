@@ -18,8 +18,6 @@
 
 """AMETEK APT(6) data exchange file reader used by atom probe microscopists."""
 
-# pylint: disable=no-member,duplicate-code
-
 import numpy as np
 
 
