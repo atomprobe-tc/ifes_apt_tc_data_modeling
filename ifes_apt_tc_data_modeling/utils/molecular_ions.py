@@ -21,7 +21,7 @@
 import numpy as np
 import radioactivedecay as rd
 
-from ase.data import atomic_numbers
+from ase.data import atomic_numbers, chemical_symbols
 from ifes_apt_tc_data_modeling.utils.utils import \
     isotope_to_hash, hash_to_isotope, isotope_vector_to_dict_keyword
 from ifes_apt_tc_data_modeling.utils.nist_isotope_data import isotopes
@@ -44,6 +44,11 @@ PRACTICAL_MIN_HALF_LIFE = np.inf
 # with first principles theory possible...
 SACRIFICE_ISOTOPIC_UNIQUENESS = True
 VERBOSE = False
+
+
+def get_chemical_symbols():
+    """"Report only valid chemical symbols"""
+    return chemical_symbols[1:]
 
 
 class MolecularIonCandidate:

@@ -18,17 +18,18 @@
 
 """Reader for FAU/Erlangen's HDF5-based formats introduced with the pyccapt library."""
 
+from typing import Dict
 import os
 import h5py
 import numpy as np
 import pandas as pd
-from typing import Dict
 
 from ase.data import atomic_numbers, chemical_symbols
 from ifes_apt_tc_data_modeling.nexus.nx_ion import NxIon
 from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
-from ifes_apt_tc_data_modeling.utils.utils import \
-    isotope_to_hash, isotope_vector_to_nuclid_list, MAX_NUMBER_OF_ATOMS_PER_ION
+from ifes_apt_tc_data_modeling.utils.utils import isotope_to_hash, \
+    isotope_vector_to_nuclid_list, MAX_NUMBER_OF_ATOMS_PER_ION
+from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
 
 # this implementation focuses on the following state of the pyccapt repository
 # https://github.com/mmonajem/pyccapt/commit/e955beb4f2627befb8b4d26f2e74e4c52e00394e
@@ -187,14 +188,13 @@ class ReadPyccaptRangingFileFormat():
             isotopes = self.df.iloc[idx, 8]
             # assertions
             ivec = np.zeros((MAX_NUMBER_OF_ATOMS_PER_ION,), np.uint16)
-            hashvector = []
+            hashvector: list = []
             for idxj in np.arange(0, len(elements)):
                 symbol = elements[idxj]
-                if symbol in chemical_symbols and symbol != "X":
+                if symbol in get_chemical_symbols():
                     proton_number = atomic_numbers[symbol]
                     neutron_number = isotopes[idxj] - proton_number
-                    for mult in np.arange(0, complexs[idxj]):
-                        hashvector.append(isotope_to_hash(proton_number, neutron_number))
+                    hashvector.extend([isotope_to_hash(proton_number, neutron_number)] * complexs[idxj])
             ivec[0:len(hashvector)] = np.sort(np.asarray(hashvector, np.uint16), kind="stable")[::-1]
 
             m_ion = NxIon()

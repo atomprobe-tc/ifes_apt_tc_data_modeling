@@ -78,8 +78,7 @@ class ReadAptFileFormat():
                                        count=1)
 
             assert self.dummy_header.matches(found_header), \
-                f"Found an unexpectedly formatted/versioned header." \
-                f"Create an issue to help us fix this!"
+                "Found an unexpectedly formatted header. Create an issue to help us fix this!"
             print(f"File describes {found_header['llIonCount'][0]} ions")
 
             self.header_section = found_header
@@ -106,13 +105,11 @@ class ReadAptFileFormat():
                 print(keyword)
                 print(found_section)
                 assert keyword not in self.available_sections, \
-                    f"Found a duplicate of an already parsed section!" \
-                    f"Create an issue to help us fix this!"
+                    "Found a duplicate of an already parsed section! Create an issue to help us fix this!"
 
                 if keyword not in ['Delta Pulse', 'Epos ToF']:
                     assert keyword in EXPECTED_SECTIONS, \
-                        f"Found an unknown section, seems like an unknown/new branch!" \
-                        f"Create an issue to help us fix this!"
+                        "Found an unknown section, seems like an unknown/new branch! Create an issue to help us fix this!"
 
                     metadata_section = EXPECTED_SECTIONS[keyword]
                     if metadata_section.matches(found_section) is True:

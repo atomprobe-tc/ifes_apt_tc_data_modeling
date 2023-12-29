@@ -30,7 +30,7 @@ class ReadAtoFileFormat():
 
     def __init__(self, filename: str):
         if (len(filename) <= 4) or (filename.lower().endswith(".ato") is False):
-            raise ImportError(f"WARNING::ATO file incorrect filename ending or file type!")
+            raise ImportError("WARNING::ATO file incorrect filename ending or file type!")
         self.filename = filename
 
         self.filesize = os.path.getsize(self.filename)

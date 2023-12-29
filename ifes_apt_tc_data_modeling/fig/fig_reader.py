@@ -26,7 +26,7 @@ from ifes_apt_tc_data_modeling.nexus.nx_ion import NxField, NxIon
 from ifes_apt_tc_data_modeling.utils.definitions import \
     MAX_NUMBER_OF_ATOMS_PER_ION
 from ifes_apt_tc_data_modeling.utils.molecular_ions import \
-    isotope_to_hash, MolecularIonBuilder, \
+    get_chemical_symbols, isotope_to_hash, MolecularIonBuilder, \
     PRACTICAL_ABUNDANCE, PRACTICAL_ABUNDANCE_PRODUCT, \
     PRACTICAL_MIN_HALF_LIFE, VERBOSE, SACRIFICE_ISOTOPIC_UNIQUENESS
 
@@ -86,7 +86,7 @@ class ReadFigTxtFileFormat():
                         multiplier = int(suffix[0])
                     symbol = isotope.replace(
                         f"{mass_number}", "").replace(f"{multiplier}", "").replace(" ", "")
-                    if (symbol != "X") and (symbol in chemical_symbols):
+                    if symbol in get_chemical_symbols():
                         proton_number = atomic_numbers[symbol]
                         neutron_number = mass_number - proton_number
                         ivec.extend([isotope_to_hash(proton_number, neutron_number)] * multiplier)

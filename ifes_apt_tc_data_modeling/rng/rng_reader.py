@@ -27,7 +27,7 @@ from ifes_apt_tc_data_modeling.utils.utils import \
     create_isotope_vector, is_range_significant
 from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
 from ifes_apt_tc_data_modeling.utils.molecular_ions import MolecularIonBuilder, \
-    PRACTICAL_ABUNDANCE, PRACTICAL_ABUNDANCE_PRODUCT, \
+    get_chemical_symbols, PRACTICAL_ABUNDANCE, PRACTICAL_ABUNDANCE_PRODUCT, \
     PRACTICAL_MIN_HALF_LIFE, VERBOSE, SACRIFICE_ISOTOPIC_UNIQUENESS
 
 
@@ -67,7 +67,7 @@ def evaluate_rng_range_line(
                 f"Line {line} no negative element counts!"
             if element_multiplicity[j] > 0:
                 symbol = column_id_to_label[j + 1]
-                if (symbol in chemical_symbols) and (symbol != "X"):
+                if symbol in get_chemical_symbols():
                     info["atoms"] = np.append(info["atoms"],
                                               [column_id_to_label[j + 1]] * int(element_multiplicity[j]))
                 else:

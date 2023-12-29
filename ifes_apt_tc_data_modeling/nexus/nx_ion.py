@@ -91,14 +91,14 @@ class NxIon():
 
     def report(self):
         """Report values."""
-        print(f"ion_type: {self.ion_type.typed_value}\n" \
-              f"isotope_vector: {self.isotope_vector.typed_value}\n" \
-              f"nuclid_list: {self.nuclid_list.typed_value}\n" \
-              f"human-readable name: {self.name.typed_value}\n" \
-              f"charge_state: {self.charge_state.typed_value}\n" \
-              f"ranges: {self.ranges.typed_value}\n" \
-              f"comment: {self.comment.typed_value}\n" \
-              f"color: {self.color.typed_value}\n" \
+        print(f"ion_type: {self.ion_type.typed_value}\n"
+              f"isotope_vector: {self.isotope_vector.typed_value}\n"
+              f"nuclid_list: {self.nuclid_list.typed_value}\n"
+              f"human-readable name: {self.name.typed_value}\n"
+              f"charge_state: {self.charge_state.typed_value}\n"
+              f"ranges: {self.ranges.typed_value}\n"
+              f"comment: {self.comment.typed_value}\n"
+              f"color: {self.color.typed_value}\n"
               f"volume: {self.volume.typed_value}\n")
 
     def add_charge_state_model(self,
