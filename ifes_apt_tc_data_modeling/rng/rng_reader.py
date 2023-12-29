@@ -42,7 +42,7 @@ def evaluate_rng_range_line(
     """Represent information content of a single range line."""
     # example line: ". 107.7240 108.0960 1 0 0 0 0 0 0 0 0 0 3 0 0 0"
     info: dict = {}
-    info["identifier"] = "Range" + str(i)
+    info["identifier"] = f"Range{i}"
     info["range"] = np.asarray([0., MQ_EPSILON], np.float64)
     info["atoms"] = []
     info["volume"] = np.float64(0.)

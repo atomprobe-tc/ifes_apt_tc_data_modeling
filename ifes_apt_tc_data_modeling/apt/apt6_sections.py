@@ -275,7 +275,7 @@ class AptFileSectionMetadata():
                 + ' get_ametek_type() detected unsupported real type!'
             # return real_dtypes[byte_length]
             return '<f4'
-        return None
+        return ""
 
     def get_ametek_count(self) -> np.uint64:
         """Interpret how many quantities from AMETEK defs."""
@@ -299,73 +299,46 @@ class AptFileSectionMetadata():
         # check if the parsed section's metadata are matching
         # AMETEK expectations, i.e. meeting manufacturers definitions?
         assert np.array_equal(self.meta['c_signature'], found_section['cSignature'][0],
-                              equal_nan=True), 'Section cSignature differs, \
-            is ' + np_uint16_to_string(found_section['cSignature'][0]) \
-            + ' but should be ' + np_uint16_to_string(self.meta['c_signature'])
-
+                              equal_nan=True), \
+            f"Section cSignature differs, is {np_uint16_to_string(found_section['cSignature'][0])}" \
+            f" but should be {np_uint16_to_string(self.meta['c_signature'])}"
         assert found_section['iHeaderSize'][0] == self.meta['i_header_size'], \
-            'Section iHeaderSize differs, is ' \
-            + str(found_section['iHeaderSize'][0]) \
-            + ' but should be ' + str(self.meta['i_header_size'])
-
+            f"Section iHeaderSize differs, is {found_section['iHeaderSize'][0]}" \
+            f" but should be {self.meta['i_header_size']}"
         assert found_section['iHeaderVersion'][0] == self.meta['i_header_version'], \
-            'Section iHeaderVersion differs, is ' \
-            + str(found_section['iHeaderVersion'][0]) \
-            + ' but should be ' + str(self.meta['i_header_version'])
-
+            f"Section iHeaderVersion differs, is {found_section['iHeaderVersion'][0]}" \
+            f" but should be {self.meta['i_header_version']}"
         assert found_section['iSectionVersion'][0] == self.meta['i_section_version'], \
-            'Section iSectionVersion differs, is ' \
-            + str(found_section['iSectionVersion'][0]) \
-            + ' but should be ' + str(self.meta['i_section_version'])
-
-        assert found_section['eRelationshipType'][0] \
-            == self.meta['e_relationship_type'], \
-            'Section eRelationshipType differs, is ' \
-            + str(found_section['eRelationshipType'][0]) \
-            + ' but should be ' + str(self.meta['e_relationship_type'])
-
+            f"Section iSectionVersion differs, is {found_section['iSectionVersion'][0]}" \
+            f" but should be {self.meta['i_section_version']}"
+        assert found_section['eRelationshipType'][0] == self.meta['e_relationship_type'], \
+            f"Section eRelationshipType differs, is {found_section['eRelationshipType'][0]}" \
+            f" but should be {self.meta['e_relationship_type']}"
         assert found_section['eRecordType'][0] == self.meta['e_record_type'], \
-            'Section eRecordType differs, is ' \
-            + str(found_section['eRecordType'][0]) \
-            + ' but should be ' + str(self.meta['e_record_type'])
-
-        assert found_section['eRecordDataType'][0] \
-            == self.meta['e_record_data_type'], \
-            'Section eRecordDataType differs, is ' \
-            + str(found_section['eRecordDataType'][0]) \
-            + ' but should be ' + str(self.meta['e_record_data_type'])
-
+            f"Section eRecordType differs, is {found_section['eRecordType'][0]}" \
+            f" but should be {self.meta['e_record_type']}"
+        assert found_section['eRecordDataType'][0] == self.meta['e_record_data_type'], \
+            f"Section eRecordDataType differs, is {found_section['eRecordDataType'][0]}" \
+            f" but should be {self.meta['e_record_data_type']}"
         assert found_section['iDataTypeSize'][0] == self.meta['i_data_type_size'], \
-            'Section iDataTypeSize differs, is ' \
-            + str(found_section['iDataTypeSize'][0]) + ' but should be ' \
-            + str(self.meta['i_data_type_size'])
-
+            f"Section iDataTypeSize differs, is {found_section['iDataTypeSize'][0]}" \
+            f" but should be {self.meta['i_data_type_size']}"
         assert found_section['iRecordSize'][0] == self.meta['i_record_size'], \
-            'Section iRecordSize differs, is ' \
-            + str(found_section['iRecordSize'][0]) + ' but should be ' \
-            + str(self.meta['i_record_size'])
-
+            f"Section iRecordSize differs, is {found_section['iRecordSize'][0]}" \
+            f" but should be {self.meta['i_record_size']}"
         # ureg = UnitRegistry()
         # ureg.define('da = Da = amu')
-        # check if wcDataUnit is of correct quantity
-        assert np_uint16_to_string(found_section['wcDataUnit'][0]) \
-            in self.accepted_units, 'Section wcDataUnit differs, is ' \
-            + np_uint16_to_string(found_section['wcDataUnit'][0]) \
-            + ' but should be from accepted_units: ' \
-            + ', '.join(self.accepted_units)
+        assert np_uint16_to_string(found_section['wcDataUnit'][0]) in self.accepted_units, \
+            f"Section wcDataUnit differs, is {np_uint16_to_string(found_section['wcDataUnit'][0])}" \
+            f" but should be from accepted_units: {', '.join(self.accepted_units)}"
         # Q = ureg.Quantity(1, 'amu')
         # use pint for checking compatible base unit
 
-        # check also special cases which this parser currently cannot handle
-        # i.e. meeting what we as the community know about the format
-        # and thus can handle only
         assert found_section['llByteCount'][0] > 0, \
-            'Section llByteCount indicates llByteCount is not > 0 !'
-
+            "Section llByteCount indicates llByteCount is not > 0 !"
         # modify dynamic quanities that can only be inferred from the file
         self.meta['ll_record_count'] = found_section['llRecordCount'][0]
         self.meta['ll_byte_count'] = found_section['llByteCount'][0]
-
         return True
 
     def get_metadata(self) -> dict:
@@ -388,24 +361,5 @@ class AptFileSectionMetadata():
                 'AmetekSize': self.get_ametek_size(),
                 'AmetekType': self.get_ametek_type(),
                 'AmetekCount': self.get_ametek_count(),
-                'AmetekShape': ', '.join([str(x)
-                                          for x in self.get_ametek_shape()])
+                'AmetekShape': ', '.join([f"{x}" for x in self.get_ametek_shape()])
             }
-
-    # def set_ll_record_count(self, value: int):
-    #     assert isinstance(value, int), \
-    #         'llRecordCount needs to be an int!'
-    #     assert value >= 0, \
-    #         'llRecordCount needs to be at least zero!'
-    #     assert value <= np.iinfo(np.int64).max, 'llRecordCount needs to be \
-    #         at most '+(str(np.iinfo(np.int64).max))+'!'
-    #     self.meta['ll_record_count'] = np.int64(0)
-
-    # def set_ll_byte_count(self, value: int):
-    #     assert isinstance(value, int), \
-    #         'llByteCount needs to be an int!'
-    #     assert value >= 0, \
-    #         'llByteCount needs to be at least zero!'
-    #     assert value <= np.iinfo(np.int64).max, 'llRecordCount needs to be \
-    #         at most '+(str(np.iinfo(np.int64).max))+'!'
-    #     self.meta['ll_byte_count'] = np.int64(0)

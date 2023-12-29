@@ -133,8 +133,8 @@ def isotope_vector_to_dict_keyword(ivec: np.ndarray) -> str:
     lst = []
     for hashvalue in ivec:
         if hashvalue != 0:
-            lst.append(str(hashvalue))
-    if lst != []:
+            lst.append(f"{hashvalue}")
+    if len(lst) > 0:
         return "_".join(lst)
     return "0"  # "_".join(np.asarray(np.zeros((MAX_NUMBER_OF_ATOMS_PER_ION,)), np.uint16))
 
@@ -149,10 +149,9 @@ def isotope_vector_to_human_readable_name(ivec: np.ndarray, charge_state: np.int
             if hashvalue != 0:
                 protons, neutrons = hash_to_isotope(int(hashvalue))
                 if neutrons > 0:
-                    human_readable += str(protons + neutrons) \
-                        + chemical_symbols[protons]
+                    human_readable += f"{protons + neutrons}{chemical_symbols[protons]}"
                 else:
-                    human_readable += chemical_symbols[protons]
+                    human_readable += f"{chemical_symbols[protons]}"
                 human_readable += " "
         if 0 < charge_state < 8:
             human_readable += "+" * charge_state
@@ -165,7 +164,7 @@ def isotope_vector_to_human_readable_name(ivec: np.ndarray, charge_state: np.int
 
 
 def is_range_overlapping(interval: np.ndarray,
-                         interval_set: np.float64) -> bool:
+                         interval_set: np.ndarray) -> bool:
     """Check if interval overlaps within with members of interval set."""
     assert np.shape(interval) == (2,), "Interval needs to have two columns!"
     assert np.shape(interval_set)[1] == 2, \

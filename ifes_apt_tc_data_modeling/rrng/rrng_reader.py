@@ -42,7 +42,7 @@ def evaluate_rrng_range_line(i: int, line: str) -> dict:
     # mqmin, mqmax, vol, ion composition is required,
     #     name and color fields are optional
     info: dict = {}
-    info["identifier"] = "Range" + str(i)
+    info["identifier"] = f"Range{i}"
     info["range"] = np.asarray([0., MQ_EPSILON], np.float64)
     info["atoms"] = []
     info["volume"] = np.float64(0.)
@@ -50,13 +50,13 @@ def evaluate_rrng_range_line(i: int, line: str) -> dict:
     info["name"] = ""
 
     tmp = re.split(r"[\s=]+", line)
-    assert len(tmp) >= 6, "Line " + line + \
-        " does not contain all required fields!"
-    assert tmp[0] == "Range" + str(i), "Line " + line + \
-        " has inconsistent line prefix!"
+    assert len(tmp) >= 6, \
+        f"Line {line} does not contain all required fields!"
+    assert tmp[0] == f"Range{i}" \
+        f"Line {line} has inconsistent line prefix!"
 
     assert is_range_significant(np.float64(tmp[1]), np.float64(tmp[2])), \
-        "Line " + line + " insignificant range!"
+        f"Line {line} insignificant range!"
     info["range"] = np.asarray([tmp[1], tmp[2]], np.float64)
 
     if tmp[3].lower().startswith("vol:"):
@@ -75,7 +75,7 @@ def evaluate_rrng_range_line(i: int, line: str) -> dict:
             "Element multiplicity is incorrectly formatted!"
         # skip vol, name, and color information
         if element_multiplicity[0].lower() == "name":
-            info["name"] = str(element_multiplicity[1])
+            info["name"] = f"{element_multiplicity[1]}"
             # this captures properly formatted ranges with keyword
             # name whose name value is then however not a chemical
             # symbol but some user-defined string
@@ -84,11 +84,11 @@ def evaluate_rrng_range_line(i: int, line: str) -> dict:
             # pick up what is an element name
             symbol = element_multiplicity[0]
             assert (symbol in chemical_symbols) and (symbol != "X"), \
-                "Line " + line + " contains an invalid chemical symbol!"
+                f"Line {line} contains an invalid chemical symbol!"
             assert np.uint32(element_multiplicity[1]) > 0, \
-                "Line " + line + " zero or negative multiplicity!"
+                f"Line {line} zero or negative multiplicity!"
             assert np.uint32(element_multiplicity[1]) < 256, \
-                "Line " + line + " unsupport high multiplicity!"
+                f"Line {line} unsupported high multiplicity!"
             info["atoms"] = np.append(
                 info["atoms"], [symbol] * int(element_multiplicity[1]))
     return info
@@ -102,7 +102,6 @@ class ReadRrngFileFormat():
         if (len(filename) <= 5) or (filename.lower().endswith(".rrng") is False):
             raise ImportError("WARNING::RRNG file incorrect filename ending or file type!")
         self.filename = filename
-
         self.rrng: dict = {}
         self.rrng["ionnames"] = []
         self.rrng["ranges"] = {}
@@ -145,10 +144,9 @@ class ReadRrngFileFormat():
         for i in np.arange(0, number_of_ion_names):
             tmp = re.split(r"[\s=]+", txt_stripped[current_line_id + i])
             assert len(tmp) == 2, "[Ions]/Ion line corrupted!"
-            assert tmp[0] == "Ion" + str(i + 1), \
-                "[Ions]/Ion incorrectly formatted!"
+            assert tmp[0] == f"Ion{i + 1}", "[Ions]/Ion incorrectly formatted!"
             assert isinstance(tmp[1], str), "[Ions]/Name not a string!"
-            self.rrng["ionnames"].append(tmp[1])  # [tmp[0]] = tmp[1]
+            self.rrng["ionnames"].append(tmp[1])
 
         # second, parse [Ranges] section
         where = [idx for idx, element in
@@ -167,8 +165,7 @@ class ReadRrngFileFormat():
 
         for i in np.arange(0, number_of_ranges):
             dct = evaluate_rrng_range_line(i + 1, txt_stripped[current_line_id + i])
-            assert dct, \
-                "Line " + txt_stripped[current_line_id + i] + " is corrupted!"
+            assert dct, f"Line {txt_stripped[current_line_id + i]} is corrupted!"
 
             m_ion = NxIon(isotope_vector=create_isotope_vector(
                 dct["atoms"]), charge_state=0)

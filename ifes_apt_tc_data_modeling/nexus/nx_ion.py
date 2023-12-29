@@ -52,12 +52,10 @@ class NxIon():
         elif "isotope_vector" in kwargs:
             assert isinstance(kwargs["isotope_vector"], np.ndarray), \
                 "kwargs isotope_vector needs to be an np.ndarray !"
-            assert np.shape(kwargs["isotope_vector"]) \
-                == (MAX_NUMBER_OF_ATOMS_PER_ION,), \
-                "kwargs isotope_vector needs be a " \
-                + "(" + str(MAX_NUMBER_OF_ATOMS_PER_ION) + ",) array!"
-            self.isotope_vector \
-                = NxField(np.asarray(kwargs["isotope_vector"], np.uint16), "")
+            assert np.shape(kwargs["isotope_vector"]) == (MAX_NUMBER_OF_ATOMS_PER_ION,), \
+                f"kwargs isotope_vector needs be a ({MAX_NUMBER_OF_ATOMS_PER_ION},) array!"
+            self.isotope_vector = NxField(np.asarray(kwargs["isotope_vector"],
+                                                     np.uint16), "")
         else:
             # the default UNKNOWN IONTYPE
             self.isotope_vector = NxField(create_isotope_vector([]), "")
@@ -139,7 +137,6 @@ class NxIon():
             if key not in self.charge_state_model:
                 self.charge_state_model[key] = val
         n_cand = len(candidates)
-        # print("n_cand " + str(n_cand))
         if n_cand > 0:
             self.charge_state_model["isotope_matrix"] = np.zeros(
                 (n_cand, MAX_NUMBER_OF_ATOMS_PER_ION), np.uint16)

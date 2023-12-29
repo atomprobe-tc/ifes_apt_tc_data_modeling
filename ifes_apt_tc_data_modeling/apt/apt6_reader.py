@@ -36,13 +36,12 @@ class ReadAptFileFormat():
     """Read AMETEK's open exchange *.apt file format."""
 
     def __init__(self, filename: str):
-        assert len(filename) > 4, 'APT file incorrect filename ending!'
-        assert filename.lower().endswith('.apt'), \
-            'APT file incorrect file type!'
+        if (len(filename) <= 4) or (filename.lower().endswith(".apt") is False):
+            raise ImportError("WARNING::APT file incorrect filename ending or file type!")
         self.filename = filename
 
         self.filesize = os.path.getsize(self.filename)
-        print('Reading ' + self.filename + ' which is ' + str(self.filesize) + ' bytes')
+        print(f"Reading {self.filename} which is {self.filesize} B")
 
         self.header_section = None
         self.byte_offsets: dict = {}
@@ -81,10 +80,9 @@ class ReadAptFileFormat():
                                        count=1)
 
             assert self.dummy_header.matches(found_header), \
-                'Found an unexpectedly formatted/versioned header! \
-                Please contact the development team to help us inspect \
-                the matter.'
-            print('File describes ' + str(found_header['llIonCount'][0]) + ' ions')
+                f"Found an unexpectedly formatted/versioned header." \
+                f"Create an issue to help us fix this!"
+            print(f"File describes {found_header['llIonCount'][0]} ions")
 
             self.header_section = found_header
             self.byte_offsets['header'] = np.uint64(file_handle.tell())
@@ -97,7 +95,7 @@ class ReadAptFileFormat():
                 if end_of_file_not_reached != b'':
                     file_handle.seek(-1, os.SEEK_CUR)
                 else:
-                    print('End of file at ' + str(file_handle.tell()) + ' bytes')
+                    print(f"End of file at {file_handle.tell()} B")
                     break
 
                 dummy_section = AptFileSectionMetadata()
@@ -110,16 +108,13 @@ class ReadAptFileFormat():
                 print(keyword)
                 print(found_section)
                 assert keyword not in self.available_sections, \
-                    'Found a duplicate of an already parsed section! Please \
-                    contact the development team as we have never encountered \
-                    an example of such a section duplication and here seems \
-                    to be an example to inspect the matter.'
+                    f"Found a duplicate of an already parsed section!" \
+                    f"Create an issue to help us fix this!"
 
                 if keyword not in ['Delta Pulse', 'Epos ToF']:
                     assert keyword in EXPECTED_SECTIONS, \
-                        'Found an unknown section, seems like an unknown/new \
-                        branch! Please contact the development team to enable us \
-                        to contact AMETEK and discuss the situation.'
+                        f"Found an unknown section, seems like an unknown/new branch!" \
+                        f"Create an issue to help us fix this!"
 
                     metadata_section = EXPECTED_SECTIONS[keyword]
                     if metadata_section.matches(found_section) is True:
@@ -128,12 +123,9 @@ class ReadAptFileFormat():
                         #     development team to help us fixing this.'
                         self.available_sections[keyword] = metadata_section
                 else:
-                    print('WARNING:: Found an uninterpretable section!')
-                    print('WARNING:: This section was not be registered!')
-                    print('WARNING:: Please contact the development team!')
-                    print('WARNING::     to help us improving this!')
-                    print('WARNING:: Try to continue parsing though...!')
-                    print('llByteCount ' + str(found_section['llByteCount'][0]))
+                    print(f"Found an uninterpretable non-registered section."
+                          f"Create an issue to help us fix this!, Parsing continues"
+                          f"llByteCount {found_section['llByteCount'][0]} B")
 
                 self.byte_offsets[keyword] = np.uint64(file_handle.tell())
                 if keyword == 'Position':
@@ -141,8 +133,8 @@ class ReadAptFileFormat():
                     self.byte_offsets[keyword] += np.uint64(6 * 4)
                 self.byte_offsets[keyword] += np.uint64(
                     found_section['llByteCount'][0])
-                print('Byte offset for reading data for section: ' + keyword)
-                print(self.byte_offsets[keyword])
+                print(f"Byte offset for reading data for section: {keyword}"
+                      f" {self.byte_offsets[keyword]} B")
                 # print(file_handle.tell())
                 file_handle.seek(self.byte_offsets[keyword], os.SEEK_SET)
                 # print(file_handle.tell())
@@ -182,8 +174,7 @@ class ReadAptFileFormat():
         """Create table from all metadata for each section."""
         column_names = ['section']  # header
         assert 'Mass' in self.available_sections, \
-            'Cannot create table, Mass section not available to guide \
-                the creation of the table header!'
+            "Mass section not available to guide creation of the table header!"
         for key in self.available_sections['Mass'].get_metadata().keys():
             column_names.append(key)
         data_frame = pd.DataFrame(columns=column_names)

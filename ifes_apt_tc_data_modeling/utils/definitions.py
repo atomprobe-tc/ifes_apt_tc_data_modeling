@@ -23,10 +23,7 @@
 
 """Generic definitions when parsing molecular ions in atom probe microscopy."""
 
-# pylint: disable=no-member,duplicate-code
-
 import numpy as np
-
 
 # restrict the number distinguished ion types
 MAX_NUMBER_OF_ION_SPECIES = 256

@@ -92,11 +92,10 @@ class ReadPyccaptCalibrationFileFormat():
         assert filename.lower().endswith(".h5") or filename.lower().endswith(".hdf5"), \
             "HDF5 file incorrect file type!"
         self.filename = filename
-
         self.filesize = os.path.getsize(self.filename)
         self.number_of_events = None
         self.version = "e955beb4f2627befb8b4d26f2e74e4c52e00394e"
-        self.df = None
+        self.df: dict = {}
 
         with h5py.File(self.filename, "r") as h5r:
             self.supported = 0  # voting-based
@@ -114,7 +113,7 @@ class ReadPyccaptCalibrationFileFormat():
                 return
 
         self.df = pd.read_hdf(self.filename)
-        self.number_of_events = np.shape(self.df)[0]
+        self.number_of_events = len(self.df)
 
     def get_named_quantities(self, term: str):
         if term in self.df.keys():
@@ -123,7 +122,6 @@ class ReadPyccaptCalibrationFileFormat():
 
     def get_reconstructed_positions(self):
         """Read xyz columns."""
-
         xyz = NxField()
         xyz.typed_value = np.zeros(
             [self.number_of_events, 3], np.float32)

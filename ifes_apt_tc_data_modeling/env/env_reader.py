@@ -44,7 +44,7 @@ def get_smart_chemical_symbols():
     return priority_queue
 
 
-def evaluate_env_range_line(line: str) -> dict:
+def evaluate_env_range_line(line: str):
     """Represent information content of a single range line."""
     # example line: ". 107.7240 108.0960 1 0 0 0 0 0 0 0 0 0 3 0 0 0"
     info: dict = {}

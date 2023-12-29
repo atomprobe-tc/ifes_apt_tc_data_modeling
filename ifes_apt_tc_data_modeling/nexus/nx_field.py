@@ -27,7 +27,7 @@
 class NxField():
     """Representative of a NeXus field."""
 
-    def __init__(self, typed_value=None, unit: str = None):
+    def __init__(self, typed_value=None, unit: str = ""):
         self.parent = None
         self.is_a = None  # ontology reference concept ID e.g.
         self.typed_value = typed_value
