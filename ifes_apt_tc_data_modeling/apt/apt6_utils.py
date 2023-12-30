@@ -20,6 +20,9 @@
 
 import numpy as np
 
+APT_SECTION_NAME_MAX_LENGTH = 32
+APT_SECTION_TYPE_MAX_LENGTH = 32
+
 
 def np_uint16_to_string(uint16_array: np.ndarray) -> str:
     """Create string from array of uint16 numbers (UTF-16)."""
