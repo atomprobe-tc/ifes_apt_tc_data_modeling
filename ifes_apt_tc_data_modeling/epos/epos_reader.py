@@ -28,18 +28,16 @@ from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
 class ReadEposFileFormat():
     """Read *.epos file format."""
 
-    def __init__(self, filename: str):
-        assert len(filename) > 5, "ePOS file incorrect filename ending!"
-        assert filename.lower().endswith(".epos"), \
-            "ePOS file incorrect file type!"
-        self.filename = filename
-
-        self.filesize = os.path.getsize(self.filename)
-        assert self.filesize % 11 * 4 == 0, \
-            "ePOS filesize not integer multiple of 11*4B!"
-        assert np.uint32(self.filesize / (11 * 4)) < np.iinfo(np.uint32).max, \
+    def __init__(self, file_path: str):
+        if (len(file_path) <= 5) or (file_path.lower().endswith(".epos") is False):
+            raise ImportError("WARNING::ePOS file incorrect file_path ending or file type!")
+        self.file_path = file_path
+        self.file_size = os.path.getsize(self.file_path)
+        assert self.file_size % 11 * 4 == 0, \
+            "ePOS file_size not integer multiple of 11*4B!"
+        assert np.uint32(self.file_size / (11 * 4)) < np.iinfo(np.uint32).max, \
             "ePOS file is too large, currently only 2*32 supported!"
-        self.number_of_events = np.uint32(self.filesize / (11 * 4))
+        self.number_of_events = np.uint32(self.file_size / (11 * 4))
 
         # https://doi.org/10.1007/978-1-4614-3436-8 for file format details
         # dtyp_names = ["Reconstructed position along the x-axis (nm)",
@@ -60,46 +58,43 @@ class ReadEposFileFormat():
         """Read xyz columns."""
 
         xyz = NxField()
-        xyz.typed_value = np.zeros(
-            [self.number_of_events, 3], np.float32)
+        xyz.values = np.zeros([self.number_of_events, 3], np.float32)
         xyz.unit = "nm"
 
-        xyz.typed_value[:, 0] = \
-            get_memory_mapped_data(self.filename, ">f4",
+        xyz.values[:, 0] = \
+            get_memory_mapped_data(self.file_path, ">f4",
                                    0 * 4, 11 * 4, self.number_of_events)  # x
-        xyz.typed_value[:, 1] = \
-            get_memory_mapped_data(self.filename, ">f4",
+        xyz.values[:, 1] = \
+            get_memory_mapped_data(self.file_path, ">f4",
                                    1 * 4, 11 * 4, self.number_of_events)  # y
-        xyz.typed_value[:, 2] = \
-            get_memory_mapped_data(self.filename, ">f4",
+        xyz.values[:, 2] = \
+            get_memory_mapped_data(self.file_path, ">f4",
                                    2 * 4, 11 * 4, self.number_of_events)  # z
         return xyz
 
     def get_mass_to_charge_state_ratio(self):
         """Read mass-to-charge-state-ratio column."""
         m_n = NxField()
-        m_n.typed_value = np.zeros(
-            [self.number_of_events, 1], np.float32)
+        m_n.values = np.zeros([self.number_of_events, 1], np.float32)
         m_n.unit = "Da"
 
-        m_n.typed_value[:, 0] = \
-            get_memory_mapped_data(self.filename, ">f4",
+        m_n.values[:, 0] = \
+            get_memory_mapped_data(self.file_path, ">f4",
                                    3 * 4, 11 * 4, self.number_of_events)
         return m_n
 
     def get_raw_time_of_flight(self):
         """Read raw (uncorrected) time-of-flight."""
         raw_tof = NxField()
-        raw_tof.typed_value = np.zeros(
-            [self.number_of_events, 1], np.float32)
+        raw_tof.values = np.zeros([self.number_of_events, 1], np.float32)
         raw_tof.unit = "ns"
 
         # according to DOI: 10.1007/978-1-4899-7430-3 raw time-of-flight
         # i.e. this is an uncorrected time-of-flight
         # for which effects uncorrect?
         # Only the proprietary IVAS/APSuite source code knows for sure
-        raw_tof.typed_value[:, 0] = \
-            get_memory_mapped_data(self.filename, ">f4",
+        raw_tof.values[:, 0] = \
+            get_memory_mapped_data(self.file_path, ">f4",
                                    4 * 4, 11 * 4, self.number_of_events)
         return raw_tof
 
@@ -109,14 +104,13 @@ class ReadEposFileFormat():
         # standing voltage on the specimen
         # according to DOI: 10.1007/978-1-4614-8721-0 also-known as DC voltage
         dc_voltage = NxField()
-        dc_voltage.typed_value = np.zeros(
-            [self.number_of_events, 1], np.float32)
+        dc_voltage.values = np.zeros([self.number_of_events, 1], np.float32)
         dc_voltage.unit = "kV"
         # different to the above-mentioned references Gault et al. state
         # that standing and pulse_voltage are in V instead of kV
 
-        dc_voltage.typed_value[:, 0] = \
-            get_memory_mapped_data(self.filename, ">f4",
+        dc_voltage.values[:, 0] = \
+            get_memory_mapped_data(self.file_path, ">f4",
                                    5 * 4, 11 * 4, self.number_of_events)
         return dc_voltage
 
@@ -126,27 +120,25 @@ class ReadEposFileFormat():
         # additional voltage to trigger field evaporation in case
         # of high-voltage pulsing, 0 for laser pulsing
         pu_voltage = NxField()
-        pu_voltage.typed_value = np.zeros(
-            [self.number_of_events, 1], np.float32)
+        pu_voltage.values = np.zeros([self.number_of_events, 1], np.float32)
         pu_voltage.unit = "kV"
 
-        pu_voltage.typed_value[:, 0] = \
-            get_memory_mapped_data(self.filename, ">f4",
+        pu_voltage.values[:, 0] = \
+            get_memory_mapped_data(self.file_path, ">f4",
                                    6 * 4, 11 * 4, self.number_of_events)
         return pu_voltage
 
     def get_hit_positions(self):
         """Read ion impact positions on detector."""
         hit_positions = NxField()
-        hit_positions.typed_value = np.zeros(
-            [self.number_of_events, 2], np.float32)
+        hit_positions.values = np.zeros([self.number_of_events, 2], np.float32)
         hit_positions.unit = "mm"
 
-        hit_positions.typed_value[:, 0] = \
-            get_memory_mapped_data(self.filename, ">f4",
+        hit_positions.values[:, 0] = \
+            get_memory_mapped_data(self.file_path, ">f4",
                                    7 * 4, 11 * 4, self.number_of_events)  # x
-        hit_positions.typed_value[:, 1] = \
-            get_memory_mapped_data(self.filename, ">f4",
+        hit_positions.values[:, 1] = \
+            get_memory_mapped_data(self.file_path, ">f4",
                                    8 * 4, 11 * 4, self.number_of_events)  # y
         return hit_positions
 
@@ -157,12 +149,11 @@ class ReadEposFileFormat():
         # 0 after the first ion per pulse
         # also known as $\Delta Pulse$
         npulses = NxField()
-        npulses.typed_value = np.zeros(
-            [self.number_of_events, 1], np.uint32)
+        npulses.values = np.zeros([self.number_of_events, 1], np.uint32)
         npulses.unit = ""
 
-        npulses.typed_value[:, 0] = \
-            get_memory_mapped_data(self.filename, ">u4",
+        npulses.values[:, 0] = \
+            get_memory_mapped_data(self.file_path, ">u4",
                                    9 * 4, 11 * 4, self.number_of_events)
         return npulses
 
@@ -171,11 +162,10 @@ class ReadEposFileFormat():
         # according to DOI: 10.1007/978-1-4899-7430-3
         # ions per pulse, 0 after the first ion
         ions_per_pulse = NxField()
-        ions_per_pulse.typed_value = np.zeros(
-            [self.number_of_events, 1], np.uint32)
+        ions_per_pulse.values = np.zeros([self.number_of_events, 1], np.uint32)
         ions_per_pulse.unit = ""
 
-        ions_per_pulse.typed_value[:, 0] = \
-            get_memory_mapped_data(self.filename, ">u4",
+        ions_per_pulse.values[:, 0] = \
+            get_memory_mapped_data(self.file_path, ">u4",
                                    10 * 4, 11 * 4, self.number_of_events)
         return ions_per_pulse

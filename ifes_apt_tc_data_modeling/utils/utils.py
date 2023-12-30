@@ -31,6 +31,18 @@ from ifes_apt_tc_data_modeling.utils.definitions import \
     MAX_NUMBER_OF_ATOMS_PER_ION, MQ_EPSILON
 
 
+def get_smart_chemical_symbols():
+    """Organize element symbols such that search H does not match He."""
+    priority_queue = []
+    for symbol in chemical_symbols:
+        if len(symbol) == 2:
+            priority_queue.append(symbol)
+    for symbol in chemical_symbols:
+        if symbol != "X" and len(symbol) == 1:
+            priority_queue.append(symbol)
+    return priority_queue
+
+
 def isotope_to_hash(proton_number: int = 0,
                     neutron_number: int = 0) -> int:
     """Encode an isotope to a hashvalue."""

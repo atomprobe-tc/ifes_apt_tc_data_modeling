@@ -28,12 +28,12 @@ from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
 class ReadAtoFileFormat():
     """Read Rouen group *.ato file format."""
 
-    def __init__(self, filename: str):
-        if (len(filename) <= 4) or (filename.lower().endswith(".ato") is False):
-            raise ImportError("WARNING::ATO file incorrect filename ending or file type!")
-        self.filename = filename
+    def __init__(self, file_path: str):
+        if (len(file_path) <= 4) or (file_path.lower().endswith(".ato") is False):
+            raise ImportError("WARNING::ATO file incorrect file_path ending or file type!")
+        self.file_path = file_path
 
-        self.filesize = os.path.getsize(self.filename)
+        self.file_size = os.path.getsize(self.file_path)
         self.number_of_events = None
         self.version = None
         retval = self.get_ato_version()
@@ -42,14 +42,14 @@ class ReadAtoFileFormat():
             self.version = retval
             print(f"ATO file is in a supported version {self.version}")
             if self.version == 3:
-                assert (self.filesize - 2 * 4) % 14 * 4 == 0, \
-                    "ATO v3 filesize not integer multiple of 14*4B!"
-                self.number_of_events = np.uint32((self.filesize - 2 * 4) / (14 * 4))
+                assert (self.file_size - 2 * 4) % 14 * 4 == 0, \
+                    "ATO v3 file_size not integer multiple of 14*4B!"
+                self.number_of_events = np.uint32((self.file_size - 2 * 4) / (14 * 4))
                 print(f"ATO file contains {self.number_of_events} entries")
             if self.version == 5:
-                assert (self.filesize - 5000) % 40 == 0, \
-                    "ATO v5 filesize not integer multiple of 40B!"
-                self.number_of_events = np.uint32((self.filesize - 5000) / 40)
+                assert (self.file_size - 5000) % 40 == 0, \
+                    "ATO v5 file_size not integer multiple of 40B!"
+                self.number_of_events = np.uint32((self.file_size - 5000) / 40)
                 print(f"ATO file contains {self.number_of_events} entries")
         else:
             raise ImportError("ATO file unsupported version!")
@@ -64,7 +64,8 @@ class ReadAtoFileFormat():
         # suggests that additional polishing of results is needed
 
     def get_ato_version(self):
-        header = get_memory_mapped_data(self.filename, "<u4", 0, 4, 2)
+        """Identify if file_path matches a known ATO format version."""
+        header = get_memory_mapped_data(self.file_path, "<u4", 0, 4, 2)
         if header[1] in [3, 4, 5]:
             return header[1]
         return None
@@ -73,14 +74,13 @@ class ReadAtoFileFormat():
         """Read xyz columns."""
 
         xyz = NxField()
-        xyz.typed_value = np.zeros(
-            [self.number_of_events, 3], np.float32)
+        xyz.values = np.zeros([self.number_of_events, 3], np.float32)
         xyz.unit = "nm"
 
         if self.version == 3:
             for dim in [0, 1, 2]:
-                xyz.typed_value[:, dim] = \
-                    get_memory_mapped_data(self.filename, "<f4",
+                xyz.values[:, dim] = \
+                    get_memory_mapped_data(self.file_path, "<f4",
                                            2 * 4 + dim * 4,
                                            14 * 4, self.number_of_events)
                 # wpx -> x, wpy -> y, fpz -> z
@@ -90,16 +90,16 @@ class ReadAtoFileFormat():
             # the resulting x, y coordinates suggests that v5 ATO stores in angstroem, while fpz is stored in nm?
             # however https://zenodo.org/records/8382828 reports the reconstructed positions to be named
             # not at all wpx, wpy and fpz but x, y, z instead and here claims the nm
-            xyz.typed_value[:, 0] = \
-                np.float32(get_memory_mapped_data(self.filename, "<i2",
+            xyz.values[:, 0] = \
+                np.float32(get_memory_mapped_data(self.file_path, "<i2",
                                                   5000 + 0,
                                                   40, self.number_of_events) * 0.1)  # wpx -> x
-            xyz.typed_value[:, 1] = \
-                np.float32(get_memory_mapped_data(self.filename, "<i2",
+            xyz.values[:, 1] = \
+                np.float32(get_memory_mapped_data(self.file_path, "<i2",
                                                   5000 + 2,
                                                   40, self.number_of_events) * 0.1)  # wpy -> y
-            xyz.typed_value[:, 2] = \
-                get_memory_mapped_data(self.filename, "<f4",
+            xyz.values[:, 2] = \
+                get_memory_mapped_data(self.file_path, "<f4",
                                        5000 + 4, 40, self.number_of_events)  # fpz -> z
         return xyz
 
@@ -107,16 +107,15 @@ class ReadAtoFileFormat():
         """Read mass-to-charge-state-ratio column."""
 
         m_n = NxField()
-        m_n.typed_value = np.zeros(
-            [self.number_of_events, 1], np.float32)
+        m_n.values = np.zeros([self.number_of_events, 1], np.float32)
         m_n.unit = "Da"
 
         if self.version == 3:
-            m_n.typed_value[:, 0] = \
-                get_memory_mapped_data(self.filename, "<f4",
+            m_n.values[:, 0] = \
+                get_memory_mapped_data(self.file_path, "<f4",
                                        2 * 4 + 3 * 4, 14 * 4, self.number_of_events)
         if self.version == 5:
-            m_n.typed_value[:, 0] = \
-                get_memory_mapped_data(self.filename, "<f4",
+            m_n.values[:, 0] = \
+                get_memory_mapped_data(self.file_path, "<f4",
                                        5000 + 8, 40, self.number_of_events)
         return m_n

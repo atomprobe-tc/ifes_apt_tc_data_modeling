@@ -24,7 +24,7 @@ import h5py
 import numpy as np
 import pandas as pd
 
-from ase.data import atomic_numbers, chemical_symbols
+from ase.data import atomic_numbers
 from ifes_apt_tc_data_modeling.nexus.nx_ion import NxIon
 from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
 from ifes_apt_tc_data_modeling.utils.utils import isotope_to_hash, \
@@ -115,6 +115,7 @@ class ReadPyccaptCalibrationFileFormat():
         self.number_of_events = len(self.df)
 
     def get_named_quantities(self, term: str):
+        """Get named quantities from dataframe."""
         if term in self.df.keys():
             return self.df[term]
         return None
@@ -122,13 +123,13 @@ class ReadPyccaptCalibrationFileFormat():
     def get_reconstructed_positions(self):
         """Read xyz columns."""
         xyz = NxField()
-        xyz.typed_value = np.zeros(
+        xyz.values = np.zeros(
             [self.number_of_events, 3], np.float32)
         xyz.unit = "nm"
 
         dim = 0
         for quant in ["x (nm)", "y (nm)", "z (nm)"]:
-            xyz.typed_value[:, dim] = np.asarray(self.get_named_quantities(quant), np.float32)
+            xyz.values[:, dim] = np.asarray(self.get_named_quantities(quant), np.float32)
             dim += 1
         return xyz
 
@@ -136,11 +137,11 @@ class ReadPyccaptCalibrationFileFormat():
         """Read (calibrated) mass-to-charge-state-ratio column."""
 
         m_n = NxField()
-        m_n.typed_value = np.zeros(
+        m_n.values = np.zeros(
             [self.number_of_events, 1], np.float32)
         m_n.unit = "Da"
 
-        m_n.typed_value[:, 0] = np.asarray(self.get_named_quantities("mc_c (Da)"), np.float32)
+        m_n.values[:, 0] = np.asarray(self.get_named_quantities("mc_c (Da)"), np.float32)
         return m_n
 
 
@@ -198,9 +199,9 @@ class ReadPyccaptRangingFileFormat():
             ivec[0:len(hashvector)] = np.sort(np.asarray(hashvector, np.uint16), kind="stable")[::-1]
 
             m_ion = NxIon()
-            m_ion.isotope_vector.typed_value = ivec
-            m_ion.nuclid_list.typed_value = isotope_vector_to_nuclid_list(ivec)
-            m_ion.charge_state.typed_value = np.int8(self.df.iloc[idx, 9])
+            m_ion.isotope_vector.values = ivec
+            m_ion.nuclid_list.values = isotope_vector_to_nuclid_list(ivec)
+            m_ion.charge_state.values = np.int8(self.df.iloc[idx, 9])
             m_ion.add_range(self.df.iloc[idx, 3], self.df.iloc[idx, 4])
             m_ion.update_human_readable_name()
             # m_ion.report()

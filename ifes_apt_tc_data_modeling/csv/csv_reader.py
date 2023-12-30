@@ -28,16 +28,16 @@ from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
 class ReadCsvFileFormat():
     """Read CSV file assuming (n_ions, 4) like in POS."""
 
-    def __init__(self, filename: str):
-        if (len(filename) <= 4) or (filename.lower().endswith(".csv") is False):
-            raise ImportError("WARNING::CSV file incorrect filename ending or file type!")
-        self.filename = filename
+    def __init__(self, file_path: str):
+        if (len(file_path) <= 4) or (file_path.lower().endswith(".csv") is False):
+            raise ImportError("WARNING::CSV file incorrect file_path ending or file type!")
+        self.file_path = file_path
 
-        self.filesize = os.path.getsize(self.filename)
+        self.file_size = os.path.getsize(self.file_path)
         self.number_of_events = None
         self.version = None
 
-        shp = np.shape(pd.read_csv(self.filename))
+        shp = np.shape(pd.read_csv(self.file_path))
         if shp[0] > 0 and shp[1] == 4:
             self.number_of_events = shp[0]
         else:
@@ -47,7 +47,7 @@ class ReadCsvFileFormat():
         """Read xyz columns."""
 
         xyz = NxField()
-        xyz.typed_value = np.zeros([self.number_of_events, 3], np.float32)
+        xyz.values = np.zeros([self.number_of_events, 3], np.float32)
         xyz.unit = "nm"
         # there are too many assumption made here as to the content
         # in the csv file sure one could pass some configuration hints but
@@ -56,18 +56,18 @@ class ReadCsvFileFormat():
         # no magic number, de facto this works only because users know what
         # to expect in advance but how should a machine know this?
         for dim in [0, 1, 2]:
-            xyz.typed_value[:, dim] = pd.read_csv(self.filename).iloc[:, dim]
+            xyz.values[:, dim] = pd.read_csv(self.file_path).iloc[:, dim]
         return xyz
 
     def get_mass_to_charge_state_ratio(self):
         """Read mass-to-charge-state-ratio column."""
 
         m_n = NxField()
-        m_n.typed_value = np.zeros([self.number_of_events, 1], np.float32)
+        m_n.values = np.zeros([self.number_of_events, 1], np.float32)
         m_n.unit = "Da"
         # again such a strong assumption!
         # why reported in Da?
         # why in the third column
         # why at all a mass-to-charge-state-ratio value array?
-        m_n.typed_value[:, 0] = pd.read_csv(self.filename).iloc[:, 3]
+        m_n.values[:, 0] = pd.read_csv(self.file_path).iloc[:, 3]
         return m_n
