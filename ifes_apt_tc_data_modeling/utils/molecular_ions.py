@@ -16,7 +16,9 @@
 # limitations under the License.
 #
 
-"""Utility tool to work with molecular ions in atom probe microscopy."""
+"""Utility tool, analyze and combinatorics for (molecular) ions."""
+
+# pylint: disable=too-many-arguments,too-many-instance-attributes,too-many-locals,too-many-nested-blocks,too-many-branches
 
 import numpy as np
 import radioactivedecay as rd
@@ -25,24 +27,9 @@ from ase.data import atomic_numbers, chemical_symbols
 from ifes_apt_tc_data_modeling.utils.utils import \
     isotope_to_hash, hash_to_isotope, isotope_vector_to_dict_keyword
 from ifes_apt_tc_data_modeling.utils.nist_isotope_data import isotopes
-
-# do not consider isotopes with a very low natural abundance
-PRACTICAL_ABUNDANCE = 0.  # 1.0e-6
-# do not consider candidate isotopically different molecular ions
-# if their natural abundance product is too low
-PRACTICAL_ABUNDANCE_PRODUCT = 0.  # 1.0e-12
-# do consider too shortliving isotopes
-PRACTICAL_MIN_HALF_LIFE = np.inf
-# many examples of ranges are not constrainted strongly enough so that
-# there are many isotopes (many of which admittedly hypothetical) ones
-# which are within the range, this option lifts the constraint that
-# there should be only one set of isotopically different molecular ions
-# and if these have all these same charge it is assumed this is the
-# charge of the molecular ion
-# strictly speaking however one would have to rule out every possible
-# molecular ion candidate (which is non-trivial and maybe not even
-# with first principles theory possible...
-SACRIFICE_ISOTOPIC_UNIQUENESS = True
+from ifes_apt_tc_data_modeling.utils.definitions import \
+    PRACTICAL_ABUNDANCE, PRACTICAL_ABUNDANCE_PRODUCT, \
+    PRACTICAL_MIN_HALF_LIFE, SACRIFICE_ISOTOPIC_UNIQUENESS
 VERBOSE = False
 
 
@@ -52,9 +39,10 @@ def get_chemical_symbols():
 
 
 class MolecularIonCandidate:
-    """Define """
+    """Define (molecular) ion build from nuclids."""
+
     def __init__(self,
-                 ivec=[],
+                 ivec,
                  charge_state=0,
                  mass_sum=0.,
                  nat_abun_prod=0.,
@@ -75,11 +63,11 @@ class MolecularIonBuilder:
     """Class for holding properties of constructed molecular ions."""
 
     def __init__(self,
-                 min_abundance=1.0e-6,
-                 min_abundance_product=1.0e-6,
-                 min_half_life=np.inf,
-                 sacrifice_uniqueness=True,
-                 verbose=False):
+                 min_abundance=PRACTICAL_ABUNDANCE,
+                 min_abundance_product=PRACTICAL_ABUNDANCE_PRODUCT,
+                 min_half_life=PRACTICAL_MIN_HALF_LIFE,
+                 sacrifice_uniqueness=SACRIFICE_ISOTOPIC_UNIQUENESS,
+                 verbose=VERBOSE):
         self.nuclids = np.asarray([], np.uint16)
         self.element_isotopes = {}
         self.nuclid_mass = {}
@@ -88,19 +76,17 @@ class MolecularIonBuilder:
         self.nuclid_unclear = {}  # unclear halflife
         self.nuclid_halflife = {}
         self.candidates = []
-        self.parms = {}
-        self.parms["min_abundance"] = min_abundance
-        self.parms["min_abundance_product"] = min_abundance_product
-        self.parms["min_half_life"] = min_half_life
-        self.parms["sacrifice_isotopic_uniqueness"] = sacrifice_uniqueness
-        self.parms["verbose"] = verbose
-        self.relevant = {}
+        self.parms = {"min_abundance": min_abundance,
+                      "min_abundance_product": min_abundance_product,
+                      "min_half_life": min_half_life,
+                      "sacrifice_isotopic_uniqueness": sacrifice_uniqueness,
+                      "verbose": verbose}
 
         for symbol, atomic_number in atomic_numbers.items():
             if symbol != "X":
                 # assume that data from ase take preference
-                # if half-life data are available in rd take these if not mark
-                # the isotope that it unclear_half_life == True
+                # if half-life data are available in radioactive decay library
+                # take these instead, if all fails mark an unclear_half_life == True
                 element_isotopes = []
                 for mass_number in isotopes[atomic_number]:
                     half_life = np.inf
@@ -137,22 +123,15 @@ class MolecularIonBuilder:
                     n_neutrons = mass_number - n_protons
                     mass = isotopes[atomic_numbers[symbol]][mass_number]["mass"]
                     abundance = isotopes[atomic_numbers[symbol]][mass_number]["composition"]
-                    # self.nuclids.append(
-                    #     Isotope(mass,
-                    #             abundance,
-                    #             n_protons, n_neutrons,
-                    #             observationally_stable,
-                    #             unclear_half_life))
                     hashvalue = isotope_to_hash(int(n_protons), int(n_neutrons))
-                    self.nuclids = np.asarray(np.append(self.nuclids, hashvalue), np.uint16)
-                    self.nuclid_mass[hashvalue] = np.float64(mass)
-                    self.nuclid_abundance[hashvalue] = np.float64(abundance)
-                    self.nuclid_stable[hashvalue] = observationally_stable
-                    self.nuclid_unclear[hashvalue] = unclear_half_life
-                    self.nuclid_halflife[hashvalue] = half_life
-                    assert np.uint16(0) not in self.nuclid_mass, \
-                        "0 must not be a key in nuclid_mass dict!"
-                    element_isotopes = np.append(element_isotopes, hashvalue)
+                    if hashvalue != 0:
+                        self.nuclids = np.append(self.nuclids, hashvalue)
+                        self.nuclid_mass[hashvalue] = np.float64(mass)
+                        self.nuclid_abundance[hashvalue] = np.float64(abundance)
+                        self.nuclid_stable[hashvalue] = observationally_stable
+                        self.nuclid_unclear[hashvalue] = unclear_half_life
+                        self.nuclid_halflife[hashvalue] = half_life
+                        element_isotopes = np.append(element_isotopes, hashvalue)
                 self.element_isotopes[atomic_number] = np.sort(
                     np.asarray(element_isotopes, np.uint16), kind="stable")[::-1]
         self.nuclids = np.sort(self.nuclids, kind="stable")[::-1]
@@ -161,19 +140,9 @@ class MolecularIonBuilder:
 
     def get_element_isotopes(self, hashvalue):
         """List of hashvalues all isotopes of element specified by hashvalue."""
-        # nuclids = np.asarray([], np.uint16)
-        target_p, target_n = hash_to_isotope(hashvalue)
-        return self.element_isotopes[target_p]
-        # for source_hashvalue in self.nuclids:
-        #     # naive search for now
-        #     source_p, source_n = hash_to_isotope(source_hashvalue)
-        #     if source_p != target_p:
-        #         continue
-        #     else:
-        #         nuclids = np.append(nuclids, source_hashvalue)
-        # return nuclids
+        return self.element_isotopes[hash_to_isotope(hashvalue)[0]]
 
-    def get_isotope_mass_sum(self, nuclid_arr=[]):
+    def get_isotope_mass_sum(self, nuclid_arr):
         """Evaluate cumulated atomic_mass of isotopes in ivec."""
         # assuming no relativistic effects or other quantum effects
         # mass loss due to charge_state considered insignificant
@@ -181,11 +150,9 @@ class MolecularIonBuilder:
         for hashvalue in nuclid_arr:
             if hashvalue != 0:
                 mass += self.nuclid_mass[hashvalue]
-            # else:  # because ivec are systematically filled sorted in descending order !
-            #   break
         return mass
 
-    def get_natural_abundance_product(self, nuclid_arr=[]):
+    def get_natural_abundance_product(self, nuclid_arr):
         """Get natural abundance product."""
         abun_prod = 1.
         for hashvalue in nuclid_arr:
@@ -193,7 +160,7 @@ class MolecularIonBuilder:
                 abun_prod *= self.nuclid_abundance[hashvalue]
         return abun_prod
 
-    def get_shortest_half_life(self, nuclid_arr=[]):
+    def get_shortest_half_life(self, nuclid_arr):
         """Get shortest half life for set of nuclids."""
         min_half_life = self.parms["min_half_life"]
         for hashvalue in nuclid_arr:
@@ -208,14 +175,16 @@ class MolecularIonBuilder:
                     # time and this might possibly hint that studying this molecular is tricky
                 else:
                     # if we do not information about the half-life it is very likely that
-                    # this is an exotic nuclids likely never found in the wild
+                    # this is an exotic nuclid likely never found in the wild
                     return np.nan
         return min_half_life
 
     def combinatorics(self, element_arr, low, high):
         """Combinatorial analysis which (molecular) elements match within [low, high]."""
-        # RNG/RRNG range files do store element information for each range
-        # BUT not isotope information, correspondingly this can yield
+        # RNG/RRNG/ENV range files store (molecular) ion information for each range
+        # BUT neither nuclid not charge state information, here we try to recover
+        # both if possible or list all possible combinations
+        # correspondingly this allows yield
         # only an isotope_vector whose hashvalues have ALL in common
         # that the number of neutrons is 0, i.e. their hashvalue is the atomic_number
         # element_arr is an isotope_vector/ivec with such hashvalues
@@ -249,7 +218,6 @@ class MolecularIonBuilder:
         """Recursive analysis of combinatorics on molecular ions."""
         if i < (max_n - 1):
             for nuclid in jth_nuclids:
-
                 ixxth_nuclids = self.get_element_isotopes(element_arr[i + 1])
                 cand_arr_curr = np.append(cand_arr_prev, nuclid)
                 self.iterate_molecular_ion(
@@ -294,51 +262,55 @@ class MolecularIonBuilder:
             # break the recursion
             return
 
-    def try_to_reduce_to_unique_solution(self):
-        """Heuristics to identify if current candidates are unique."""
-        if self.parms["verbose"] is True:
-            print(f"Reduce set of {len(self.candidates)} candidates to a unique...")
-        self.relevant = {}
+    def get_relevant(self):
+        """Identify relevant candidates."""
+        relevant = {}
         for cand in self.candidates:
             if cand.abundance_product >= self.parms["min_abundance_product"]:
                 if np.isnan(cand.shortest_half_life) is False:
                     if cand.shortest_half_life >= self.parms["min_half_life"]:
                         keyword = cand.unique_keyword()
-                        if keyword not in self.relevant:
-                            self.relevant[keyword] = cand
-        relevant_candidates = []
-        if self.parms["verbose"] is True:
-            print(f"Reduced set to {len(self.relevant.keys())} relevant candidates...")
-            for key, val in self.relevant.items():
-                print(key)
-        for key, obj in self.relevant.items():
-            relevant_candidates.append(obj)
-        # print(type(relevant_candidates))
+                        if keyword not in relevant:
+                            relevant[keyword] = cand
 
-        if len(self.relevant) == 0:
+        if self.parms["verbose"] is True:
+            print(f"Reduced set to {len(relevant.keys())} relevant candidates...")
+            for key in relevant:
+                print(key)
+        relevant_candidates = []
+        for key, obj in relevant.items():
+            relevant_candidates.append(obj)
+        return relevant, relevant_candidates
+
+    def try_to_reduce_to_unique_solution(self):
+        """Heuristics to identify if current candidates are unique."""
+        if self.parms["verbose"] is True:
+            print(f"Reduce set of {len(self.candidates)} candidates to a unique...")
+        relevant, relevant_candidates = self.get_relevant()
+        if len(relevant) == 0:
             if self.parms["verbose"] is True:
                 print("WARNING::No relevant candidate meets all criteria!")
                 print("WARNING::No solution possible for given criteria!")
             return (0, relevant_candidates)
-        if len(self.relevant) == 1:
+        if len(relevant) == 1:
             if self.parms["verbose"] is True:
                 print("One relevant candidate which meets all criteria")
             keywords = []
-            for key in self.relevant:
+            for key in relevant:
                 if isinstance(key, str):
                     keywords.append(key)
             assert len(keywords) >= 1, "List of relevant keywords is empty!"
-            return (self.relevant[keywords[0]].charge_state, relevant_candidates)
+            return (relevant[keywords[0]].charge_state, relevant_candidates)
 
         if self.parms["verbose"] is True:
             print("Multiple relevant candidates meet all selection criteria")
         keywords = []
-        for key in self.relevant:
+        for key in relevant:
             if isinstance(key, str):
                 keywords.append(key)
         assert len(keywords) >= 1, "List of relevant keywords is empty!"
-        charge_state = self.relevant[keywords[0]].charge_state
-        for key, val in self.relevant.items():
+        charge_state = relevant[keywords[0]].charge_state
+        for key, val in relevant.items():
             if val.charge_state == charge_state:
                 continue
             if self.parms["verbose"] is True:

@@ -29,14 +29,15 @@ import numpy as np
 
 
 @typing.no_type_check
-def get_memory_mapped_data(file_name: str, data_type: str, oset: int,
+def get_memory_mapped_data(fpath: str,
+                           dtyp: str, oset: int,
                            strd: int, shp: int):
-    """Memory-maps file plus offset strided read of typed data."""
+    """Read typed data from memory-mapped file from offset with stride."""
     # https://stackoverflow.com/questions/60493766/ \
     #       read-binary-flatfile-and-skip-bytes for I/O access details
 
-    with open(file_name, "rb") as file_handle, \
-            mmap.mmap(file_handle.fileno(), length=0, access=mmap.ACCESS_READ) as memory_mapped:
-        return np.ndarray(buffer=memory_mapped, dtype=data_type,
+    with open(fpath, "rb") as fp, \
+            mmap.mmap(fp.fileno(), length=0, access=mmap.ACCESS_READ) as memory_mapped:
+        return np.ndarray(buffer=memory_mapped, dtype=dtyp,
                           offset=oset, strides=strd, shape=shp).copy()
     return None
