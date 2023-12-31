@@ -18,7 +18,7 @@
 
 """ENV file format reader for GPM/Rouen ENV system configuration and range files"""
 
-# pylint: disable=too-many-nested-blocks
+# pylint: disable=too-many-nested-blocks,duplicate-code
 
 import re
 import numpy as np

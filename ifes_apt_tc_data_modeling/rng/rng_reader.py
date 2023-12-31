@@ -18,6 +18,8 @@
 
 """RNG range file reader used by atom probe microscopists."""
 
+# pylint: disable=duplicate-code
+
 import re
 import numpy as np
 

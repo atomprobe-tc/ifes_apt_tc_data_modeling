@@ -18,6 +18,8 @@
 
 """CSV file format reader as sometimes used for reporting POS file content."""
 
+# pylint: disable=duplicate-code
+
 import os
 import numpy as np
 import pandas as pd

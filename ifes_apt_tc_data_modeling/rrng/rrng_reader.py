@@ -18,7 +18,7 @@
 
 """RRNG range file reader used by atom probe microscopists."""
 
-# pylint: disable=too-many-branches,too-many-statements
+# pylint: disable=too-many-branches,too-many-statements,duplicate-code
 
 import re
 import numpy as np
