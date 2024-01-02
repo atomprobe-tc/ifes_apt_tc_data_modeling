@@ -28,7 +28,6 @@ from ifes_apt_tc_data_modeling.utils.utils import \
     create_isotope_vector, is_range_significant
 from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
 from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
-from ifes_apt_tc_data_modeling.utils.combinatorics import apply_combinatorics
 
 
 # there are specific examples for unusual range files here:
@@ -158,11 +157,11 @@ class ReadRngFileFormat():
                 print(f"WARNING::RNG line {txt_stripped[idx]} is corrupted!")
                 continue
 
-            m_ion = NxIon(isotope_vector=create_isotope_vector(
-                dct["atoms"]), charge_state=0)
+            m_ion = NxIon(isotope_vector=create_isotope_vector(dct["atoms"]),
+                          charge_state=0)
             m_ion.add_range(dct["range"][0], dct["range"][1])
             m_ion.comment = NxField(dct["name"], "")
-            apply_combinatorics(m_ion)
+            m_ion.apply_combinatorics()
             # m_ion.report()
 
             self.rng["molecular_ions"].append(m_ion)

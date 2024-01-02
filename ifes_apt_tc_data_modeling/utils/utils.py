@@ -77,8 +77,7 @@ def create_isotope_vector(building_blocks: list) -> np.ndarray:
                 if block.count("-") == 0:  # an element
                     if (block not in symbol_to_proton_number) or (block == "X"):
                         return ivec
-                    hashvector.append(isotope_to_hash(
-                        symbol_to_proton_number[block], 0))
+                    hashvector.append(isotope_to_hash(symbol_to_proton_number[block], 0))
                 elif block.count("-") == 1:
                     symb_mass = block.split("-")
                     if (len(symb_mass) != 2) or (symb_mass[0] not in symbol_to_proton_number) or (symb_mass[0] == "X"):
@@ -89,9 +88,6 @@ def create_isotope_vector(building_blocks: list) -> np.ndarray:
                     neutron_number = mass_number - proton_number
                     if (proton_number in isotopes) and (mass_number in isotopes[proton_number]):
                         hashvector.append(isotope_to_hash(proton_number, neutron_number))
-                    return ivec
-                return ivec
-
         ivec[0:len(hashvector)] = np.sort(
             np.asarray(hashvector, np.uint16), kind="stable")[::-1]
     return ivec

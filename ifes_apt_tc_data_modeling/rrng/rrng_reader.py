@@ -28,7 +28,6 @@ from ifes_apt_tc_data_modeling.nexus.nx_ion import NxField, NxIon
 from ifes_apt_tc_data_modeling.utils.utils import \
     create_isotope_vector, is_range_significant
 from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
-from ifes_apt_tc_data_modeling.utils.combinatorics import apply_combinatorics
 
 
 def evaluate_rrng_range_line(i: int, line: str) -> dict:
@@ -142,7 +141,7 @@ class ReadRrngFileFormat():
         current_line_id += 1
         for i in np.arange(0, number_of_ion_names):
             tmp = re.split(r"[\s=]+", txt_stripped[current_line_id + i])
-            if len(tmp) == 2:
+            if len(tmp) != 2:
                 raise ValueError(f"Line {txt_stripped[current_line_id + i]} [Ions]/Ion line corrupted!")
             if tmp[0] != f"Ion{i + 1}":
                 raise ValueError(f"Line {txt_stripped[current_line_id + i]} [Ions]/Ion incorrectly formatted!")
@@ -177,11 +176,11 @@ class ReadRrngFileFormat():
                 print(f"WARNING::RNG line {txt_stripped[current_line_id + jdx]} is corrupted!")
                 continue
 
-            m_ion = NxIon(isotope_vector=create_isotope_vector(
-                dct["atoms"]), charge_state=0)
+            m_ion = NxIon(isotope_vector=create_isotope_vector(dct["atoms"]),
+                          charge_state=0)
             m_ion.add_range(dct["range"][0], dct["range"][1])
             m_ion.comment = NxField(dct["name"], "")
-            apply_combinatorics(m_ion)
+            m_ion.apply_combinatorics()
             # m_ion.report()
 
             self.rrng["molecular_ions"].append(m_ion)

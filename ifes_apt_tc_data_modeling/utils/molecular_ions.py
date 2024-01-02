@@ -208,6 +208,8 @@ class MolecularIonBuilder:
                 depth, max_depth, low, high)
             if self.parms["verbose"] is True:
                 print(f"Found {len(self.candidates)} candidates!")
+                for obj in self.candidates:
+                    print(f"{obj.isotope_vector}, {obj.charge_state}, {obj.shortest_half_life}")
             return self.try_to_reduce_to_unique_solution()
             # will return a tuple of charge_state and list of relevant_candidates
         return (0, [])
@@ -267,10 +269,11 @@ class MolecularIonBuilder:
         relevant = {}
         for cand in self.candidates:
             if cand.abundance_product >= self.parms["min_abundance_product"]:
-                if np.isnan(cand.shortest_half_life) is False:
+                if np.isnan(cand.shortest_half_life) == False:
+                    # don't dare to test np.isnan(cand.shortest_half_life) is False
                     if cand.shortest_half_life >= self.parms["min_half_life"]:
                         keyword = cand.unique_keyword()
-                        if keyword not in relevant:
+                        if keyword not in relevant.keys():
                             relevant[keyword] = cand
 
         if self.parms["verbose"] is True:
@@ -280,7 +283,7 @@ class MolecularIonBuilder:
         relevant_candidates = []
         for key, obj in relevant.items():
             relevant_candidates.append(obj)
-        return relevant, relevant_candidates
+        return (relevant, relevant_candidates)
 
     def try_to_reduce_to_unique_solution(self):
         """Heuristics to identify if current candidates are unique."""

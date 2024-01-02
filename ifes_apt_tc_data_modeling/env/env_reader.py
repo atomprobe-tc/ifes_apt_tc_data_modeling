@@ -118,32 +118,12 @@ class ReadEnvFileFormat():
                 if dct is None:
                     continue
 
-                m_ion = NxIon(isotope_vector=create_isotope_vector(
-                    dct["atoms"]), charge_state=0)
+                m_ion = NxIon(isotope_vector=create_isotope_vector(dct["atoms"]),
+                              charge_state=0)
                 m_ion.add_range(dct["range"][0], dct["range"][1])
                 m_ion.comment = NxField(dct["name"], "")
-                m_ion.color = NxField(dct["color"], "")
-                m_ion.volume = NxField(dct["volume"], "")
+                m_ion.apply_combinatorics()
                 # m_ion.report()
-
-                crawler = MolecularIonBuilder(
-                    min_abundance=PRACTICAL_ABUNDANCE,
-                    min_abundance_product=PRACTICAL_ABUNDANCE_PRODUCT,
-                    min_half_life=PRACTICAL_MIN_HALF_LIFE,
-                    sacrifice_uniqueness=SACRIFICE_ISOTOPIC_UNIQUENESS,
-                    verbose=VERBOSE)
-                recovered_charge_state, m_ion_candidates = crawler.combinatorics(
-                    m_ion.isotope_vector.values,
-                    m_ion.ranges.values[0, 0],
-                    m_ion.ranges.values[0, 1])
-                # print(f"{recovered_charge_state}")
-                m_ion.charge_state = NxField(np.int8(recovered_charge_state), "")
-                m_ion.update_human_readable_name()
-                m_ion.add_charge_state_model({"min_abundance": PRACTICAL_ABUNDANCE,
-                                              "min_abundance_product": PRACTICAL_ABUNDANCE_PRODUCT,
-                                              "min_half_life": PRACTICAL_MIN_HALF_LIFE,
-                                              "sacrifice_isotopic_uniqueness": SACRIFICE_ISOTOPIC_UNIQUENESS},
-                                             m_ion_candidates)
 
                 self.env["molecular_ions"].append(m_ion)
             print(f"{self.file_path} parsed successfully")

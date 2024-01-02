@@ -29,8 +29,6 @@ from ifes_apt_tc_data_modeling.utils.definitions import \
     MAX_NUMBER_OF_ATOMS_PER_ION
 from ifes_apt_tc_data_modeling.utils.molecular_ions import \
     get_chemical_symbols, isotope_to_hash
-from ifes_apt_tc_data_modeling.utils.combinatorics import \
-    apply_combinatorics
 
 
 class ReadFigTxtFileFormat():
@@ -97,7 +95,7 @@ class ReadFigTxtFileFormat():
             m_ion = NxIon(isotope_vector=ivector, charge_state=charge_state)
             m_ion.add_range(mqmin, mqmax)
             m_ion.comment = NxField(ionname, "")
-            apply_combinatorics(m_ion)
+            m_ion.apply_combinatorics()
             # m_ion.report()
 
             self.fig["molecular_ions"].append(m_ion)

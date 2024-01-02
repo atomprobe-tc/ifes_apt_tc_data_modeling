@@ -29,10 +29,10 @@ MQ_EPSILON = np.float64(1. / 2000.)
 
 
 # do not consider isotopes with a very low natural abundance
-PRACTICAL_ABUNDANCE = 1.e-6  # 0.  # 1.0e-6
+PRACTICAL_ABUNDANCE = 1.0e-6  # 0.  # 1.0e-6
 # do not consider candidate isotopically different molecular ions
 # if their natural abundance product is too low
-PRACTICAL_ABUNDANCE_PRODUCT = 1.e-6  # 0.  # 1.0e-12
+PRACTICAL_ABUNDANCE_PRODUCT = 0.  # 1.0e-6  # 0.  # 1.0e-12
 # do consider too shortliving isotopes
 PRACTICAL_MIN_HALF_LIFE = np.inf
 # many examples of ranges are not constrainted strongly enough so that

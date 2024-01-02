@@ -32,7 +32,10 @@ from ifes_apt_tc_data_modeling.utils.definitions import \
 from ifes_apt_tc_data_modeling.utils.utils import \
     create_isotope_vector, isotope_vector_to_nuclid_list, \
     isotope_vector_to_human_readable_name, is_range_significant
-from ifes_apt_tc_data_modeling.utils.molecular_ions import MolecularIonCandidate
+from ifes_apt_tc_data_modeling.utils.molecular_ions import \
+    MolecularIonCandidate, MolecularIonBuilder, \
+    PRACTICAL_ABUNDANCE, PRACTICAL_ABUNDANCE_PRODUCT, \
+    PRACTICAL_MIN_HALF_LIFE, VERBOSE, SACRIFICE_ISOTOPIC_UNIQUENESS
 from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
 
 
@@ -103,6 +106,28 @@ class NxIon():
               f"color: {self.color.values}\n"
               f"volume: {self.volume.values}\n")
 
+    def apply_combinatorics(self):
+        """Apply specifically constrainted combinatorial analysis."""
+        crawler = MolecularIonBuilder(
+            min_abundance=PRACTICAL_ABUNDANCE,
+            min_abundance_product=PRACTICAL_ABUNDANCE_PRODUCT,
+            min_half_life=PRACTICAL_MIN_HALF_LIFE,
+            sacrifice_uniqueness=SACRIFICE_ISOTOPIC_UNIQUENESS,
+            verbose=VERBOSE)
+        recovered_charge_state, m_ion_candidates = crawler.combinatorics(
+            self.isotope_vector.values,
+            self.ranges.values[0, 0],
+            self.ranges.values[0, 1])
+        # print(f"{recovered_charge_state}")
+        self.charge_state = NxField(np.int8(recovered_charge_state), "")
+        self.update_human_readable_name()
+        self.add_charge_state_model(
+            {"min_abundance": PRACTICAL_ABUNDANCE,
+             "min_abundance_product": PRACTICAL_ABUNDANCE_PRODUCT,
+             "min_half_life": PRACTICAL_MIN_HALF_LIFE,
+             "sacrifice_isotopic_uniqueness": SACRIFICE_ISOTOPIC_UNIQUENESS},
+             crawler.candidates)
+
     def add_charge_state_model(self,
                                parameters,
                                candidates):
@@ -114,39 +139,42 @@ class NxIon():
             if req in parameters:
                 continue
             raise ValueError(f"Parameter {req} not defined in parameters dict!")
-        self.charge_state_model = {"isotope_matrix": [],
-                                   "charge_state_vector": [],
-                                   "mass_vector": [],
-                                   "nat_abun_prod_vector": [],
-                                   "min_half_life_vector": []}
+        self.charge_state_model = {"n_cand": 0}
         for key, val in parameters.items():
             if key not in self.charge_state_model:
                 self.charge_state_model[key] = val
-        n_cand = len(candidates)
-        if n_cand > 0:
+        n_cand = 0
+        for cand in candidates:
+            if isinstance(cand, MolecularIonCandidate):
+                n_cand += 1
+        if n_cand == 0:
+            return
+        self.charge_state_model["n_cand"] = n_cand
+        if n_cand == 1:
+            self.charge_state_model["isotope_matrix"] = candidates[0].isotope_vector
+            self.charge_state_model["charge_state_vector"] = candidates[0].charge_state
+            self.charge_state_model["mass_vector"] = candidates[0].mass
+            self.charge_state_model["nat_abun_prod_vector"] = candidates[0].abundance_product
+            self.charge_state_model["min_half_life_vector"] = candidates[0].shortest_half_life
+        else:
             self.charge_state_model["isotope_matrix"] \
                 = np.zeros((n_cand, MAX_NUMBER_OF_ATOMS_PER_ION), np.uint16)
             self.charge_state_model["charge_state_vector"] \
-                = np.zeros((n_cand, ), np.int8)
+                = np.zeros((n_cand,), np.int8)
             self.charge_state_model["mass_vector"] \
-                = np.zeros((n_cand, ), np.float64)
+                = np.zeros((n_cand,), np.float64)
             self.charge_state_model["nat_abun_prod_vector"] \
-                = np.zeros((n_cand, ), np.float64)
+                = np.zeros((n_cand,), np.float64)
             self.charge_state_model["min_half_life_vector"] \
-                = np.zeros((n_cand, ), np.float64)
+                = np.zeros((n_cand,), np.float64)
             row_idx = 0
             for cand in candidates:
-                if isinstance(cand, MolecularIonCandidate):
-                    self.charge_state_model["isotope_matrix"][row_idx, 0:len(cand.isotope_vector)] \
-                        = cand.isotope_vector
-                    self.charge_state_model["charge_state_vector"][row_idx] = cand.charge_state
-                    self.charge_state_model["mass_vector"][row_idx] = cand.mass
-                    self.charge_state_model["nat_abun_prod_vector"][row_idx] \
-                        = cand.abundance_product
-                    self.charge_state_model["min_half_life_vector"][row_idx] \
-                        = cand.shortest_half_life
-                    row_idx += 1
-                else:
-                    print(f"{__name__} found cand which is not a MolecularIonCandidate!")
-        # else:
-        #     print("Not enough candidates to report as a charge_state model")
+                self.charge_state_model["isotope_matrix"][row_idx, 0:len(cand.isotope_vector)] \
+                    = cand.isotope_vector
+                self.charge_state_model["charge_state_vector"][row_idx] = cand.charge_state
+                self.charge_state_model["mass_vector"][row_idx] = cand.mass
+                self.charge_state_model["nat_abun_prod_vector"][row_idx] \
+                    = cand.abundance_product
+                self.charge_state_model["min_half_life_vector"][row_idx] \
+                    = cand.shortest_half_life
+                row_idx += 1
