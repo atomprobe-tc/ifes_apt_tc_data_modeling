@@ -46,11 +46,14 @@ def evaluate_rrng_range_line(i: int, line: str) -> dict:
 
     tmp = re.split(r"[\s=]+", line)
     if len(tmp) < 6:
-        raise ValueError(f"Line {line} does not contain all required fields!")
+        # raise ValueError(f"Line {line} does not contain all required fields {len(tmp)}!")
+        return None
     if tmp[0] != f"Range{i}":
-        raise ValueError(f"Line {line} has inconsistent line prefix!")
+        # raise ValueError(f"Line {line} has inconsistent line prefix {tmp[0]}!")
+        return None
     if is_range_significant(np.float64(tmp[1]), np.float64(tmp[2])) is False:
-        raise ValueError(f"Line {line} insignificant range!")
+        # raise ValueError(f"Line {line} insignificant range!")
+        return None
     info["range"] = np.asarray([tmp[1], tmp[2]], np.float64)
 
     if tmp[3].lower().startswith("vol:"):
@@ -66,7 +69,8 @@ def evaluate_rrng_range_line(i: int, line: str) -> dict:
     for information in tmp[4:-1]:
         element_multiplicity = re.split(r":+", information)
         if len(element_multiplicity) != 2:
-            raise ValueError(f"Line {line}, element multiplicity is incorrectly formatted!")
+            raise ValueError(f"Line {line}, element multiplicity is not "
+                             f"correctly formatted {len(element_multiplicity)}!")
         # skip vol, name, and color information
         if element_multiplicity[0].lower() == "name":
             info["name"] = f"{element_multiplicity[1]}"
@@ -78,12 +82,16 @@ def evaluate_rrng_range_line(i: int, line: str) -> dict:
             # pick up what is an element name
             symbol = element_multiplicity[0]
             if (symbol not in chemical_symbols) or (symbol == "X"):
-                raise ValueError(f"Line {line} contains an invalid chemical symbol!")
-            if np.uint32(element_multiplicity[1]) <= 0:
-                raise ValueError(f"Line {line} zero or negative multiplicity!")
+                # raise ValueError(f"WARNING::Line {line} contains an invalid chemical symbol {symbol}!")
+                return None
+            # if np.uint32(element_multiplicity[1]) <= 0:
+                # raise ValueError(f"Line {line} zero or negative multiplicity !")
             if np.uint32(element_multiplicity[1]) >= 256:
-                raise ValueError(f"Line {line} unsupported high multiplicity!")
-            info["atoms"] = np.append(info["atoms"], [symbol] * int(element_multiplicity[1]))
+                # raise ValueError(f"Line {line} unsupported high multiplicity "
+                #                  f"{np.uint32(element_multiplicity)}!")
+                return None
+            info["atoms"] = np.append(info["atoms"],
+                                      [symbol] * int(element_multiplicity[1]))
     return info
 
 
@@ -173,7 +181,7 @@ class ReadRrngFileFormat():
         for jdx in np.arange(0, number_of_ranges):
             dct = evaluate_rrng_range_line(jdx + 1, txt_stripped[current_line_id + jdx])
             if dct is None:
-                print(f"WARNING::RNG line {txt_stripped[current_line_id + jdx]} is corrupted!")
+                print(f"WARNING::RRNG line {txt_stripped[current_line_id + jdx]} is corrupted!")
                 continue
 
             m_ion = NxIon(isotope_vector=create_isotope_vector(dct["atoms"]),

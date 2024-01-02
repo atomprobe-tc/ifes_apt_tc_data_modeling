@@ -47,21 +47,24 @@ def evaluate_rng_range_line(
 
     tmp = re.split(r"\s+", line)
     if len(tmp) != n_columns:
-        raise ValueError(f"Line {line} inconsistent number columns!")
+        raise ValueError(f"Line {line} inconsistent number columns {len(tmp)}!")
     if tmp[0] != ".":
         raise ValueError(f"Line {line} has inconsistent line prefix!")
     if is_range_significant(np.float64(tmp[1]), np.float64(tmp[2])) is False:
-        raise ValueError(f"Line {line} insignificant range!")
+        # raise ValueError(f"Line {line} insignificant range!")
+        return None
     info["range"] = np.asarray([tmp[1], tmp[2]], np.float64)
 
     # line encodes multiplicity of element via array of multiplicity counts
     element_multiplicity = np.asarray(tmp[3:len(tmp)], np.uint32)
     if np.sum(element_multiplicity) < 0:
-        raise ValueError(f"Line {line} no element counts!")
+        # raise ValueError(f"Line {line} no element counts!")
+        return None
     if np.sum(element_multiplicity) > 0:
         for jdx in np.arange(0, len(element_multiplicity)):
             if element_multiplicity[jdx] < 0:
-                raise ValueError(f"Line {line} no negative element counts!")
+                # raise ValueError(f"Line {line} no negative element counts!")
+                return None
             if element_multiplicity[jdx] > 0:
                 symbol = column_id_to_label[jdx + 1]
                 if symbol in get_chemical_symbols():
@@ -87,7 +90,7 @@ def evaluate_rng_ion_type_header(line: str) -> dict:
     info: dict = {"column_id_to_label": {}}
     tmp = re.split(r"\s+", line)
     if len(tmp) == 0:
-        raise ValueError(f"Line {line} does not contain iontype labels!")
+        raise ValueError(f"Line {line} does not contain iontype labels {len(tmp)}!")
     for idx in np.arange(1, len(tmp)):
         info["column_id_to_label"][idx] = tmp[idx]
     return info
