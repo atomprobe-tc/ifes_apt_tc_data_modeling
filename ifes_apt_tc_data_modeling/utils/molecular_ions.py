@@ -269,11 +269,11 @@ class MolecularIonBuilder:
         relevant = {}
         for cand in self.candidates:
             if cand.abundance_product >= self.parms["min_abundance_product"]:
-                if np.isnan(cand.shortest_half_life) == False:
+                if not np.isnan(cand.shortest_half_life):
                     # don't dare to test np.isnan(cand.shortest_half_life) is False
                     if cand.shortest_half_life >= self.parms["min_half_life"]:
                         keyword = cand.unique_keyword()
-                        if keyword not in relevant.keys():
+                        if keyword not in relevant:
                             relevant[keyword] = cand
 
         if self.parms["verbose"] is True:

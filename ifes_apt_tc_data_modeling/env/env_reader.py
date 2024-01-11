@@ -26,10 +26,6 @@ from ifes_apt_tc_data_modeling.nexus.nx_ion import NxField, NxIon
 from ifes_apt_tc_data_modeling.utils.utils import \
     create_isotope_vector, is_range_significant, get_smart_chemical_symbols
 from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
-from ifes_apt_tc_data_modeling.utils.molecular_ions import MolecularIonBuilder
-from ifes_apt_tc_data_modeling.utils.molecular_ions import \
-    PRACTICAL_ABUNDANCE, PRACTICAL_ABUNDANCE_PRODUCT, \
-    PRACTICAL_MIN_HALF_LIFE, VERBOSE, SACRIFICE_ISOTOPIC_UNIQUENESS
 
 
 def evaluate_env_range_line(line: str):

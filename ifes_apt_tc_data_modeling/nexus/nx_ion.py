@@ -23,7 +23,7 @@
 
 """Set of utility tools for parsing file formats used by atom probe."""
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes,unused-variable
 
 import numpy as np
 
@@ -121,12 +121,11 @@ class NxIon():
         # print(f"{recovered_charge_state}")
         self.charge_state = NxField(np.int8(recovered_charge_state), "")
         self.update_human_readable_name()
-        self.add_charge_state_model(
-            {"min_abundance": PRACTICAL_ABUNDANCE,
-             "min_abundance_product": PRACTICAL_ABUNDANCE_PRODUCT,
-             "min_half_life": PRACTICAL_MIN_HALF_LIFE,
-             "sacrifice_isotopic_uniqueness": SACRIFICE_ISOTOPIC_UNIQUENESS},
-             crawler.candidates)
+        self.add_charge_state_model({"min_abundance": PRACTICAL_ABUNDANCE,
+                                     "min_abundance_product": PRACTICAL_ABUNDANCE_PRODUCT,
+                                     "min_half_life": PRACTICAL_MIN_HALF_LIFE,
+                                     "sacrifice_isotopic_uniqueness": SACRIFICE_ISOTOPIC_UNIQUENESS},
+                                    crawler.candidates)
 
     def add_charge_state_model(self,
                                parameters,
