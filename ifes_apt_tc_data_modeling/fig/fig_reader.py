@@ -86,7 +86,9 @@ class ReadFigTxtFileFormat():
                         f"{mass_number}", "").replace(f"{multiplier}", "").replace(" ", "")
                     if symbol in get_chemical_symbols():
                         proton_number = atomic_numbers[symbol]
-                        neutron_number = mass_number - proton_number
+                        neutron_number = 0
+                        if mass_number != 0:
+                            neutron_number = mass_number - proton_number
                         ivec.extend([isotope_to_hash(proton_number, neutron_number)] * multiplier)
             ivec = np.sort(np.asarray(ivec, np.uint16))[::-1]
             ivector = np.zeros((MAX_NUMBER_OF_ATOMS_PER_ION,), np.uint16)
