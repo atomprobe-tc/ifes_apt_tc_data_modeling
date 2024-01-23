@@ -25,7 +25,7 @@ import radioactivedecay as rd
 
 from ase.data import atomic_numbers, chemical_symbols
 from ifes_apt_tc_data_modeling.utils.utils import \
-    isotope_to_hash, hash_to_isotope, isotope_vector_to_dict_keyword
+    isotope_to_hash, hash_to_isotope, nuclide_hash_to_dict_keyword
 from ifes_apt_tc_data_modeling.utils.nist_isotope_data import isotopes
 from ifes_apt_tc_data_modeling.utils.definitions import \
     PRACTICAL_ABUNDANCE, PRACTICAL_ABUNDANCE_PRODUCT, \
@@ -39,7 +39,7 @@ def get_chemical_symbols():
 
 
 class MolecularIonCandidate:
-    """Define (molecular) ion build from nuclids."""
+    """Define (molecular) ion build from nuclides."""
 
     def __init__(self,
                  ivec,
@@ -47,7 +47,7 @@ class MolecularIonCandidate:
                  mass_sum=0.,
                  nat_abun_prod=0.,
                  min_half_life=np.inf):
-        self.isotope_vector = np.asarray(np.atleast_1d(ivec), np.uint16)
+        self.nuclide_hash = np.asarray(ivec, np.uint16)
         self.charge_state = np.int8(charge_state)
         self.mass = np.float64(mass_sum)
         self.abundance_product = np.float64(nat_abun_prod)
@@ -55,7 +55,7 @@ class MolecularIonCandidate:
 
     def unique_keyword(self):
         """Generate unique keyword."""
-        keyword = f"{isotope_vector_to_dict_keyword(np.sort(np.asarray(self.isotope_vector, np.uint16), kind='stable')[::-1])}__{self.charge_state}"
+        keyword = f"{nuclide_hash_to_dict_keyword(np.sort(np.asarray(self.nuclide_hash, np.uint16), kind='stable')[::-1])}__{self.charge_state}"
         return keyword
 
 
@@ -68,13 +68,13 @@ class MolecularIonBuilder:
                  min_half_life=PRACTICAL_MIN_HALF_LIFE,
                  sacrifice_uniqueness=SACRIFICE_ISOTOPIC_UNIQUENESS,
                  verbose=VERBOSE):
-        self.nuclids = np.asarray([], np.uint16)
+        self.nuclides = np.asarray([], np.uint16)
         self.element_isotopes = {}
-        self.nuclid_mass = {}
-        self.nuclid_abundance = {}
-        self.nuclid_stable = {}  # observationally stable
-        self.nuclid_unclear = {}  # unclear halflife
-        self.nuclid_halflife = {}
+        self.nuclide_mass = {}
+        self.nuclide_abundance = {}
+        self.nuclide_stable = {}  # observationally stable
+        self.nuclide_unclear = {}  # unclear halflife
+        self.nuclide_halflife = {}
         self.candidates = []
         self.parms = {"min_abundance": min_abundance,
                       "min_abundance_product": min_abundance_product,
@@ -94,9 +94,9 @@ class MolecularIonBuilder:
                     unclear_half_life = False
 
                     # test if half-life data available
-                    trial_nuclid_name = f"{symbol}-{mass_number}"
+                    trial_nuclide_name = f"{symbol}-{mass_number}"
                     try:
-                        tmp = rd.Nuclide(trial_nuclid_name)
+                        tmp = rd.Nuclide(trial_nuclide_name)
                     except ValueError:
                         tmp = None
                     if tmp is not None:
@@ -125,69 +125,69 @@ class MolecularIonBuilder:
                     abundance = isotopes[atomic_numbers[symbol]][mass_number]["composition"]
                     hashvalue = isotope_to_hash(int(n_protons), int(n_neutrons))
                     if hashvalue != 0:
-                        self.nuclids = np.append(self.nuclids, hashvalue)
-                        self.nuclid_mass[hashvalue] = np.float64(mass)
-                        self.nuclid_abundance[hashvalue] = np.float64(abundance)
-                        self.nuclid_stable[hashvalue] = observationally_stable
-                        self.nuclid_unclear[hashvalue] = unclear_half_life
-                        self.nuclid_halflife[hashvalue] = half_life
+                        self.nuclides = np.append(self.nuclides, hashvalue)
+                        self.nuclide_mass[hashvalue] = np.float64(mass)
+                        self.nuclide_abundance[hashvalue] = np.float64(abundance)
+                        self.nuclide_stable[hashvalue] = observationally_stable
+                        self.nuclide_unclear[hashvalue] = unclear_half_life
+                        self.nuclide_halflife[hashvalue] = half_life
                         element_isotopes = np.append(element_isotopes, hashvalue)
                 self.element_isotopes[atomic_number] = np.sort(
                     np.asarray(element_isotopes, np.uint16), kind="stable")[::-1]
-        self.nuclids = np.sort(self.nuclids, kind="stable")[::-1]
+        self.nuclides = np.sort(self.nuclides, kind="stable")[::-1]
         if self.parms["verbose"] is True:
-            print(f"MolecularIonBuilder initialized with {len(self.nuclids)}")
+            print(f"MolecularIonBuilder initialized with {len(self.nuclides)}")
 
     def get_element_isotopes(self, hashvalue):
         """List of hashvalues all isotopes of element specified by hashvalue."""
         return self.element_isotopes[hash_to_isotope(hashvalue)[0]]
 
-    def get_isotope_mass_sum(self, nuclid_arr):
+    def get_isotope_mass_sum(self, nuclide_arr):
         """Evaluate cumulated atomic_mass of isotopes in ivec."""
         # assuming no relativistic effects or other quantum effects
         # mass loss due to charge_state considered insignificant
         mass = 0.
-        for hashvalue in nuclid_arr:
+        for hashvalue in nuclide_arr:
             if hashvalue != 0:
-                mass += self.nuclid_mass[hashvalue]
+                mass += self.nuclide_mass[hashvalue]
         return mass
 
-    def get_natural_abundance_product(self, nuclid_arr):
+    def get_natural_abundance_product(self, nuclide_arr):
         """Get natural abundance product."""
         abun_prod = 1.
-        for hashvalue in nuclid_arr:
+        for hashvalue in nuclide_arr:
             if hashvalue != 0:
-                abun_prod *= self.nuclid_abundance[hashvalue]
+                abun_prod *= self.nuclide_abundance[hashvalue]
         return abun_prod
 
-    def get_shortest_half_life(self, nuclid_arr):
-        """Get shortest half life for set of nuclids."""
+    def get_shortest_half_life(self, nuclide_arr):
+        """Get shortest half life for set of nuclides."""
         min_half_life = self.parms["min_half_life"]
-        for hashvalue in nuclid_arr:
+        for hashvalue in nuclide_arr:
             if hashvalue != 0:
-                if self.nuclid_halflife[hashvalue] != np.nan:
-                    min_half_life = np.min((min_half_life, self.nuclid_halflife[hashvalue]))
-                    # if the min_half_life is np.inf than we know that every nuclid in the
+                if self.nuclide_halflife[hashvalue] != np.nan:
+                    min_half_life = np.min((min_half_life, self.nuclide_halflife[hashvalue]))
+                    # if the min_half_life is np.inf than we know that every nuclide in the
                     # molecular ion is observationally stable
                     # if not we know that considering this molecular ion might not be a good
                     # idea or only necessary in very few cases because even if we were
-                    # to find such a combination of nuclids at least one would decay in observable
+                    # to find such a combination of nuclides at least one would decay in observable
                     # time and this might possibly hint that studying this molecular is tricky
                 else:
                     # if we do not information about the half-life it is very likely that
-                    # this is an exotic nuclid likely never found in the wild
+                    # this is an exotic nuclide likely never found in the wild
                     return np.nan
         return min_half_life
 
     def combinatorics(self, element_arr, low, high):
         """Combinatorial analysis which (molecular) elements match within [low, high]."""
         # RNG/RRNG/ENV range files store (molecular) ion information for each range
-        # BUT neither nuclid not charge state information, here we try to recover
+        # BUT neither nuclide not charge state information, here we try to recover
         # both if possible or list all possible combinations
         # correspondingly this allows yield
-        # only an isotope_vector whose hashvalues have ALL in common
+        # only an nuclide_hash whose hashvalues have ALL in common
         # that the number of neutrons is 0, i.e. their hashvalue is the atomic_number
-        # element_arr is an isotope_vector/ivec with such hashvalues
+        # element_arr is an nuclide_hash/ivec with such hashvalues
         # as an example the molecular ion C:2 H:1 will map to 6, 6, 1
         max_depth = 0  # number of non-zero entries in element_arr
         for hashvalue in element_arr:
@@ -201,33 +201,33 @@ class MolecularIonBuilder:
 
         if max_depth > 0:
             depth = 0
-            ith_nuclids = self.get_element_isotopes(element_arr[depth])
-            cand_arr_curr = []  # combinatorially add nuclids while recursing deeper
+            ith_nuclides = self.get_element_isotopes(element_arr[depth])
+            cand_arr_curr = []  # combinatorially add nuclides while recursing deeper
             self.iterate_molecular_ion(
-                element_arr, ith_nuclids, cand_arr_curr,
+                element_arr, ith_nuclides, cand_arr_curr,
                 depth, max_depth, low, high)
             if self.parms["verbose"] is True:
                 print(f"Found {len(self.candidates)} candidates!")
                 for obj in self.candidates:
-                    print(f"{obj.isotope_vector}, {obj.charge_state}, {obj.shortest_half_life}")
+                    print(f"{obj.nuclide_hash}, {obj.charge_state}, {obj.shortest_half_life}")
             return self.try_to_reduce_to_unique_solution()
             # will return a tuple of charge_state and list of relevant_candidates
         return (0, [])
 
     def iterate_molecular_ion(self,
-                              element_arr, jth_nuclids, cand_arr_prev,
+                              element_arr, jth_nuclides, cand_arr_prev,
                               i, max_n, low, high):
         """Recursive analysis of combinatorics on molecular ions."""
         if i < (max_n - 1):
-            for nuclid in jth_nuclids:
-                ixxth_nuclids = self.get_element_isotopes(element_arr[i + 1])
-                cand_arr_curr = np.append(cand_arr_prev, nuclid)
+            for nuclide in jth_nuclides:
+                ixxth_nuclides = self.get_element_isotopes(element_arr[i + 1])
+                cand_arr_curr = np.append(cand_arr_prev, nuclide)
                 self.iterate_molecular_ion(
-                    element_arr, ixxth_nuclids, cand_arr_curr,
+                    element_arr, ixxth_nuclides, cand_arr_curr,
                     i + 1, max_n, low, high)
         elif i == (max_n - 1):
-            for nuclid in jth_nuclids:
-                cand_arr_curr = np.append(cand_arr_prev, nuclid)
+            for nuclide in jth_nuclides:
+                cand_arr_curr = np.append(cand_arr_prev, nuclide)
                 # by this design the ivec does not necessarily remain ordered
 
                 new_mass = self.get_isotope_mass_sum(cand_arr_curr)

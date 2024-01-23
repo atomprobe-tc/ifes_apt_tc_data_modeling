@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-"""Look-up table of stable and radioactive nuclids for all elements."""
+"""Look-up table of stable and radioactive nuclides for all elements."""
 
 # pylint: disable:too-many-lines
 

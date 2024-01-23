@@ -140,7 +140,7 @@ class ReadImagoAnalysisFileFormat():
                                 ivector = np.zeros((MAX_NUMBER_OF_ATOMS_PER_ION,), np.uint16)
                                 ivector[0:len(ivec)] = ivec
 
-                                m_ion = NxIon(isotope_vector=ivector, charge_state=0)
+                                m_ion = NxIon(nuclide_hash=ivector, charge_state=0)
                                 m_ion.add_range(float(mq[0]), float(mq[1]))
                                 m_ion.comment = NxField(" ".join(element_symbol), "")
                                 m_ion.apply_combinatorics()

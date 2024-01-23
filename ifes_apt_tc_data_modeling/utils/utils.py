@@ -18,10 +18,6 @@
 
 """Utilities for working with molecular ions in atom probe microscopy."""
 
-# including convenience functions for translating human-readable ion names
-# into the isotope_vector description proposed by Kühbach et al. in
-# DOI: 10.1017/S1431927621012241
-
 from typing import Tuple
 import numpy as np
 
@@ -62,12 +58,12 @@ def hash_to_isotope(hashvalue: int = 0) -> Tuple[int, int]:
     return (0, 0)
 
 
-def create_isotope_vector(building_blocks: list) -> np.ndarray:
+def create_nuclide_hash(building_blocks: list) -> np.ndarray:
     """Create specifically-shaped array of isotope hashvalues."""
     # building_blocks are usually names of elements in the periodic table
     # if not we assume the ion is special such as user type or plain words
     # a typical expected test case is
-    # create_isotope_vector(["Fe", "Fe", "O", "O", "O"])
+    # create_nuclide_hash(["Fe", "Fe", "O", "O", "O"])
     ivec = np.zeros((MAX_NUMBER_OF_ATOMS_PER_ION,), np.uint16)
     if 0 < len(building_blocks) <= MAX_NUMBER_OF_ATOMS_PER_ION:
         symbol_to_proton_number = atomic_numbers
@@ -88,28 +84,27 @@ def create_isotope_vector(building_blocks: list) -> np.ndarray:
                     neutron_number = mass_number - proton_number
                     if (proton_number in isotopes) and (mass_number in isotopes[proton_number]):
                         hashvector.append(isotope_to_hash(proton_number, neutron_number))
-        ivec[0:len(hashvector)] = np.sort(
-            np.asarray(hashvector, np.uint16), kind="stable")[::-1]
+        ivec[0:len(hashvector)] = np.sort(np.asarray(hashvector, np.uint16), kind="stable")[::-1]
     return ivec
 
 
-def isotope_vector_to_nuclid_list(ivec: np.ndarray) -> np.ndarray:
-    """Create a NeXus NXion nuclid list."""
-    nuclid_list = np.zeros((2, MAX_NUMBER_OF_ATOMS_PER_ION), np.uint16)
+def nuclide_hash_to_nuclide_list(ivec: np.ndarray) -> np.ndarray:
+    """Create a NeXus NXion nuclide list."""
+    nuclide_list = np.zeros((MAX_NUMBER_OF_ATOMS_PER_ION, 2), np.uint16)
     if np.shape(ivec) == (MAX_NUMBER_OF_ATOMS_PER_ION,):
         for idx in np.arange(0, MAX_NUMBER_OF_ATOMS_PER_ION):
             if ivec[idx] != 0:
-                protons, neutrons = hash_to_isotope(int(ivec[idx]))
-                nuclid_list[0, idx] = protons + neutrons
-                nuclid_list[1, idx] = protons
-        return nuclid_list
-    print(f"WARNING:: Argument isotope_vector needs to be "
-          f"shaped {MAX_NUMBER_OF_ATOMS_PER_ION},) !")
-    return nuclid_list
+                n_protons, n_neutrons = hash_to_isotope(int(ivec[idx]))
+                if n_neutrons != 0:
+                    nuclide_list[idx, 0] = n_protons + n_neutrons
+                nuclide_list[idx, 1] = n_protons
+        return nuclide_list
+    print(f"WARNING:: Argument nuclide_hash needs to be shaped ({MAX_NUMBER_OF_ATOMS_PER_ION},) !")
+    return nuclide_list
 
 
-def isotope_vector_to_dict_keyword(ivec: np.ndarray) -> str:
-    """Create keyword for dictionary from isotope_vector."""
+def nuclide_hash_to_dict_keyword(ivec: np.ndarray) -> str:
+    """Create keyword for dictionary from nuclide_hash."""
     if len(ivec) <= MAX_NUMBER_OF_ATOMS_PER_ION:
         lst = []
         for hashvalue in ivec:
@@ -120,8 +115,8 @@ def isotope_vector_to_dict_keyword(ivec: np.ndarray) -> str:
     return "0"  # "_".join(np.asarray(np.zeros((MAX_NUMBER_OF_ATOMS_PER_ION,)), np.uint16))
 
 
-def isotope_vector_to_human_readable_name(ivec: np.ndarray, charge_state: np.int8) -> str:
-    """Get human-readable name from an isotope_vector."""
+def nuclide_hash_to_human_readable_name(ivec: np.ndarray, charge_state: np.int8) -> str:
+    """Get human-readable name from an nuclide_hash."""
     if len(ivec) <= MAX_NUMBER_OF_ATOMS_PER_ION:
         human_readable = ""
         for hashvalue in ivec:

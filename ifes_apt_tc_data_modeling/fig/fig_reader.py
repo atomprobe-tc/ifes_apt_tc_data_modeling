@@ -94,7 +94,7 @@ class ReadFigTxtFileFormat():
             ivector = np.zeros((MAX_NUMBER_OF_ATOMS_PER_ION,), np.uint16)
             ivector[0:len(ivec)] = ivec
 
-            m_ion = NxIon(isotope_vector=ivector, charge_state=charge_state)
+            m_ion = NxIon(nuclide_hash=ivector, charge_state=charge_state)
             m_ion.add_range(mqmin, mqmax)
             m_ion.comment = NxField(ionname, "")
             m_ion.apply_combinatorics()

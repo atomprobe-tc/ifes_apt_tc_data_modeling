@@ -1,9 +1,4 @@
 #
-# Also convenience functions are included which translate human-readable ion
-# names into the isotope_vector description proposed by Kuehbach et al. in
-# DOI: 10.1017/S1431927621012241 to the human-readable ion names which are use
-# in P. Felfer et al.'s atom probe toolbox
-#
 # Copyright The NOMAD Authors.
 #
 # This file is part of NOMAD. See https://nomad-lab.eu for further info.
@@ -30,8 +25,8 @@ import numpy as np
 from ifes_apt_tc_data_modeling.utils.definitions import \
     MAX_NUMBER_OF_ATOMS_PER_ION
 from ifes_apt_tc_data_modeling.utils.utils import \
-    create_isotope_vector, isotope_vector_to_nuclid_list, \
-    isotope_vector_to_human_readable_name, is_range_significant
+    create_nuclide_hash, nuclide_hash_to_nuclide_list, \
+    nuclide_hash_to_human_readable_name, is_range_significant
 from ifes_apt_tc_data_modeling.utils.molecular_ions import \
     MolecularIonCandidate, MolecularIonBuilder, \
     PRACTICAL_ABUNDANCE, PRACTICAL_ABUNDANCE_PRODUCT, \
@@ -51,18 +46,18 @@ class NxIon():
         if len(args) >= 1:
             if isinstance(args[0], list) is False:
                 raise ValueError("args[0] needs to be a list!")
-            self.isotope_vector = NxField(create_isotope_vector(args[0]), "")
-        elif "isotope_vector" in kwargs:
-            if isinstance(kwargs["isotope_vector"], np.ndarray) is False:
-                raise ValueError("kwargs isotope_vector needs to be an np.ndarray!")
-            if np.shape(kwargs["isotope_vector"]) != (MAX_NUMBER_OF_ATOMS_PER_ION,):
+            self.nuclide_hash = NxField(create_nuclide_hash(args[0]), "")
+        elif "nuclide_hash" in kwargs:
+            if isinstance(kwargs["nuclide_hash"], np.ndarray) is False:
+                raise ValueError("kwargs nuclide_hash needs to be an np.ndarray!")
+            if np.shape(kwargs["nuclide_hash"]) != (MAX_NUMBER_OF_ATOMS_PER_ION,):
                 raise ValueError(
-                    f"kwargs isotope_vector needs be a ({MAX_NUMBER_OF_ATOMS_PER_ION},) array!")
-            self.isotope_vector = NxField(np.asarray(kwargs["isotope_vector"], np.uint16), "")
+                    f"kwargs nuclide_hash needs be a ({MAX_NUMBER_OF_ATOMS_PER_ION},) array!")
+            self.nuclide_hash = NxField(np.asarray(kwargs["nuclide_hash"], np.uint16), "")
         else:
             # the default UNKNOWN IONTYPE
-            self.isotope_vector = NxField(create_isotope_vector([]), "")
-        self.nuclid_list = NxField(isotope_vector_to_nuclid_list(self.isotope_vector.values), "")
+            self.nuclide_hash = NxField(create_nuclide_hash([]), "")
+        self.nuclide_list = NxField(nuclide_hash_to_nuclide_list(self.nuclide_hash.values), "")
         if "charge_state" in kwargs:
             if isinstance(kwargs["charge_state"], int) \
                     and (-8 < kwargs["charge_state"] < +8):
@@ -72,8 +67,8 @@ class NxIon():
             # the relevant charge which is usually a sign that the range
             # is not matching the theoretically expect peak location
             self.charge_state = NxField(np.int8(0), "")
-        self.name = NxField(isotope_vector_to_human_readable_name(
-            self.isotope_vector.values, self.charge_state.values))
+        self.name = NxField(nuclide_hash_to_human_readable_name(
+            self.nuclide_hash.values, self.charge_state.values))
         self.ranges = NxField(np.empty((0, 2), np.float64), "amu")
 
     def add_range(self, mqmin: np.float64, mqmax: np.float64):
@@ -90,15 +85,15 @@ class NxIon():
         self.ranges.values = np.vstack((self.ranges.values, np.array([mqmin, mqmax])))
 
     def update_human_readable_name(self):
-        """Re-evaluate charge and isotope_vector for name."""
-        self.name = NxField(isotope_vector_to_human_readable_name(
-            self.isotope_vector.values, self.charge_state.values))
+        """Re-evaluate charge and nuclide_hash for name."""
+        self.name = NxField(nuclide_hash_to_human_readable_name(
+            self.nuclide_hash.values, self.charge_state.values))
 
     def report(self):
         """Report values."""
         print(f"ion_type: {self.ion_type.values}\n"
-              f"isotope_vector: {self.isotope_vector.values}\n"
-              f"nuclid_list: {self.nuclid_list.values}\n"
+              f"nuclide_hash: {self.nuclide_hash.values}\n"
+              f"nuclide_list: {self.nuclide_list.values}\n"
               f"human-readable name: {self.name.values}\n"
               f"charge_state: {self.charge_state.values}\n"
               f"ranges: {self.ranges.values}\n"
@@ -115,7 +110,7 @@ class NxIon():
             sacrifice_uniqueness=SACRIFICE_ISOTOPIC_UNIQUENESS,
             verbose=VERBOSE)
         recovered_charge_state, m_ion_candidates = crawler.combinatorics(
-            self.isotope_vector.values,
+            self.nuclide_hash.values,
             self.ranges.values[0, 0],
             self.ranges.values[0, 1])
         # print(f"{recovered_charge_state}")
@@ -150,30 +145,28 @@ class NxIon():
             return
         self.charge_state_model["n_cand"] = n_cand
         if n_cand == 1:
-            self.charge_state_model["isotope_matrix"] = candidates[0].isotope_vector
-            self.charge_state_model["charge_state_vector"] = candidates[0].charge_state
-            self.charge_state_model["mass_vector"] = candidates[0].mass
-            self.charge_state_model["nat_abun_prod_vector"] = candidates[0].abundance_product
-            self.charge_state_model["min_half_life_vector"] = candidates[0].shortest_half_life
+            self.charge_state_model["nuclide_hash"] = candidates[0].nuclide_hash
+            self.charge_state_model["charge_state"] = candidates[0].charge_state
+            self.charge_state_model["mass"] = candidates[0].mass
+            self.charge_state_model["natural_abundance_product"] = candidates[0].abundance_product
+            self.charge_state_model["shortest_half_life"] = candidates[0].shortest_half_life
         else:
-            self.charge_state_model["isotope_matrix"] \
+            self.charge_state_model["nuclide_hash"] \
                 = np.zeros((n_cand, MAX_NUMBER_OF_ATOMS_PER_ION), np.uint16)
-            self.charge_state_model["charge_state_vector"] \
-                = np.zeros((n_cand,), np.int8)
-            self.charge_state_model["mass_vector"] \
-                = np.zeros((n_cand,), np.float64)
-            self.charge_state_model["nat_abun_prod_vector"] \
-                = np.zeros((n_cand,), np.float64)
-            self.charge_state_model["min_half_life_vector"] \
-                = np.zeros((n_cand,), np.float64)
+            self.charge_state_model["charge_state"] = np.zeros((n_cand,), np.int8)
+            self.charge_state_model["mass"] = np.zeros((n_cand,), np.float64)
+            self.charge_state_model["natural_abundance_product"] = np.zeros((n_cand,), np.float64)
+            self.charge_state_model["shortest_half_life"] = np.zeros((n_cand,), np.float64)
             row_idx = 0
             for cand in candidates:
-                self.charge_state_model["isotope_matrix"][row_idx, 0:len(cand.isotope_vector)] \
-                    = cand.isotope_vector
-                self.charge_state_model["charge_state_vector"][row_idx] = cand.charge_state
-                self.charge_state_model["mass_vector"][row_idx] = cand.mass
-                self.charge_state_model["nat_abun_prod_vector"][row_idx] \
+                self.charge_state_model["nuclide_hash"][row_idx, 0:len(cand.nuclide_hash)] \
+                    = cand.nuclide_hash
+                self.charge_state_model["charge_state"][row_idx] \
+                    = cand.charge_state
+                self.charge_state_model["mass"][row_idx] \
+                    = cand.mass
+                self.charge_state_model["natural_abundance_product"][row_idx] \
                     = cand.abundance_product
-                self.charge_state_model["min_half_life_vector"][row_idx] \
+                self.charge_state_model["shortest_half_life"][row_idx] \
                     = cand.shortest_half_life
                 row_idx += 1

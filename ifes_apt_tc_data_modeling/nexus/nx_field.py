@@ -1,9 +1,4 @@
 #
-# Also convenience functions are included which translate human-readable ion
-# names into the isotope_vector description proposed by Kuehbach et al. in
-# DOI: 10.1017/S1431927621012241 to the human-readable ion names which are use
-# in P. Felfer et al.'s atom probe toolbox
-#
 # Copyright The NOMAD Authors.
 #
 # This file is part of NOMAD. See https://nomad-lab.eu for further info.

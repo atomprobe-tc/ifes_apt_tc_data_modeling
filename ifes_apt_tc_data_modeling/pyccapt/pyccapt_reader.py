@@ -30,7 +30,7 @@ from ase.data import atomic_numbers
 from ifes_apt_tc_data_modeling.nexus.nx_ion import NxIon
 from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
 from ifes_apt_tc_data_modeling.utils.utils import isotope_to_hash, \
-    isotope_vector_to_nuclid_list, MAX_NUMBER_OF_ATOMS_PER_ION
+    nuclide_hash_to_nuclide_list, MAX_NUMBER_OF_ATOMS_PER_ION
 from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
 # from ifes_apt_tc_data_modeling.utils.combinatorics import apply_combinatorics
 
@@ -61,8 +61,8 @@ from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
 SUPPORTED_PYCCAPT_VERSION = "e955beb4f2627befb8b4d26f2e74e4c52e00394e"
 
 
-def get_isotope_vector_from_fau_list(elements, complexs, isotopes) -> np.ndarray:
-    """Compute isotope_vector from specific representation used at FAU/Erlangen."""
+def get_nuclide_hash_from_fau_list(elements, complexs, isotopes) -> np.ndarray:
+    """Compute nuclide_hash from specific representation used at FAU/Erlangen."""
     # TODO:: add raise ValueError checks
     ivec = np.zeros((MAX_NUMBER_OF_ATOMS_PER_ION,), np.uint16)
     hashvector: list = []
@@ -198,12 +198,12 @@ class ReadPyccaptRangingFileFormat():
                 if self.df.iloc[idx, 6] == "unranged":
                     continue
 
-            ivec = get_isotope_vector_from_fau_list(elements=self.df.iloc[idx, 6],
-                                                    complexs=self.df.iloc[idx, 7],
-                                                    isotopes=self.df.iloc[idx, 8])
+            ivec = get_nuclide_hash_from_fau_list(elements=self.df.iloc[idx, 6],
+                                                  complexs=self.df.iloc[idx, 7],
+                                                  isotopes=self.df.iloc[idx, 8])
             m_ion = NxIon()
-            m_ion.isotope_vector.values = ivec
-            m_ion.nuclid_list.values = isotope_vector_to_nuclid_list(ivec)
+            m_ion.nuclide_hash.values = ivec
+            m_ion.nuclide_list.values = nuclide_hash_to_nuclide_list(ivec)
             m_ion.charge_state.values = np.int8(self.df.iloc[idx, 9])
             m_ion.add_range(self.df.iloc[idx, 3], self.df.iloc[idx, 4])
             m_ion.apply_combinatorics()

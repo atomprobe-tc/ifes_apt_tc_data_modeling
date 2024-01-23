@@ -24,7 +24,7 @@ import re
 import numpy as np
 from ifes_apt_tc_data_modeling.nexus.nx_ion import NxField, NxIon
 from ifes_apt_tc_data_modeling.utils.utils import \
-    create_isotope_vector, is_range_significant, get_smart_chemical_symbols
+    create_nuclide_hash, is_range_significant, get_smart_chemical_symbols
 from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
 
 
@@ -114,7 +114,7 @@ class ReadEnvFileFormat():
                 if dct is None:
                     continue
 
-                m_ion = NxIon(isotope_vector=create_isotope_vector(dct["atoms"]),
+                m_ion = NxIon(nuclide_hash=create_nuclide_hash(dct["atoms"]),
                               charge_state=0)
                 m_ion.add_range(dct["range"][0], dct["range"][1])
                 m_ion.comment = NxField(dct["name"], "")
