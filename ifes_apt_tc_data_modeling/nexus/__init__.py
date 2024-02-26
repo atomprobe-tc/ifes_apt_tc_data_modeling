@@ -1,4 +1,3 @@
-# Init file
 #
 # Copyright The NOMAD Authors.
 #

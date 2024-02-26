@@ -1,4 +1,3 @@
-# AMETEK APT(6) data exchange file reader used by atom probe microscopists.
 #
 # Copyright The NOMAD Authors.
 #
@@ -17,7 +16,7 @@
 # limitations under the License.
 #
 
-# pylint: disable=no-member,duplicate-code
+"""AMETEK APT(6) data exchange file reader used by atom probe microscopists."""
 
 import numpy as np
 
@@ -32,13 +31,13 @@ class AptFileHeaderMetadata():
     # when developing the parser for their vendor file format
     def __init__(self):
         # file format signature
-        self.c_signature = string_to_typed_nparray('APT\0', 4, np.uint8)
+        self.c_signature = string_to_typed_nparray("APT\0", 4, np.uint8)
         # byte length of the file header
         self.i_header_size = np.int32(540)
         # version number of the file header, currently expecting 2
         self.i_header_version = np.int32(2)
         # original filename, i.e. *.apt filename, null-terminated UTF-16 !
-        self.wc_filename = string_to_typed_nparray('', 256, np.uint16)
+        self.wc_filename = string_to_typed_nparray("", 256, np.uint16)
         # file creation time
         # according to AMETEK is implemented as a VisualStudio C++ FILETIME
         # 64-bit value, which represents the number of 100-nanosecond intervals
@@ -50,39 +49,34 @@ class AptFileHeaderMetadata():
     @classmethod
     def get_numpy_struct(cls) -> np.dtype:
         """Create customized numpy struct to read a file header at once."""
-        return np.dtype([('cSignature', np.uint8, (4,)),
-                         ('iHeaderSize', np.int32),
-                         ('iHeaderVersion', np.int32),
-                         ('wcFilename', np.uint16, 256),
-                         ('ftCreationTime', np.uint64),
-                         ('llIonCount', np.uint64)])
+        return np.dtype([("cSignature", np.uint8, (4,)),
+                         ("iHeaderSize", np.int32),
+                         ("iHeaderVersion", np.int32),
+                         ("wcFilename", np.uint16, 256),
+                         ("ftCreationTime", np.uint64),
+                         ("llIonCount", np.uint64)])
 
     def set_ll_ion_count(self, value: np.uint64):
         """Check and set total ion count."""
-        assert isinstance(value, np.uint64), \
-            'llIonCount needs to be an int!'
-        assert value > 0, \
-            'llIonCount needs to be positive and not zero!'
-        assert value <= np.iinfo(np.uint64).max, \
-            'llIonCount is too large, needs to map to np.uint64!'
+        if isinstance(value, np.uint64) is False:
+            raise ValueError(f"llIonCount {value} needs to be an uint64!")
+        if value <= 0:
+            raise ValueError(f"llIonCount {value} needs to be positive and not zero!")
+        if value > np.iinfo(np.uint64).max:
+            raise ValueError(f"llIonCount is too large {value}, needs to map to np.uint64!")
         self.ll_ion_count = np.uint64(value)
 
     def matches(self, found_header: np.ndarray) -> bool:
         """Compare a read header against expectation."""
-        assert np.array_equal(self.c_signature,
-                              found_header['cSignature'][0],
-                              equal_nan=True), \
-            'Header cSignature differs!'
-        assert self.i_header_size \
-            == found_header['iHeaderSize'][0], \
-            'Header iHeaderSize differs!'
-        assert self.i_header_version \
-            == found_header['iHeaderVersion'][0], \
-            'Header iHeaderVersion differs!'
-        assert found_header['llIonCount'][0] > 0, \
-            'Header indicates there are no ions in the file!'
-
-        self.set_ll_ion_count(found_header['llIonCount'][0])
+        if np.array_equal(self.c_signature, found_header["cSignature"][0], equal_nan=True) is False:
+            raise ValueError("Header cSignature differs!")
+        if self.i_header_size != found_header["iHeaderSize"][0]:
+            raise ValueError("Header iHeaderSize differs!")
+        if self.i_header_version != found_header["iHeaderVersion"][0]:
+            raise ValueError("Header iHeaderVersion differs!")
+        if found_header["llIonCount"][0] <= 0:
+            raise ValueError("Header indicates there are no ions in the file!")
+        self.set_ll_ion_count(found_header["llIonCount"][0])
         return True
 
 

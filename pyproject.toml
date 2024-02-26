@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ifes_apt_tc_data_modeling"
-version = "0.1"
+version = "0.2"
 authors = [
     { name = "The NOMAD Authors" },
 ]
@@ -27,15 +27,20 @@ dependencies = [
     "pandas",
     "tables",
     "ase>=3.19.0",
-    "radioactivedecay>=0.4.16"
+    "radioactivedecay>=0.4.16",
+    "flatdict",
+    "xmltodict"
 ]
 
 [project.optional-dependencies]
 dev = [
     "twine",
     "jupyterlab_h5web",
-    "jupyterlab"
+    "jupyterlab",
+    "mypy",
+    "pylint",
+    "pycodestyle"
 ]
 
 # [tool.setuptools]
-# packages = ["apt", "ato", "epos", "fig", "nexus", "pos", "pyccapt", "rng", "rrng", "utils"]
+# packages = ["apt", "ato", "epos", "fig", "imago", "nexus", "pos", "pyccapt", "rng", "rrng", "utils"]

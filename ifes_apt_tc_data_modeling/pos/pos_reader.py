@@ -1,4 +1,3 @@
-# POS file format reader used by atom probe microscopists.
 #
 # Copyright The NOMAD Authors.
 #
@@ -17,33 +16,33 @@
 # limitations under the License.
 #
 
-# pylint: disable=no-member,duplicate-code
+"""POS file format reader used by atom probe microscopists."""
+
+# pylint: disable=duplicate-code
 
 import os
-
 import numpy as np
 
 from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
-
 from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
 
 
 class ReadPosFileFormat():
     """Read *.pos file format."""
 
-    def __init__(self, filename: str):
-        assert len(filename) > 4, "POS file incorrect filename ending!"
-        assert filename.lower().endswith(".pos"), \
-            "POS file incorrect file type!"
-        self.filename = filename
+    def __init__(self, file_path: str):
+        """Initialize the reader."""
+        if (len(file_path) <= 4) or (file_path.lower().endswith(".pos") is False):
+            raise ImportError("WARNING::POS file incorrect file_path ending or file type!")
+        self.file_path = file_path
 
-        self.filesize = os.path.getsize(self.filename)
-        assert self.filesize % 4 * 4 == 0, \
-            "POS filesize not integer multiple of 4*4B!"
-        assert np.uint32(self.filesize / (4 * 4)) < np.iinfo(np.uint32).max, \
+        self.file_size = os.path.getsize(self.file_path)
+        assert self.file_size % 4 * 4 == 0, \
+            "POS file_size not integer multiple of 4*4B!"
+        assert np.uint32(self.file_size / (4 * 4)) < np.iinfo(np.uint32).max, \
             "POS file is too large, currently only 2*32 supported!"
-        self.number_of_events = np.uint32(self.filesize / (4 * 4))
-        # print("Initialized access to " + self.filename + " successfully")
+        self.number_of_events = np.uint32(self.file_size / (4 * 4))
+        # print("Initialized access to " + self.file_path + " successfully")
 
         # https://doi.org/10.1007/978-1-4614-3436-8 for file format details
         # dtyp_names = ["Reconstructed position along the x-axis (nm)",
@@ -55,18 +54,17 @@ class ReadPosFileFormat():
         """Read xyz columns."""
 
         xyz = NxField()
-        xyz.typed_value = np.zeros(
-            [self.number_of_events, 3], np.float32)
+        xyz.values = np.zeros([self.number_of_events, 3], np.float32)
         xyz.unit = "nm"
 
-        xyz.typed_value[:, 0] = \
-            get_memory_mapped_data(self.filename, ">f4",
+        xyz.values[:, 0] = \
+            get_memory_mapped_data(self.file_path, ">f4",
                                    0 * 4, 4 * 4, self.number_of_events)  # x
-        xyz.typed_value[:, 1] = \
-            get_memory_mapped_data(self.filename, ">f4",
+        xyz.values[:, 1] = \
+            get_memory_mapped_data(self.file_path, ">f4",
                                    1 * 4, 4 * 4, self.number_of_events)  # y
-        xyz.typed_value[:, 2] = \
-            get_memory_mapped_data(self.filename, ">f4",
+        xyz.values[:, 2] = \
+            get_memory_mapped_data(self.file_path, ">f4",
                                    2 * 4, 4 * 4, self.number_of_events)  # z
         return xyz
 
@@ -74,11 +72,10 @@ class ReadPosFileFormat():
         """Read mass-to-charge-state-ratio column."""
 
         m_n = NxField()
-        m_n.typed_value = np.zeros(
-            [self.number_of_events, 1], np.float32)
+        m_n.values = np.zeros([self.number_of_events, 1], np.float32)
         m_n.unit = "Da"
 
-        m_n.typed_value[:, 0] = \
-            get_memory_mapped_data(self.filename, ">f4",
+        m_n.values[:, 0] = \
+            get_memory_mapped_data(self.file_path, ">f4",
                                    3 * 4, 4 * 4, self.number_of_events)
         return m_n

@@ -1,9 +1,3 @@
-# Set of utility tools for parsing file formats used by atom probe.
-#
-# Also convenience functions are included which translate human-readable ion
-# names into the isotope_vector description proposed by Kuehbach et al. in
-# DOI: 10.1017/S1431927621012241 to the human-readable ion names which are use
-# in P. Felfer et al.'s atom probe toolbox
 #
 # Copyright The NOMAD Authors.
 #
@@ -22,29 +16,23 @@
 # limitations under the License.
 #
 
-# pylint: disable=no-member,duplicate-code
-
-import typing
-
-from typing import Tuple
-
-import numpy as np
+"""Set of utility tools for parsing file formats used by atom probe."""
 
 
 class NxField():
     """Representative of a NeXus field."""
 
-    def __init__(self, typed_value=None, unit: str = None):
+    def __init__(self, values=None, unit: str = ""):
         self.parent = None
         self.is_a = None  # ontology reference concept ID e.g.
-        self.typed_value = typed_value
+        self.values = values
         self.unit_category = None
         self.unit = unit
         self.attributes = None
 
     def get_value(self):
         """Get value."""
-        return self.typed_value
+        return self.values
 
     def get_unit(self):
         """Get unit."""

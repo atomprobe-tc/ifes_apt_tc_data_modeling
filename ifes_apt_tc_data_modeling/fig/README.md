@@ -5,14 +5,14 @@ figures should first run the following Matlab script `matlab/matlab_fig_to_txt.m
 to extract the ranging definitions into a text file.
 
 The text file is very simple. Each ranging definitions is a single line
-with three parts. The first part is a human-readable description of the
+with three parts: The first part is a human-readable description of the
 ion (element, isotope, molecular ion). We follow the naming convention
 of P. Felfer's atom-probe-toolbox. Examples are shown below.
-The second part is the left (minimum) while the third
-part is the right (maximum bound) bound of the mass-to-charge-state
-ratio interval identified as the ion named in the first part.
+The second part is the left (minimum) bound while the third part
+is the right (maximum bound) bound of the mass-to-charge-state-ratio
+value interval of the ion that is specified in the first part.
 
-The file must not contain other definitions
+The file must not contain other definitions. Here are a few examples:
 
 ```
 16O 1H2+ 1.796520e+01 1.808020e+01
