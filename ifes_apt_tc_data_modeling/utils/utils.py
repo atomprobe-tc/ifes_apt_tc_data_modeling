@@ -225,9 +225,9 @@ def symbol_lst_to_matrix_of_nuclide_vector(method: str = "resolve_all",
     if not isinstance(symbol_lst, list) and all(isinstance(lst, list) for lst in symbol_lst):
         raise TypeError("Argument symbol_lst must be a list of lists!")
     if not all(len(np.shape(lst)) == 1 for lst in symbol_lst):
-        "One list in argument symbol_lst is not a 1d list or an empty list!"
+        raise ValueError("One list in argument symbol_lst is not a 1d list or an empty list!")
     if not all(np.shape(lst)[0] >= 1 for lst in symbol_lst):
-        "One list in argument symbol_lst is not a 1d list or an empty list!"
+        raise ValueError("One list in argument symbol_lst is not a 1d list or an empty list!")
     matrix = np.zeros([len(symbol_lst), MAX_NUMBER_OF_ATOMS_PER_ION])
     charge = []
     if (method == "resolve_ion") and ("charge_lst" in kwargs):

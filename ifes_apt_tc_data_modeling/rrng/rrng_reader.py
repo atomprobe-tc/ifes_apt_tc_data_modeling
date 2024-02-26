@@ -47,13 +47,13 @@ def evaluate_rrng_range_line(i: int, line: str) -> dict:
     tmp = re.split(r"[\s=]+", line)
     if len(tmp) < 6:
         # raise ValueError(f"Line {line} does not contain all required fields {len(tmp)}!")
-        return None
+        return info
     if tmp[0] != f"Range{i}":
         # raise ValueError(f"Line {line} has inconsistent line prefix {tmp[0]}!")
-        return None
+        return info
     if is_range_significant(np.float64(tmp[1]), np.float64(tmp[2])) is False:
         # raise ValueError(f"Line {line} insignificant range!")
-        return None
+        return info
     info["range"] = np.asarray([tmp[1], tmp[2]], np.float64)
 
     if tmp[3].lower().startswith("vol:"):
@@ -83,13 +83,13 @@ def evaluate_rrng_range_line(i: int, line: str) -> dict:
             symbol = element_multiplicity[0]
             if (symbol not in chemical_symbols) or (symbol == "X"):
                 # raise ValueError(f"WARNING::Line {line} contains an invalid chemical symbol {symbol}!")
-                return None
+                return info
             # if np.uint32(element_multiplicity[1]) <= 0:
                 # raise ValueError(f"Line {line} zero or negative multiplicity !")
             if np.uint32(element_multiplicity[1]) >= 256:
                 # raise ValueError(f"Line {line} unsupported high multiplicity "
                 #                  f"{np.uint32(element_multiplicity)}!")
-                return None
+                return info
             info["atoms"] = np.append(info["atoms"],
                                       [symbol] * int(element_multiplicity[1]))
     return info

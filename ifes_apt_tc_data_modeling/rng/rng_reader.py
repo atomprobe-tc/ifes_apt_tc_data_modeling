@@ -52,19 +52,19 @@ def evaluate_rng_range_line(
         raise ValueError(f"Line {line} has inconsistent line prefix!")
     if is_range_significant(np.float64(tmp[1]), np.float64(tmp[2])) is False:
         # raise ValueError(f"Line {line} insignificant range!")
-        return None
+        return info
     info["range"] = np.asarray([tmp[1], tmp[2]], np.float64)
 
     # line encodes multiplicity of element via array of multiplicity counts
     element_multiplicity = np.asarray(tmp[3:len(tmp)], np.uint32)
     if np.sum(element_multiplicity) < 0:
         # raise ValueError(f"Line {line} no element counts!")
-        return None
+        return info
     if np.sum(element_multiplicity) > 0:
         for jdx in np.arange(0, len(element_multiplicity)):
             if element_multiplicity[jdx] < 0:
                 # raise ValueError(f"Line {line} no negative element counts!")
-                return None
+                raise ValueError(f"element_multiplicity[jdx] {element_multiplicity[jdx]} needs to be positive!")
             if element_multiplicity[jdx] > 0:
                 symbol = column_id_to_label[jdx + 1]
                 if symbol in get_chemical_symbols():
