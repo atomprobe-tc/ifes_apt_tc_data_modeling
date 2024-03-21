@@ -42,6 +42,7 @@ cd ifes_apt_tc_data_modeling
 python -m pip install --upgrade pip
 python -m pip install pip-tools
 python -m pip install -e .
+python -m pip install -e ".[dev]"
 python -m pip list
 ```
 

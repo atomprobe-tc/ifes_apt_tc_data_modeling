@@ -136,7 +136,7 @@ class MolecularIonBuilder:
                     np.asarray(element_isotopes, np.uint16), kind="stable")[::-1]
         self.nuclides = np.sort(self.nuclides, kind="stable")[::-1]
         if self.parms["verbose"] is True:
-            print(f"MolecularIonBuilder initialized with {len(self.nuclides)}")
+            print(f"MolecularIonBuilder initialized with {len(self.nuclides)} nuclides")
 
     def get_element_isotopes(self, hashvalue):
         """List of hashvalues all isotopes of element specified by hashvalue."""
@@ -179,7 +179,7 @@ class MolecularIonBuilder:
                     return np.nan
         return min_half_life
 
-    def combinatorics(self, element_arr, low, high):
+    def combinatorics(self, hash_arr, low, high):
         """Combinatorial analysis which (molecular) elements match within [low, high]."""
         # RNG/RRNG/ENV range files store (molecular) ion information for each range
         # BUT neither nuclide not charge state information, here we try to recover
@@ -187,24 +187,24 @@ class MolecularIonBuilder:
         # correspondingly this allows yield
         # only an nuclide_hash whose hashvalues have ALL in common
         # that the number of neutrons is 0, i.e. their hashvalue is the atomic_number
-        # element_arr is an nuclide_hash/ivec with such hashvalues
+        # hash_arr is an nuclide_hash/ivec with such hashvalues
         # as an example the molecular ion C:2 H:1 will map to 6, 6, 1
-        max_depth = 0  # number of non-zero entries in element_arr
-        for hashvalue in element_arr:
+        max_depth = 0  # number of non-zero entries in hash_arr
+        for hashvalue in hash_arr:
             if hashvalue != 0:
                 max_depth += 1
         if self.parms["verbose"] is True:
             print(f"Maximum recursion depth {max_depth}")
         self.candidates = []
         if self.parms["verbose"] is True:
-            print(element_arr)
+            print(hash_arr)
 
         if max_depth > 0:
             depth = 0
-            ith_nuclides = self.get_element_isotopes(element_arr[depth])
+            ith_nuclides = self.get_element_isotopes(hash_arr[depth])
             cand_arr_curr = []  # combinatorially add nuclides while recursing deeper
             self.iterate_molecular_ion(
-                element_arr, ith_nuclides, cand_arr_curr,
+                hash_arr, ith_nuclides, cand_arr_curr,
                 depth, max_depth, low, high)
             if self.parms["verbose"] is True:
                 print(f"Found {len(self.candidates)} candidates!")
@@ -215,15 +215,15 @@ class MolecularIonBuilder:
         return (0, [])
 
     def iterate_molecular_ion(self,
-                              element_arr, jth_nuclides, cand_arr_prev,
+                              hash_arr, jth_nuclides, cand_arr_prev,
                               i, max_n, low, high):
         """Recursive analysis of combinatorics on molecular ions."""
         if i < (max_n - 1):
             for nuclide in jth_nuclides:
-                ixxth_nuclides = self.get_element_isotopes(element_arr[i + 1])
+                ixxth_nuclides = self.get_element_isotopes(hash_arr[i + 1])
                 cand_arr_curr = np.append(cand_arr_prev, nuclide)
                 self.iterate_molecular_ion(
-                    element_arr, ixxth_nuclides, cand_arr_curr,
+                    hash_arr, ixxth_nuclides, cand_arr_curr,
                     i + 1, max_n, low, high)
         elif i == (max_n - 1):
             for nuclide in jth_nuclides:

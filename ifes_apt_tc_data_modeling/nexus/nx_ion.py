@@ -145,7 +145,10 @@ class NxIon():
             return
         self.charge_state_model["n_cand"] = n_cand
         if n_cand == 1:
-            self.charge_state_model["nuclide_hash"] = candidates[0].nuclide_hash
+            self.charge_state_model["nuclide_hash"] \
+                = np.zeros((1, MAX_NUMBER_OF_ATOMS_PER_ION), np.uint16)
+            self.charge_state_model["nuclide_hash"][0, 0:len(candidates[0].nuclide_hash)] \
+                = candidates[0].nuclide_hash
             self.charge_state_model["charge_state"] = candidates[0].charge_state
             self.charge_state_model["mass"] = candidates[0].mass
             self.charge_state_model["natural_abundance_product"] = candidates[0].abundance_product
