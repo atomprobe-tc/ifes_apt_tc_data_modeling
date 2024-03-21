@@ -1,0 +1,693 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<java version="1.6.0_32" class="java.beans.XMLDecoder"> 
+ <object id="RootROI0" class="com.imago.analysis.roi.RootROI"> 
+  <boolean>true</boolean> 
+  <void property="name"> 
+   <string>Top-Level ROI</string> 
+  </void> 
+  <void property="lastUsedID"> 
+   <int>1</int> 
+  </void> 
+  <void property="currentProjection"> 
+   <array class="double" length="16"> 
+    <void index="0"> 
+     <double>-0.36152137469515205</double> 
+    </void> 
+    <void index="1"> 
+     <double>-0.0012290710957780881</double> 
+    </void> 
+    <void index="2"> 
+     <double>-2.0532860055526413E-5</double> 
+    </void> 
+    <void index="4"> 
+     <double>1.0249281641949892E-5</double> 
+    </void> 
+    <void index="5"> 
+     <double>0.0030246553863432515</double> 
+    </void> 
+    <void index="6"> 
+     <double>-0.361510811392378</double> 
+    </void> 
+    <void index="8"> 
+     <double>0.001229199865377892</double> 
+    </void> 
+    <void index="9"> 
+     <double>-0.3615087222223895</double> 
+    </void> 
+    <void index="10"> 
+     <double>-0.0030246030575213274</double> 
+    </void> 
+    <void index="15"> 
+     <double>1.0</double> 
+    </void> 
+   </array> 
+  </void> 
+  <void property="projectionPolicy"> 
+   <int>0</int> 
+  </void> 
+  <void property="rangeManager"> 
+   <object class="com.imago.core.atomdata.AtomDataRangeManager"> 
+    <void method="add"> 
+     <object id="AtomDataRealRange0" class="com.imago.core.atomdata.AtomDataRealRange"> 
+      <string>Bi</string> 
+      <boolean>true</boolean> 
+      <void method="addRange"> 
+       <object class="com.imago.core.atomdata.RealRange"> 
+        <object idref="AtomDataRealRange0"/> 
+        <double>208.87625122070312</double> 
+        <double>209.08749389648438</double> 
+        <double>0.03538738599999999</double> 
+        <void method="addElement"> 
+         <string>Bi</string> 
+         <double>1.0</double> 
+        </void> 
+       </object> 
+      </void> 
+      <void property="color"> 
+       <object class="java.awt.Color"> 
+        <int>51</int> 
+        <int>51</int> 
+        <int>255</int> 
+        <int>255</int> 
+       </object> 
+      </void> 
+      <void property="maxAtoms"> 
+       <int>100000</int> 
+      </void> 
+      <void property="enable"> 
+       <boolean>false</boolean> 
+      </void> 
+      <void property="showType"> 
+       <int>1</int> 
+      </void> 
+      <void method="setSpheres"> 
+       <float>0.29828855</float> 
+       <int>1000</int> 
+      </void> 
+      <void property="psize"> 
+       <float>1.0</float> 
+      </void> 
+     </object> 
+    </void> 
+    <void method="add"> 
+     <object id="AtomDataRealRange1" class="com.imago.core.atomdata.AtomDataRealRange"> 
+      <string>Ag</string> 
+      <boolean>true</boolean> 
+      <void method="addRange"> 
+       <object class="com.imago.core.atomdata.RealRange"> 
+        <object idref="AtomDataRealRange1"/> 
+        <double>107.1812515258789</double> 
+        <double>111.58999633789062</double> 
+        <double>0.017054362</double> 
+        <void method="addElement"> 
+         <string>Ag</string> 
+         <double>1.0</double> 
+        </void> 
+       </object> 
+      </void> 
+      <void method="addRange"> 
+       <object class="com.imago.core.atomdata.RealRange"> 
+        <object idref="AtomDataRealRange1"/> 
+        <double>52.48875045776367</double> 
+        <double>55.282501220703125</double> 
+        <double>0.017054362</double> 
+        <void method="addElement"> 
+         <string>Ag</string> 
+         <double>1.0</double> 
+        </void> 
+       </object> 
+      </void> 
+      <void property="color"> 
+       <object class="java.awt.Color"> 
+        <int>255</int> 
+        <int>0</int> 
+        <int>51</int> 
+        <int>255</int> 
+       </object> 
+      </void> 
+      <void property="maxAtoms"> 
+       <int>100000</int> 
+      </void> 
+      <void property="enable"> 
+       <boolean>true</boolean> 
+      </void> 
+      <void property="showType"> 
+       <int>1</int> 
+      </void> 
+      <void method="setSpheres"> 
+       <float>0.23386519</float> 
+       <int>1000</int> 
+      </void> 
+      <void property="psize"> 
+       <float>1.0</float> 
+      </void> 
+     </object> 
+    </void> 
+    <void method="add"> 
+     <object id="AtomDataRealRange2" class="com.imago.core.atomdata.AtomDataRealRange"> 
+      <string>Pb</string> 
+      <boolean>true</boolean> 
+      <void method="addRange"> 
+       <object class="com.imago.core.atomdata.RealRange"> 
+        <object idref="AtomDataRealRange2"/> 
+        <double>102.4262466430664</double> 
+        <double>104.70249938964844</double> 
+        <double>0.030372373999999997</double> 
+        <void method="addElement"> 
+         <string>Pb</string> 
+         <double>1.0</double> 
+        </void> 
+       </object> 
+      </void> 
+      <void method="addRange"> 
+       <object class="com.imago.core.atomdata.RealRange"> 
+        <object idref="AtomDataRealRange2"/> 
+        <double>205.6962432861328</double> 
+        <double>208.45375061035156</double> 
+        <double>0.030372373999999997</double> 
+        <void method="addElement"> 
+         <string>Pb</string> 
+         <double>1.0</double> 
+        </void> 
+       </object> 
+      </void> 
+      <void property="color"> 
+       <object class="java.awt.Color"> 
+        <int>0</int> 
+        <int>153</int> 
+        <int>0</int> 
+        <int>255</int> 
+       </object> 
+      </void> 
+      <void property="maxAtoms"> 
+       <int>100000</int> 
+      </void> 
+      <void property="enable"> 
+       <boolean>false</boolean> 
+      </void> 
+      <void property="showType"> 
+       <int>1</int> 
+      </void> 
+      <void method="setSpheres"> 
+       <float>0.28347406</float> 
+       <int>1000</int> 
+      </void> 
+      <void property="psize"> 
+       <float>1.0</float> 
+      </void> 
+     </object> 
+    </void> 
+    <void method="add"> 
+     <object id="AtomDataRealRange3" class="com.imago.core.atomdata.AtomDataRealRange"> 
+      <string>Se</string> 
+      <boolean>true</boolean> 
+      <void method="addRange"> 
+       <object class="com.imago.core.atomdata.RealRange"> 
+        <object idref="AtomDataRealRange3"/> 
+        <double>75.79499816894531</double> 
+        <double>82.4262466430664</double> 
+        <double>0.027267052</double> 
+        <void method="addElement"> 
+         <string>Se</string> 
+         <double>1.0</double> 
+        </void> 
+       </object> 
+      </void> 
+      <void method="addRange"> 
+       <object class="com.imago.core.atomdata.RealRange"> 
+        <object idref="AtomDataRealRange3"/> 
+        <double>151.84500122070312</double> 
+        <double>162.2449951171875</double> 
+        <double>0.027267052</double> 
+        <void method="addElement"> 
+         <string>Se</string> 
+         <double>1.0</double> 
+        </void> 
+       </object> 
+      </void> 
+      <void property="color"> 
+       <object class="java.awt.Color"> 
+        <int>102</int> 
+        <int>102</int> 
+        <int>255</int> 
+        <int>255</int> 
+       </object> 
+      </void> 
+      <void property="maxAtoms"> 
+       <int>100000</int> 
+      </void> 
+      <void property="enable"> 
+       <boolean>false</boolean> 
+      </void> 
+      <void property="showType"> 
+       <int>1</int> 
+      </void> 
+      <void method="setSpheres"> 
+       <float>0.2734638</float> 
+       <int>1000</int> 
+      </void> 
+      <void property="psize"> 
+       <float>1.0</float> 
+      </void> 
+     </object> 
+    </void> 
+    <void method="add"> 
+     <object id="AtomDataRealRange4" class="com.imago.core.atomdata.AtomDataRealRange"> 
+      <string>BiSe</string> 
+      <boolean>true</boolean> 
+      <void method="addRange"> 
+       <object class="com.imago.core.atomdata.RealRange"> 
+        <object idref="AtomDataRealRange4"/> 
+        <double>288.6875</double> 
+        <double>290.40875244140625</double> 
+        <double>0.06265443799999999</double> 
+        <void method="addElement"> 
+         <string>Bi</string> 
+         <double>1.0</double> 
+        </void> 
+        <void method="addElement"> 
+         <string>Se</string> 
+         <double>1.0</double> 
+        </void> 
+       </object> 
+      </void> 
+      <void property="color"> 
+       <object class="java.awt.Color"> 
+        <int>255</int> 
+        <int>0</int> 
+        <int>0</int> 
+        <int>255</int> 
+       </object> 
+      </void> 
+      <void property="maxAtoms"> 
+       <int>100000</int> 
+      </void> 
+      <void property="enable"> 
+       <boolean>false</boolean> 
+      </void> 
+      <void property="showType"> 
+       <int>1</int> 
+      </void> 
+      <void method="setSpheres"> 
+       <float>0.36085913</float> 
+       <int>1000</int> 
+      </void> 
+      <void property="psize"> 
+       <float>1.0</float> 
+      </void> 
+     </object> 
+    </void> 
+    <void method="add"> 
+     <object id="AtomDataRealRange5" class="com.imago.core.atomdata.AtomDataRealRange"> 
+      <string>PbSe</string> 
+      <boolean>true</boolean> 
+      <void method="addRange"> 
+       <object class="com.imago.core.atomdata.RealRange"> 
+        <object idref="AtomDataRealRange5"/> 
+        <double>285.2799987792969</double> 
+        <double>287.95623779296875</double> 
+        <double>0.057639425999999994</double> 
+        <void method="addElement"> 
+         <string>Pb</string> 
+         <double>1.0</double> 
+        </void> 
+        <void method="addElement"> 
+         <string>Se</string> 
+         <double>1.0</double> 
+        </void> 
+       </object> 
+      </void> 
+      <void property="color"> 
+       <object class="java.awt.Color"> 
+        <int>0</int> 
+        <int>255</int> 
+        <int>0</int> 
+        <int>255</int> 
+       </object> 
+      </void> 
+      <void property="maxAtoms"> 
+       <int>100000</int> 
+      </void> 
+      <void property="enable"> 
+       <boolean>false</boolean> 
+      </void> 
+      <void property="showType"> 
+       <int>1</int> 
+      </void> 
+      <void method="setSpheres"> 
+       <float>0.35096216</float> 
+       <int>1000</int> 
+      </void> 
+      <void property="psize"> 
+       <float>1.0</float> 
+      </void> 
+     </object> 
+    </void> 
+    <void method="add"> 
+     <object id="AtomDataRealRange6" class="com.imago.core.atomdata.AtomDataRealRange"> 
+      <string>BiSe2</string> 
+      <boolean>true</boolean> 
+      <void method="addRange"> 
+       <object class="com.imago.core.atomdata.RealRange"> 
+        <object idref="AtomDataRealRange6"/> 
+        <double>184.1062469482422</double> 
+        <double>186.2137451171875</double> 
+        <double>0.08992148999999999</double> 
+        <void method="addElement"> 
+         <string>Bi</string> 
+         <double>1.0</double> 
+        </void> 
+        <void method="addElement"> 
+         <string>Se</string> 
+         <double>2.0</double> 
+        </void> 
+       </object> 
+      </void> 
+      <void method="addRange"> 
+       <object class="com.imago.core.atomdata.RealRange"> 
+        <object idref="AtomDataRealRange6"/> 
+        <double>366.1612548828125</double> 
+        <double>367.60626220703125</double> 
+        <double>0.08992148999999999</double> 
+        <void method="addElement"> 
+         <string>Bi</string> 
+         <double>1.0</double> 
+        </void> 
+        <void method="addElement"> 
+         <string>Se</string> 
+         <double>2.0</double> 
+        </void> 
+       </object> 
+      </void> 
+      <void property="color"> 
+       <object class="java.awt.Color"> 
+        <int>0</int> 
+        <int>0</int> 
+        <int>255</int> 
+        <int>255</int> 
+       </object> 
+      </void> 
+      <void property="maxAtoms"> 
+       <int>100000</int> 
+      </void> 
+      <void property="enable"> 
+       <boolean>false</boolean> 
+      </void> 
+      <void property="showType"> 
+       <int>1</int> 
+      </void> 
+      <void method="setSpheres"> 
+       <float>0.4070442</float> 
+       <int>1000</int> 
+      </void> 
+      <void property="psize"> 
+       <float>1.0</float> 
+      </void> 
+     </object> 
+    </void> 
+    <void method="add"> 
+     <object id="AtomDataRealRange7" class="com.imago.core.atomdata.AtomDataRealRange"> 
+      <string>PbSe2</string> 
+      <boolean>true</boolean> 
+      <void method="addRange"> 
+       <object class="com.imago.core.atomdata.RealRange"> 
+        <object idref="AtomDataRealRange7"/> 
+        <double>181.26625061035156</double> 
+        <double>183.78500366210938</double> 
+        <double>0.084906478</double> 
+        <void method="addElement"> 
+         <string>Pb</string> 
+         <double>1.0</double> 
+        </void> 
+        <void method="addElement"> 
+         <string>Se</string> 
+         <double>2.0</double> 
+        </void> 
+       </object> 
+      </void> 
+      <void method="addRange"> 
+       <object class="com.imago.core.atomdata.RealRange"> 
+        <object idref="AtomDataRealRange7"/> 
+        <double>355.59375</double> 
+        <double>366.1612548828125</double> 
+        <double>0.084906478</double> 
+        <void method="addElement"> 
+         <string>Pb</string> 
+         <double>1.0</double> 
+        </void> 
+        <void method="addElement"> 
+         <string>Se</string> 
+         <double>2.0</double> 
+        </void> 
+       </object> 
+      </void> 
+      <void method="addRange"> 
+       <object class="com.imago.core.atomdata.RealRange"> 
+        <object idref="AtomDataRealRange7"/> 
+        <double>367.60626220703125</double> 
+        <double>371.3900146484375</double> 
+        <double>0.084906478</double> 
+        <void method="addElement"> 
+         <string>Pb</string> 
+         <double>1.0</double> 
+        </void> 
+        <void method="addElement"> 
+         <string>Se</string> 
+         <double>2.0</double> 
+        </void> 
+       </object> 
+      </void> 
+      <void property="color"> 
+       <object class="java.awt.Color"> 
+        <int>0</int> 
+        <int>255</int> 
+        <int>255</int> 
+        <int>255</int> 
+       </object> 
+      </void> 
+      <void property="maxAtoms"> 
+       <int>100000</int> 
+      </void> 
+      <void property="enable"> 
+       <boolean>false</boolean> 
+      </void> 
+      <void property="showType"> 
+       <int>1</int> 
+      </void> 
+      <void method="setSpheres"> 
+       <float>0.39933193</float> 
+       <int>1000</int> 
+      </void> 
+      <void property="psize"> 
+       <float>1.0</float> 
+      </void> 
+     </object> 
+    </void> 
+   </object> 
+  </void> 
+  <void property="gridParameters"> 
+   <object class="com.imago.analysis.grid3d.Grid3DParameters"> 
+    <void property="voxelSize"> 
+     <array class="double" length="3"> 
+      <void index="0"> 
+       <double>1.0</double> 
+      </void> 
+      <void index="1"> 
+       <double>1.0</double> 
+      </void> 
+      <void index="2"> 
+       <double>1.0</double> 
+      </void> 
+     </array> 
+    </void> 
+    <void property="delocalization"> 
+     <array class="double" length="3"> 
+      <void index="0"> 
+       <double>3.0</double> 
+      </void> 
+      <void index="1"> 
+       <double>3.0</double> 
+      </void> 
+      <void index="2"> 
+       <double>1.5</double> 
+      </void> 
+     </array> 
+    </void> 
+    <void property="sampleCountThreshold"> 
+     <double>0.0</double> 
+    </void> 
+    <void property="erodeByDelocalization"> 
+     <boolean>false</boolean> 
+    </void> 
+    <void id="Vector0" property="isosurfaceParameters"/> 
+    <void property="isosurfaceParameters"> 
+     <object idref="Vector0"/> 
+    </void> 
+    <void id="Vector1" property="boundedVolumeParameters"/> 
+    <void property="boundedVolumeParameters"> 
+     <object idref="Vector1"/> 
+    </void> 
+   </object> 
+  </void> 
+  <void property="clipData"> 
+   <array class="javax.vecmath.Vector4d" length="6"> 
+    <void index="0"> 
+     <object class="javax.vecmath.Vector4d"> 
+      <double>1.0</double> 
+      <double>0.0</double> 
+      <double>0.0</double> 
+      <double>-1.01</double> 
+     </object> 
+    </void> 
+    <void index="1"> 
+     <object class="javax.vecmath.Vector4d"> 
+      <double>-1.0</double> 
+      <double>0.0</double> 
+      <double>0.0</double> 
+      <double>-1.01</double> 
+     </object> 
+    </void> 
+    <void index="2"> 
+     <object class="javax.vecmath.Vector4d"> 
+      <double>0.0</double> 
+      <double>1.0</double> 
+      <double>0.0</double> 
+      <double>-1.01</double> 
+     </object> 
+    </void> 
+    <void index="3"> 
+     <object class="javax.vecmath.Vector4d"> 
+      <double>0.0</double> 
+      <double>-1.0</double> 
+      <double>0.0</double> 
+      <double>-1.01</double> 
+     </object> 
+    </void> 
+    <void index="4"> 
+     <object class="javax.vecmath.Vector4d"> 
+      <double>0.0</double> 
+      <double>0.0</double> 
+      <double>1.0</double> 
+      <double>-1.01</double> 
+     </object> 
+    </void> 
+    <void index="5"> 
+     <object class="javax.vecmath.Vector4d"> 
+      <double>0.0</double> 
+      <double>0.0</double> 
+      <double>-1.0</double> 
+      <double>-1.01</double> 
+     </object> 
+    </void> 
+   </array> 
+  </void> 
+  <void id="Vector2" property="children"> 
+   <void method="add"> 
+    <object id="CylinderROI0" class="com.imago.analysis.roi.CylinderROI"> 
+     <void property="parent"> 
+      <object idref="RootROI0"/> 
+     </void> 
+     <void property="ID"> 
+      <int>0</int> 
+     </void> 
+     <void property="width"> 
+      <float>30.0</float> 
+     </void> 
+     <void property="height"> 
+      <float>30.0</float> 
+     </void> 
+     <void property="depth"> 
+      <float>40.000004</float> 
+     </void> 
+     <void property="name"> 
+      <string>Cylinder ID: 0</string> 
+     </void> 
+     <void property="enabled"> 
+      <boolean>true</boolean> 
+     </void> 
+     <void property="controlEnabled"> 
+      <boolean>false</boolean> 
+     </void> 
+     <void property="parentTransform"> 
+      <array class="float" length="16"> 
+       <void index="0"> 
+        <float>1.0</float> 
+       </void> 
+       <void index="3"> 
+        <float>0.12402116</float> 
+       </void> 
+       <void index="5"> 
+        <float>1.0</float> 
+       </void> 
+       <void index="7"> 
+        <float>1.3877788E-17</float> 
+       </void> 
+       <void index="10"> 
+        <float>1.0</float> 
+       </void> 
+       <void index="11"> 
+        <float>-12.1526</float> 
+       </void> 
+       <void index="15"> 
+        <float>1.0</float> 
+       </void> 
+      </array> 
+     </void> 
+     <void method="setColor"> 
+      <int>26</int> 
+      <int>240</int> 
+      <int>240</int> 
+     </void> 
+     <void property="transparency"> 
+      <float>0.3</float> 
+     </void> 
+     <void id="Vector3" property="analyses"> 
+      <void method="add"> 
+       <object class="com.imago.analysis.analyses.Comp1DAnalysis"> 
+        <object idref="CylinderROI0"/> 
+        <int>2</int> 
+        <float>1.0</float> 
+        <float>1.0</float> 
+        <boolean>true</boolean> 
+        <boolean>true</boolean> 
+        <object class="com.imago.analysis.analyses.Comp1DAnalysis$ComputeMode" method="valueOf"> 
+         <string>COUNT</string> 
+        </object> 
+        <int>1000</int> 
+        <int>50</int> 
+        <float>0.0</float> 
+        <void method="createDisplay"/> 
+       </object> 
+      </void> 
+     </void> 
+     <void property="analyses"> 
+      <object idref="Vector3"/> 
+     </void> 
+    </object> 
+   </void> 
+  </void> 
+  <void property="children"> 
+   <object idref="Vector2"/> 
+  </void> 
+  <void id="Vector4" property="analyses"/> 
+  <void property="analyses"> 
+   <object idref="Vector4"/> 
+  </void> 
+  <void property="backgroundColor"> 
+   <object class="java.awt.Color"> 
+    <int>0</int> 
+    <int>0</int> 
+    <int>0</int> 
+    <int>255</int> 
+   </object> 
+  </void> 
+  <void property="foregroundColor"> 
+   <object class="java.awt.Color"> 
+    <int>255</int> 
+    <int>255</int> 
+    <int>255</int> 
+    <int>255</int> 
+   </object> 
+  </void> 
+ </object> 
+</java> 
