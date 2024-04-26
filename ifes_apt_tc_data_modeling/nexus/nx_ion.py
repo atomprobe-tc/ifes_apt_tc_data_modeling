@@ -34,6 +34,72 @@ from ifes_apt_tc_data_modeling.utils.molecular_ions import \
 from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
 
 
+def try_to_reduce_to_unique_definitions(inp: list) -> list:
+    """Try to reduce a set of (molecular) ion definitions to unique."""
+    for entry in inp:
+        if isinstance(entry, NxIon):
+            continue
+        else:
+            raise ValueError(f"Argument inp to try_to_reduce_to_unique_definitions needs to list of NxIon!")
+    unique = []
+    # unique if mqival does not overlap (but can touch) either side
+    # extrema of ranging definition and ivec is different or all 0
+    # from a scientific point of view we would like iontypes to be
+    # unique and ranges at most touching numerically but not overlapping
+    # as then for a given mass-to-charge-state value an ion can qualify
+    # to be an instance more than one iontype thus making the ranging
+    # ambiguous
+    visited = np.asarray(np.zeros(len(inp,)), bool)
+    for idx in np.arange(0, len(inp)):
+        if not visited[idx]:
+            # find all ranging definition value intersections with other ions
+            isect = []  # 
+            for jdx in np.concatenate((np.arange(0, idx), np.arange(idx + 1, len(inp)))):
+                if not visited[jdx]:
+                    if inp[idx].ranges.values[0, 1] < inp[jdx].ranges.values[0, 0] \
+                        or inp[idx].ranges.values[0, 0] > inp[jdx].ranges.values[0, 1]:
+                        continue
+                    else:
+                        # append only if exactly the same ivec
+                        idx_jdx_are_equal = True  # try to falsify
+                        for i in np.arange(0, MAX_NUMBER_OF_ATOMS_PER_ION):
+                            if inp[idx].nuclide_hash.values[i] != inp[jdx].nuclide_hash.values[i]:
+                                idx_jdx_are_equal = False
+                                break
+                        if idx_jdx_are_equal:
+                            isect.append(jdx)
+                            # that nuclide_hashes are the same is necessary for subsequent
+                            # processing of the range for these ions
+                        """
+                        else:
+                            print(f"Overlapping or exactly numerically aligned ranges for different ion types {idx}, {jdx}!")
+                            inp[idx].report()
+                            inp[jdx].report()
+                        """
+            # print(f"isect {isect}")
+            # if there are none accept this candidate for sure
+            visited[idx] = True
+            if len(isect) == 0:
+                # inp[idx].report()
+                unique.append(inp[idx])
+            else:
+                # combine range of isect candidates with the same nuclide_hash
+                mqmin = inp[idx].ranges.values[0, 0]
+                mqmax = inp[idx].ranges.values[0, 1]
+                for ids in isect:
+                    visited[ids] = True
+                    if inp[ids].ranges.values[0, 0] <= mqmin:
+                        mqmin = inp[ids].ranges.values[0, 0]
+                    if inp[ids].ranges.values[0, 1] >= mqmax:
+                        mqmax = inp[ids].ranges.values[0, 1]
+                joined_ion = NxIon(nuclide_hash=inp[idx].nuclide_hash.values, charge_state=0)
+                joined_ion.add_range(mqmin, mqmax)
+                joined_ion.comment.values = f"{inp[idx].comment.values} was combined with {isect}"
+                # joined_ion.report()
+                unique.append(joined_ion)
+    return unique
+
+
 class NxIon():
     """Representative of a NeXus base class NXion."""
 

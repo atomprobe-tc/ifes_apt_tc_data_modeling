@@ -23,11 +23,13 @@
 import re
 import numpy as np
 
-from ase.data import chemical_symbols
-from ifes_apt_tc_data_modeling.nexus.nx_ion import NxField, NxIon
+from ifes_apt_tc_data_modeling.nexus.nx_ion import NxField, NxIon, \
+    try_to_reduce_to_unique_definitions
 from ifes_apt_tc_data_modeling.utils.utils import \
     create_nuclide_hash, is_range_significant
 from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
+from ifes_apt_tc_data_modeling.utils.molecular_ions import \
+    get_chemical_symbols
 
 
 def evaluate_rrng_range_line(i: int, line: str) -> dict:
@@ -47,13 +49,10 @@ def evaluate_rrng_range_line(i: int, line: str) -> dict:
     tmp = re.split(r"[\s=]+", line)
     if len(tmp) < 6:
         # raise ValueError(f"Line {line} does not contain all required fields {len(tmp)}!")
-        return info
-    if tmp[0] != f"Range{i}":
-        # raise ValueError(f"Line {line} has inconsistent line prefix {tmp[0]}!")
-        return info
+        return None
     if is_range_significant(np.float64(tmp[1]), np.float64(tmp[2])) is False:
         # raise ValueError(f"Line {line} insignificant range!")
-        return info
+        return None
     info["range"] = np.asarray([tmp[1], tmp[2]], np.float64)
 
     if tmp[3].lower().startswith("vol:"):
@@ -81,7 +80,7 @@ def evaluate_rrng_range_line(i: int, line: str) -> dict:
         elif element_multiplicity[0].lower() not in ["vol", "color"]:
             # pick up what is an element name
             symbol = element_multiplicity[0]
-            if (symbol not in chemical_symbols) or (symbol == "X"):
+            if symbol not in get_chemical_symbols():
                 # raise ValueError(f"WARNING::Line {line} contains an invalid chemical symbol {symbol}!")
                 return info
             # if np.uint32(element_multiplicity[1]) <= 0:
@@ -98,7 +97,7 @@ def evaluate_rrng_range_line(i: int, line: str) -> dict:
 class ReadRrngFileFormat():
     """Read *.rrng file format."""
 
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: str, unique=False, verbose=False):
         """Initialize the class."""
         if (len(file_path) <= 5) or (file_path.lower().endswith(".rrng") is False):
             raise ImportError("WARNING::RRNG file incorrect file_path ending or file type!")
@@ -107,6 +106,8 @@ class ReadRrngFileFormat():
                            "ranges": {},
                            "ions": {},
                            "molecular_ions": []}
+        self.unique = unique
+        self.verbose = verbose
         self.read_rrng()
 
     def read_rrng(self):
@@ -178,7 +179,10 @@ class ReadRrngFileFormat():
             raise ValueError(f"Line {txt_stripped[current_line_id]}  No ranges defined!")
         current_line_id += 1
 
+        m_ions = []
         for jdx in np.arange(0, number_of_ranges):
+            if self.verbose:
+                print(f"{txt_stripped[current_line_id + jdx]}")
             dct = evaluate_rrng_range_line(jdx + 1, txt_stripped[current_line_id + jdx])
             if dct is None:
                 print(f"WARNING::RRNG line {txt_stripped[current_line_id + jdx]} is corrupted!")
@@ -187,8 +191,19 @@ class ReadRrngFileFormat():
             m_ion = NxIon(nuclide_hash=create_nuclide_hash(dct["atoms"]), charge_state=0)
             m_ion.add_range(dct["range"][0], dct["range"][1])
             m_ion.comment = NxField(dct["name"], "")
+            m_ions.append(m_ion)
+            # this set may contain duplicates or overlapping ranges if ranging definitions are ambiguous like here https://doi.org/10.5281/zenodo.7788883
+
+        if self.unique:
+            unique_m_ions = try_to_reduce_to_unique_definitions(m_ions)
+            print(f"Found {len(m_ions)} ranging definitions, performed reduction to {len(unique_m_ions)} unique ones")
+        else:
+            unique_m_ions = m_ions.copy()
+            print(f"Found {len(m_ions)} ranging definitions, no reduction, {len(unique_m_ions)} remain.")
+        del m_ions
+
+        for m_ion in unique_m_ions:
             m_ion.apply_combinatorics()
             # m_ion.report()
-
             self.rrng["molecular_ions"].append(m_ion)
         print(f"{self.file_path} parsed successfully")
