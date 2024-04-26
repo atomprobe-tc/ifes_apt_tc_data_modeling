@@ -160,7 +160,7 @@ def is_range_overlapping(interval: np.ndarray,
 def is_range_significant(left: np.float64, right: np.float64) -> bool:
     """Check if inclusive interval bounds [left, right] span a finite range."""
     if (np.float64(0.) <= left) and (np.float64(0.) <= right):
-        if (right - left) > MQ_EPSILON:
+        if (right - left) >= MQ_EPSILON:
             return True
     return False
 
