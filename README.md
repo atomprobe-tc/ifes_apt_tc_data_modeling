@@ -37,18 +37,10 @@ Please consider this if you run into issues when continuing with this manual.
 ### Install the ifes_apt_tc_data_modeling modules as a user
 
 ```
-git clone git@github.com:atomprobe-tc/ifes_apt_tc_data_modeling.git
+git clone https://www.github.com/atomprobe-tc/ifes_apt_tc_data_modeling.git
 cd ifes_apt_tc_data_modeling
 python -m pip install --upgrade pip
-python -m pip install pip-tools
 python -m pip install -e .
-python -m pip install -e ".[dev]"
-python -m pip list
-```
-
-### Additional steps to perform when you are a developer
-
-```
 python -m pip install -e ".[dev]"
 python -m pip list
 jupyter-lab
@@ -64,13 +56,13 @@ of files in respective formats. Pieces of information about the content and form
 (e.g. in the books by D. Larson et al. https://doi.org/10.1007/978-1-4614-8721-0 or B. Gault et al. http://dx.doi.org/10.1007/978-1-4614-3436-8 ).
 Atom probers like D. Haley have contributed substantially through raising awareness of the issue within the community.
 
-AMETEK/Cameca is the key technology partner in atom probe. AMETEK has developed an open file format called APT which has improved
+AMETEK/Cameca is the key technology partner in atom probe. AMETEK/Cameca has developed an open file format called APT which has improved
 the accessibility of specific numerical data and some metadata. Individuals like M. Kühbach have driven the implementation and
-communication of parsers for this APT file format. There are ongoing efforts by both AMETEK and the scientific community to extent the APT file format
+communication of parsers for this APT file format. There are ongoing efforts by both AMETEK/Cameca and the scientific community to extent the APT file format
 with additional metadata. The main motivation behind these newer efforts is to improve the interoperability between research data collected
 within the IVAS/APSuite software and third-party software including research data management systems.
 Currently, most metadata have to be entered manually via e.g. electronic lab notebooks if one were to use or register atom probe
-data in solutions other than those developed by AMETEK.
+data in solutions other than those developed by AMETEK/Cameca.
 
 Nowadays, there is a global desire, a push by research funding agencies, and an increased interest of atom probers
 to make their research data and knowledge generation process better matching and more completely aligned to the aims

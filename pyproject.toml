@@ -24,20 +24,21 @@ classifiers = [
 dependencies = [
     "h5py>=3.6.0",
     "numpy>=1.21.2",
-    "pandas",
-    "tables",
     "ase>=3.19.0",
     "radioactivedecay>=0.4.16",
+    "pandas",
+    "tables",
     "flatdict",
-    "xmltodict"
+    "xmltodict",
+    "jupyter",
+    "jupyterlab",
+    "jupyterlab_h5web"
 ]
 
 [project.optional-dependencies]
 dev = [
     "pip-tools",
     "twine",
-    "jupyterlab_h5web",
-    "jupyterlab",
     "mypy",
     "pylint",
     "pycodestyle"
