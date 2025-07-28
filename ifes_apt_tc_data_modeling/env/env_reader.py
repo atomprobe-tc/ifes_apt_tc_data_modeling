@@ -23,27 +23,34 @@
 import re
 import numpy as np
 from ifes_apt_tc_data_modeling.nexus.nx_ion import NxField, NxIon
-from ifes_apt_tc_data_modeling.utils.utils import \
-    create_nuclide_hash, is_range_significant, get_smart_chemical_symbols
+from ifes_apt_tc_data_modeling.utils.utils import (
+    create_nuclide_hash,
+    is_range_significant,
+    get_smart_chemical_symbols,
+)
 from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
 
 
 def evaluate_env_range_line(line: str):
     """Represent information content of a single range line."""
     # example line: ". 107.7240 108.0960 1 0 0 0 0 0 0 0 0 0 3 0 0 0"
-    info: dict = {"identifier": None,
-                  "range": np.asarray([0., MQ_EPSILON], np.float64),
-                  "atoms": [],
-                  "volume": np.float64(0.),
-                  "color": "",
-                  "name": ""}
+    info: dict = {
+        "identifier": None,
+        "range": np.asarray([0.0, MQ_EPSILON], np.float64),
+        "atoms": [],
+        "volume": np.float64(0.0),
+        "color": "",
+        "name": "",
+    }
 
     tmp = line.split()
     # interpret zeroth token into a list of chemical symbols
     # interpret first token as inclusive left of m/q interval
     # interpret second token as inclusive right bound of m/q interval
     if len(tmp) < 3:
-        print(f"WARNING::ENV file ranging definition {line} has insufficient information!")
+        print(
+            f"WARNING::ENV file ranging definition {line} has insufficient information!"
+        )
         return None
     if is_range_significant(np.float64(tmp[1]), np.float64(tmp[2])) is False:
         print(f"WARNING::ENV file ranging definition {line} has insignificant range!")
@@ -56,14 +63,16 @@ def evaluate_env_range_line(line: str):
     elif tmp[0] in get_smart_chemical_symbols():
         lst.append(tmp[0])
     else:
-        tokens = re.split(r'(\d+)', tmp[0])
+        tokens = re.split(r"(\d+)", tmp[0])
         for jdx in np.arange(0, len(tokens)):
             kdx = 0
             for sym in get_smart_chemical_symbols():
                 if tokens[jdx][kdx:].startswith(sym) is True:
                     mult = 1
                     if jdx < len(tokens) - 1:
-                        if (tokens[jdx][kdx:] == sym) and (tokens[jdx + 1].isdigit() is True):
+                        if (tokens[jdx][kdx:] == sym) and (
+                            tokens[jdx + 1].isdigit() is True
+                        ):
                             mult = int(tokens[jdx + 1])
                             kdx += len(tokens[jdx + 1])
                     lst.extend([sym] * mult)
@@ -72,16 +81,16 @@ def evaluate_env_range_line(line: str):
     return info
 
 
-class ReadEnvFileFormat():
+class ReadEnvFileFormat:
     """Read GPM/Rouen *.env file format."""
 
     def __init__(self, file_path: str):
         if (len(file_path) <= 4) or (file_path.lower().endswith(".env") is False):
-            raise ImportError("WARNING::ENV file incorrect file_path ending or file type!")
+            raise ImportError(
+                "WARNING::ENV file incorrect file_path ending or file type!"
+            )
         self.file_path = file_path
-        self.env: dict = {"ranges": {},
-                          "ions": {},
-                          "molecular_ions": []}
+        self.env: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
         self.read_env()
 
     def read_env(self):
@@ -114,8 +123,9 @@ class ReadEnvFileFormat():
                 if dct is None:
                     continue
 
-                m_ion = NxIon(nuclide_hash=create_nuclide_hash(dct["atoms"]),
-                              charge_state=0)
+                m_ion = NxIon(
+                    nuclide_hash=create_nuclide_hash(dct["atoms"]), charge_state=0
+                )
                 m_ion.add_range(dct["range"][0], dct["range"][1])
                 m_ion.comment = NxField(dct["name"], "")
                 m_ion.apply_combinatorics()

@@ -22,15 +22,22 @@
 
 import numpy as np
 
-from ifes_apt_tc_data_modeling.utils.definitions import \
-    MAX_NUMBER_OF_ATOMS_PER_ION
-from ifes_apt_tc_data_modeling.utils.utils import \
-    create_nuclide_hash, nuclide_hash_to_nuclide_list, \
-    nuclide_hash_to_human_readable_name, is_range_significant
-from ifes_apt_tc_data_modeling.utils.molecular_ions import \
-    MolecularIonCandidate, MolecularIonBuilder, \
-    PRACTICAL_ABUNDANCE, PRACTICAL_ABUNDANCE_PRODUCT, \
-    PRACTICAL_MIN_HALF_LIFE, VERBOSE, SACRIFICE_ISOTOPIC_UNIQUENESS
+from ifes_apt_tc_data_modeling.utils.definitions import MAX_NUMBER_OF_ATOMS_PER_ION
+from ifes_apt_tc_data_modeling.utils.utils import (
+    create_nuclide_hash,
+    nuclide_hash_to_nuclide_list,
+    nuclide_hash_to_human_readable_name,
+    is_range_significant,
+)
+from ifes_apt_tc_data_modeling.utils.molecular_ions import (
+    MolecularIonCandidate,
+    MolecularIonBuilder,
+    PRACTICAL_ABUNDANCE,
+    PRACTICAL_ABUNDANCE_PRODUCT,
+    PRACTICAL_MIN_HALF_LIFE,
+    VERBOSE,
+    SACRIFICE_ISOTOPIC_UNIQUENESS,
+)
 from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
 
 
@@ -40,7 +47,9 @@ def try_to_reduce_to_unique_definitions(inp: list) -> list:
         if isinstance(entry, NxIon):
             continue
         else:
-            raise ValueError(f"Argument inp to try_to_reduce_to_unique_definitions needs to list of NxIon!")
+            raise ValueError(
+                "Argument inp to try_to_reduce_to_unique_definitions needs to list of NxIon!"
+            )
     unique = []
     # unique if mqival does not overlap (but can touch) either side
     # extrema of ranging definition and ivec is different or all 0
@@ -49,21 +58,35 @@ def try_to_reduce_to_unique_definitions(inp: list) -> list:
     # as then for a given mass-to-charge-state value an ion can qualify
     # to be an instance more than one iontype thus making the ranging
     # ambiguous
-    visited = np.asarray(np.zeros(len(inp,)), bool)
+    visited = np.asarray(
+        np.zeros(
+            len(
+                inp,
+            )
+        ),
+        bool,
+    )
     for idx in np.arange(0, len(inp)):
         if not visited[idx]:
             # find all ranging definition value intersections with other ions
-            isect = []  # 
-            for jdx in np.concatenate((np.arange(0, idx), np.arange(idx + 1, len(inp)))):
+            isect = []  #
+            for jdx in np.concatenate(
+                (np.arange(0, idx), np.arange(idx + 1, len(inp)))
+            ):
                 if not visited[jdx]:
-                    if inp[idx].ranges.values[0, 1] < inp[jdx].ranges.values[0, 0] \
-                        or inp[idx].ranges.values[0, 0] > inp[jdx].ranges.values[0, 1]:
+                    if (
+                        inp[idx].ranges.values[0, 1] < inp[jdx].ranges.values[0, 0]
+                        or inp[idx].ranges.values[0, 0] > inp[jdx].ranges.values[0, 1]
+                    ):
                         continue
                     else:
                         # append only if exactly the same ivec
                         idx_jdx_are_equal = True  # try to falsify
                         for i in np.arange(0, MAX_NUMBER_OF_ATOMS_PER_ION):
-                            if inp[idx].nuclide_hash.values[i] != inp[jdx].nuclide_hash.values[i]:
+                            if (
+                                inp[idx].nuclide_hash.values[i]
+                                != inp[jdx].nuclide_hash.values[i]
+                            ):
                                 idx_jdx_are_equal = False
                                 break
                         if idx_jdx_are_equal:
@@ -92,19 +115,25 @@ def try_to_reduce_to_unique_definitions(inp: list) -> list:
                         mqmin = inp[ids].ranges.values[0, 0]
                     if inp[ids].ranges.values[0, 1] >= mqmax:
                         mqmax = inp[ids].ranges.values[0, 1]
-                joined_ion = NxIon(nuclide_hash=inp[idx].nuclide_hash.values, charge_state=0)
+                joined_ion = NxIon(
+                    nuclide_hash=inp[idx].nuclide_hash.values, charge_state=0
+                )
                 joined_ion.add_range(mqmin, mqmax)
-                joined_ion.comment.values = f"{inp[idx].comment.values} was combined with {isect}"
+                joined_ion.comment.values = (
+                    f"{inp[idx].comment.values} was combined with {isect}"
+                )
                 # joined_ion.report()
                 unique.append(joined_ion)
     return unique
 
 
-class NxIon():
+class NxIon:
     """Representative of a NeXus base class NXion."""
 
     def __init__(self, *args, **kwargs):
-        self.comment = NxField("", "")  # comment, use e.g. for label of custom ion types
+        self.comment = NxField(
+            "", ""
+        )  # comment, use e.g. for label of custom ion types
         self.color = NxField("", "")  # color used by software which created the dataset
         self.volume = NxField("", "")  # volume value in range files
         self.ion_type = NxField("", "")
@@ -118,23 +147,32 @@ class NxIon():
                 raise ValueError("kwargs nuclide_hash needs to be an np.ndarray!")
             if np.shape(kwargs["nuclide_hash"]) != (MAX_NUMBER_OF_ATOMS_PER_ION,):
                 raise ValueError(
-                    f"kwargs nuclide_hash needs be a ({MAX_NUMBER_OF_ATOMS_PER_ION},) array!")
-            self.nuclide_hash = NxField(np.asarray(kwargs["nuclide_hash"], np.uint16), "")
+                    f"kwargs nuclide_hash needs be a ({MAX_NUMBER_OF_ATOMS_PER_ION},) array!"
+                )
+            self.nuclide_hash = NxField(
+                np.asarray(kwargs["nuclide_hash"], np.uint16), ""
+            )
         else:
             # the default UNKNOWN IONTYPE
             self.nuclide_hash = NxField(create_nuclide_hash([]), "")
-        self.nuclide_list = NxField(nuclide_hash_to_nuclide_list(self.nuclide_hash.values), "")
+        self.nuclide_list = NxField(
+            nuclide_hash_to_nuclide_list(self.nuclide_hash.values), ""
+        )
         if "charge_state" in kwargs:
-            if isinstance(kwargs["charge_state"], int) \
-                    and (-8 < kwargs["charge_state"] < +8):
+            if isinstance(kwargs["charge_state"], int) and (
+                -8 < kwargs["charge_state"] < +8
+            ):
                 self.charge_state = NxField(np.int8(kwargs["charge_state"]), "")
         else:
             # charge_state 0 flags and warns that it was impossible to recover
             # the relevant charge which is usually a sign that the range
             # is not matching the theoretically expect peak location
             self.charge_state = NxField(np.int8(0), "")
-        self.name = NxField(nuclide_hash_to_human_readable_name(
-            self.nuclide_hash.values, self.charge_state.values))
+        self.name = NxField(
+            nuclide_hash_to_human_readable_name(
+                self.nuclide_hash.values, self.charge_state.values
+            )
+        )
         self.ranges = NxField(np.empty((0, 2), np.float64), "amu")
 
     def add_range(self, mqmin: np.float64, mqmax: np.float64):
@@ -152,20 +190,25 @@ class NxIon():
 
     def update_human_readable_name(self):
         """Re-evaluate charge and nuclide_hash for name."""
-        self.name = NxField(nuclide_hash_to_human_readable_name(
-            self.nuclide_hash.values, self.charge_state.values))
+        self.name = NxField(
+            nuclide_hash_to_human_readable_name(
+                self.nuclide_hash.values, self.charge_state.values
+            )
+        )
 
     def report(self):
         """Report values."""
-        print(f"ion_type: {self.ion_type.values}\n"
-              f"nuclide_hash: {self.nuclide_hash.values}\n"
-              f"nuclide_list: {self.nuclide_list.values}\n"
-              f"human-readable name: {self.name.values}\n"
-              f"charge_state: {self.charge_state.values}\n"
-              f"ranges: {self.ranges.values}\n"
-              f"comment: {self.comment.values}\n"
-              f"color: {self.color.values}\n"
-              f"volume: {self.volume.values}\n")
+        print(
+            f"ion_type: {self.ion_type.values}\n"
+            f"nuclide_hash: {self.nuclide_hash.values}\n"
+            f"nuclide_list: {self.nuclide_list.values}\n"
+            f"human-readable name: {self.name.values}\n"
+            f"charge_state: {self.charge_state.values}\n"
+            f"ranges: {self.ranges.values}\n"
+            f"comment: {self.comment.values}\n"
+            f"color: {self.color.values}\n"
+            f"volume: {self.volume.values}\n"
+        )
 
     def apply_combinatorics(self):
         """Apply specifically constrainted combinatorial analysis."""
@@ -174,27 +217,33 @@ class NxIon():
             min_abundance_product=PRACTICAL_ABUNDANCE_PRODUCT,
             min_half_life=PRACTICAL_MIN_HALF_LIFE,
             sacrifice_uniqueness=SACRIFICE_ISOTOPIC_UNIQUENESS,
-            verbose=VERBOSE)
+            verbose=VERBOSE,
+        )
         recovered_charge_state, m_ion_candidates = crawler.combinatorics(
-            self.nuclide_hash.values,
-            self.ranges.values[0, 0],
-            self.ranges.values[0, 1])
+            self.nuclide_hash.values, self.ranges.values[0, 0], self.ranges.values[0, 1]
+        )
         # print(f"{recovered_charge_state}")
         self.charge_state = NxField(np.int8(recovered_charge_state), "")
         self.update_human_readable_name()
-        self.add_charge_state_model({"min_abundance": PRACTICAL_ABUNDANCE,
-                                     "min_abundance_product": PRACTICAL_ABUNDANCE_PRODUCT,
-                                     "min_half_life": PRACTICAL_MIN_HALF_LIFE,
-                                     "sacrifice_isotopic_uniqueness": SACRIFICE_ISOTOPIC_UNIQUENESS},
-                                    crawler.candidates)
+        self.add_charge_state_model(
+            {
+                "min_abundance": PRACTICAL_ABUNDANCE,
+                "min_abundance_product": PRACTICAL_ABUNDANCE_PRODUCT,
+                "min_half_life": PRACTICAL_MIN_HALF_LIFE,
+                "sacrifice_isotopic_uniqueness": SACRIFICE_ISOTOPIC_UNIQUENESS,
+            },
+            crawler.candidates,
+        )
 
-    def add_charge_state_model(self,
-                               parameters,
-                               candidates):
+    def add_charge_state_model(self, parameters, candidates):
         """Add details about the model how self.charge_state was defined."""
         self.charge_state_model = {}
-        req_parms = ["min_abundance", "min_abundance_product",
-                     "min_half_life", "sacrifice_isotopic_uniqueness"]
+        req_parms = [
+            "min_abundance",
+            "min_abundance_product",
+            "min_half_life",
+            "sacrifice_isotopic_uniqueness",
+        ]
         for req in req_parms:
             if req in parameters:
                 continue
@@ -211,31 +260,43 @@ class NxIon():
             return
         self.charge_state_model["n_cand"] = n_cand
         if n_cand == 1:
-            self.charge_state_model["nuclide_hash"] \
-                = np.zeros((1, MAX_NUMBER_OF_ATOMS_PER_ION), np.uint16)
-            self.charge_state_model["nuclide_hash"][0, 0:len(candidates[0].nuclide_hash)] \
-                = candidates[0].nuclide_hash
+            self.charge_state_model["nuclide_hash"] = np.zeros(
+                (1, MAX_NUMBER_OF_ATOMS_PER_ION), np.uint16
+            )
+            self.charge_state_model["nuclide_hash"][
+                0, 0 : len(candidates[0].nuclide_hash)
+            ] = candidates[0].nuclide_hash
             self.charge_state_model["charge_state"] = candidates[0].charge_state
             self.charge_state_model["mass"] = candidates[0].mass
-            self.charge_state_model["natural_abundance_product"] = candidates[0].abundance_product
-            self.charge_state_model["shortest_half_life"] = candidates[0].shortest_half_life
+            self.charge_state_model["natural_abundance_product"] = candidates[
+                0
+            ].abundance_product
+            self.charge_state_model["shortest_half_life"] = candidates[
+                0
+            ].shortest_half_life
         else:
-            self.charge_state_model["nuclide_hash"] \
-                = np.zeros((n_cand, MAX_NUMBER_OF_ATOMS_PER_ION), np.uint16)
+            self.charge_state_model["nuclide_hash"] = np.zeros(
+                (n_cand, MAX_NUMBER_OF_ATOMS_PER_ION), np.uint16
+            )
             self.charge_state_model["charge_state"] = np.zeros((n_cand,), np.int8)
             self.charge_state_model["mass"] = np.zeros((n_cand,), np.float64)
-            self.charge_state_model["natural_abundance_product"] = np.zeros((n_cand,), np.float64)
-            self.charge_state_model["shortest_half_life"] = np.zeros((n_cand,), np.float64)
+            self.charge_state_model["natural_abundance_product"] = np.zeros(
+                (n_cand,), np.float64
+            )
+            self.charge_state_model["shortest_half_life"] = np.zeros(
+                (n_cand,), np.float64
+            )
             row_idx = 0
             for cand in candidates:
-                self.charge_state_model["nuclide_hash"][row_idx, 0:len(cand.nuclide_hash)] \
-                    = cand.nuclide_hash
-                self.charge_state_model["charge_state"][row_idx] \
-                    = cand.charge_state
-                self.charge_state_model["mass"][row_idx] \
-                    = cand.mass
-                self.charge_state_model["natural_abundance_product"][row_idx] \
-                    = cand.abundance_product
-                self.charge_state_model["shortest_half_life"][row_idx] \
-                    = cand.shortest_half_life
+                self.charge_state_model["nuclide_hash"][
+                    row_idx, 0 : len(cand.nuclide_hash)
+                ] = cand.nuclide_hash
+                self.charge_state_model["charge_state"][row_idx] = cand.charge_state
+                self.charge_state_model["mass"][row_idx] = cand.mass
+                self.charge_state_model["natural_abundance_product"][row_idx] = (
+                    cand.abundance_product
+                )
+                self.charge_state_model["shortest_half_life"][row_idx] = (
+                    cand.shortest_half_life
+                )
                 row_idx += 1

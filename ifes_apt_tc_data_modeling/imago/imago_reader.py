@@ -29,22 +29,23 @@ import numpy as np
 
 from ase.data import atomic_numbers, chemical_symbols
 from ifes_apt_tc_data_modeling.nexus.nx_ion import NxField, NxIon
-from ifes_apt_tc_data_modeling.utils.definitions import \
-    MAX_NUMBER_OF_ATOMS_PER_ION
-from ifes_apt_tc_data_modeling.utils.molecular_ions import \
-    get_chemical_symbols, isotope_to_hash
+from ifes_apt_tc_data_modeling.utils.definitions import MAX_NUMBER_OF_ATOMS_PER_ION
+from ifes_apt_tc_data_modeling.utils.molecular_ions import (
+    get_chemical_symbols,
+    isotope_to_hash,
+)
 
 
-class ReadImagoAnalysisFileFormat():
+class ReadImagoAnalysisFileFormat:
     """Read *.analysis file (format), extract ranging definitions as an example."""
 
     def __init__(self, file_path: str):
         if (len(file_path) <= 9) or (file_path.lower().endswith(".analysis") is False):
-            raise ImportError("WARNING::ANALYSIS file incorrect file_path ending or file type!")
+            raise ImportError(
+                "WARNING::ANALYSIS file incorrect file_path ending or file type!"
+            )
         self.file_path = file_path
-        self.imago: dict = {"ranges": {},
-                            "ions": {},
-                            "molecular_ions": []}
+        self.imago: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
         self.read_imago_analysis_ranging_definitions()
 
     def read_imago_analysis_ranging_definitions(self):
@@ -75,24 +76,38 @@ class ReadImagoAnalysisFileFormat():
                     if (not isinstance(val, list)) or (key != "object/void"):
                         continue
                     for member in val:
-                        if (not isinstance(member, dict)) \
-                                or ("@method" not in member.keys()) \
-                                or (member["@method"] != "add"):
+                        if (
+                            (not isinstance(member, dict))
+                            or ("@method" not in member.keys())
+                            or (member["@method"] != "add")
+                        ):
                             continue
                         # print(">>>>>>>>>>>At the level of a molecular ion that can be so simple that it is just an element ion")
                         cand_dct = fd.FlatDict(member, "/")
                         # print(f">>>>> {cand_dct}")
                         all_reqs_exist = True
-                        reqs = ["@method", "object/@id", "object/@class", "object/string", "object/boolean", "object/void"]
+                        reqs = [
+                            "@method",
+                            "object/@id",
+                            "object/@class",
+                            "object/string",
+                            "object/boolean",
+                            "object/void",
+                        ]
                         for req in reqs:
                             if req not in cand_dct.keys():
                                 all_reqs_exist = False
-                        if all_reqs_exist == False:
+                        if not all_reqs_exist:
                             continue
 
-                        if (not cand_dct["object/@id"].startswith("AtomDataRealRange")) \
-                                or (cand_dct["object/@class"] != "com.imago.core.atomdata.AtomDataRealRange") \
-                                or (not isinstance(cand_dct["object/void"], list)):
+                        if (
+                            (not cand_dct["object/@id"].startswith("AtomDataRealRange"))
+                            or (
+                                cand_dct["object/@class"]
+                                != "com.imago.core.atomdata.AtomDataRealRange"
+                            )
+                            or (not isinstance(cand_dct["object/void"], list))
+                        ):
                             continue
                         for lst in cand_dct["object/void"]:
                             rng = fd.FlatDict(lst, "/")
@@ -102,7 +117,9 @@ class ReadImagoAnalysisFileFormat():
                                 if rng["object/void/string"] in get_chemical_symbols():
                                     if "object/double" in rng.keys():
                                         mq = rng["object/double"][0:2]
-                                        element_symbol.append(rng["object/void/string"])  # assuming multiplicity is one !
+                                        element_symbol.append(
+                                            rng["object/void/string"]
+                                        )  # assuming multiplicity is one !
                             else:
                                 if "object/void" in rng.keys():
                                     if isinstance(rng["object/void"], list):
@@ -110,10 +127,26 @@ class ReadImagoAnalysisFileFormat():
                                         element_symbol = []
                                         for block in rng["object/void"]:
                                             if isinstance(block, dict):
-                                                if "@method" in block.keys() and "string" in block.keys() and "double" in block.keys():
-                                                    if block["string"] in chemical_symbols:
-                                                        for mult in np.arange(0, int(block["double"].split('.')[0])):
-                                                            element_symbol.append(block["string"])
+                                                if (
+                                                    "@method" in block.keys()
+                                                    and "string" in block.keys()
+                                                    and "double" in block.keys()
+                                                ):
+                                                    if (
+                                                        block["string"]
+                                                        in chemical_symbols
+                                                    ):
+                                                        for mult in np.arange(
+                                                            0,
+                                                            int(
+                                                                block["double"].split(
+                                                                    "."
+                                                                )[0]
+                                                            ),
+                                                        ):
+                                                            element_symbol.append(
+                                                                block["string"]
+                                                            )
                             if (len(element_symbol) >= 1) and (len(mq) == 2):
                                 # print(f"------------>{element_symbol}, {mq}")
                                 ivec = []
@@ -128,17 +161,31 @@ class ReadImagoAnalysisFileFormat():
                                         multiplier = 1
                                         if len(suffix) == 1:
                                             multiplier = int(suffix[0])
-                                        symbol = isotope.replace(
-                                            f"{mass_number}", "").replace(f"{multiplier}", "").replace(" ", "")
+                                        symbol = (
+                                            isotope.replace(f"{mass_number}", "")
+                                            .replace(f"{multiplier}", "")
+                                            .replace(" ", "")
+                                        )
                                         if symbol in get_chemical_symbols():
                                             proton_number = atomic_numbers[symbol]
                                             neutron_number = 0
                                             if mass_number != 0:
-                                                neutron_number = mass_number - proton_number
-                                            ivec.extend([isotope_to_hash(proton_number, neutron_number)] * multiplier)
+                                                neutron_number = (
+                                                    mass_number - proton_number
+                                                )
+                                            ivec.extend(
+                                                [
+                                                    isotope_to_hash(
+                                                        proton_number, neutron_number
+                                                    )
+                                                ]
+                                                * multiplier
+                                            )
                                 ivec = np.sort(np.asarray(ivec, np.uint16))[::-1]
-                                ivector = np.zeros((MAX_NUMBER_OF_ATOMS_PER_ION,), np.uint16)
-                                ivector[0:len(ivec)] = ivec
+                                ivector = np.zeros(
+                                    (MAX_NUMBER_OF_ATOMS_PER_ION,), np.uint16
+                                )
+                                ivector[0 : len(ivec)] = ivec
 
                                 m_ion = NxIon(nuclide_hash=ivector, charge_state=0)
                                 m_ion.add_range(float(mq[0]), float(mq[1]))

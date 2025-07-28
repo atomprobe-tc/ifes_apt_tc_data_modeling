@@ -29,8 +29,11 @@ import pandas as pd
 from ase.data import atomic_numbers
 from ifes_apt_tc_data_modeling.nexus.nx_ion import NxIon
 from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
-from ifes_apt_tc_data_modeling.utils.utils import isotope_to_hash, \
-    nuclide_hash_to_nuclide_list, MAX_NUMBER_OF_ATOMS_PER_ION
+from ifes_apt_tc_data_modeling.utils.utils import (
+    isotope_to_hash,
+    nuclide_hash_to_nuclide_list,
+    MAX_NUMBER_OF_ATOMS_PER_ION,
+)
 from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
 # from ifes_apt_tc_data_modeling.utils.combinatorics import apply_combinatorics
 
@@ -71,17 +74,25 @@ def get_nuclide_hash_from_fau_list(elements, complexs, isotopes) -> np.ndarray:
         if symbol in get_chemical_symbols():
             proton_number = atomic_numbers[symbol]
             neutron_number = isotopes[idxj] - proton_number
-            hashvector.extend([isotope_to_hash(proton_number, neutron_number)] * complexs[idxj])
-    ivec[0:len(hashvector)] = np.sort(np.asarray(hashvector, np.uint16), kind="stable")[::-1]
+            hashvector.extend(
+                [isotope_to_hash(proton_number, neutron_number)] * complexs[idxj]
+            )
+    ivec[0 : len(hashvector)] = np.sort(
+        np.asarray(hashvector, np.uint16), kind="stable"
+    )[::-1]
     return ivec
 
 
-class ReadPyccaptControlFileFormat():
+class ReadPyccaptControlFileFormat:
     """Read FAU/Erlangen pyccapt (controle module) HDF5 file format."""
 
     def __init__(self, file_path: str):
-        if (file_path.lower().endswith(".h5") is False) and (file_path.lower().endswith(".hdf5") is False):
-            raise ImportError("WARNING::HDF5 file incorrect file_path ending or file type!")
+        if (file_path.lower().endswith(".h5") is False) and (
+            file_path.lower().endswith(".hdf5") is False
+        ):
+            raise ImportError(
+                "WARNING::HDF5 file incorrect file_path ending or file type!"
+            )
         self.file_path = file_path
         self.file_size = os.path.getsize(self.file_path)
         self.number_of_events = None
@@ -102,12 +113,16 @@ class ReadPyccaptControlFileFormat():
         # parse out relevant pieces of information
 
 
-class ReadPyccaptCalibrationFileFormat():
+class ReadPyccaptCalibrationFileFormat:
     """Read FAU/Erlangen pyccapt (calibration module) HDF5 file format."""
 
     def __init__(self, file_path: str):
-        if (file_path.lower().endswith(".h5") is False) and (file_path.lower().endswith(".hdf5") is False):
-            raise ImportError("WARNING::HDF5 file incorrect file_path ending or file type!")
+        if (file_path.lower().endswith(".h5") is False) and (
+            file_path.lower().endswith(".hdf5") is False
+        ):
+            raise ImportError(
+                "WARNING::HDF5 file incorrect file_path ending or file type!"
+            )
         self.file_path = file_path
         self.file_size = os.path.getsize(self.file_path)
         self.number_of_events = None
@@ -116,17 +131,24 @@ class ReadPyccaptCalibrationFileFormat():
 
         with h5py.File(self.file_path, "r") as h5r:
             self.supported = 0  # voting-based
-            required_entries = ["df",
-                                "df/axis0", "df/axis1",
-                                "df/block0_items", "df/block0_values",
-                                "df/block1_items", "df/block1_values"]
+            required_entries = [
+                "df",
+                "df/axis0",
+                "df/axis1",
+                "df/block0_items",
+                "df/block0_values",
+                "df/block1_items",
+                "df/block1_values",
+            ]
             for entry in required_entries:
                 if entry in h5r.keys():
                     self.supported += 1
             if self.supported == 7:
                 print(f"{self.file_path} is a supported pyccapt/calibration HDF5 file!")
             else:
-                print(f"{self.file_path} is not a supported pyccapt/calibration HDF5 file!")
+                print(
+                    f"{self.file_path} is not a supported pyccapt/calibration HDF5 file!"
+                )
                 return
 
         self.df = pd.read_hdf(self.file_path)
@@ -146,7 +168,9 @@ class ReadPyccaptCalibrationFileFormat():
 
         dim = 0
         for quant in ["x (nm)", "y (nm)", "z (nm)"]:
-            xyz.values[:, dim] = np.asarray(self.get_named_quantities(quant), np.float32)
+            xyz.values[:, dim] = np.asarray(
+                self.get_named_quantities(quant), np.float32
+            )
             dim += 1
         return xyz
 
@@ -157,16 +181,22 @@ class ReadPyccaptCalibrationFileFormat():
         m_n.values = np.zeros([self.number_of_events, 1], np.float32)
         m_n.unit = "Da"
 
-        m_n.values[:, 0] = np.asarray(self.get_named_quantities("mc_c (Da)"), np.float32)
+        m_n.values[:, 0] = np.asarray(
+            self.get_named_quantities("mc_c (Da)"), np.float32
+        )
         return m_n
 
 
-class ReadPyccaptRangingFileFormat():
+class ReadPyccaptRangingFileFormat:
     """Read FAU/Erlangen pyccapt (ranging module) HDF5 file format."""
 
     def __init__(self, file_path: str):
-        if (file_path.lower().endswith(".h5") is False) and (file_path.lower().endswith(".hdf5") is False):
-            raise ImportError("WARNING::HDF5 file incorrect file_path ending or file type!")
+        if (file_path.lower().endswith(".h5") is False) and (
+            file_path.lower().endswith(".hdf5") is False
+        ):
+            raise ImportError(
+                "WARNING::HDF5 file incorrect file_path ending or file type!"
+            )
         self.file_path = file_path
         self.file_size = os.path.getsize(self.file_path)
         self.number_of_events = None
@@ -175,11 +205,17 @@ class ReadPyccaptRangingFileFormat():
 
         with h5py.File(self.file_path, "r") as h5r:
             self.supported = 0  # voting-based
-            required_entries = ["df",
-                                "df/axis0", "df/axis1",
-                                "df/block0_items", "df/block0_values",
-                                "df/block1_items", "df/block1_values",
-                                "df/block2_items", "df/block2_values"]
+            required_entries = [
+                "df",
+                "df/axis0",
+                "df/axis1",
+                "df/block0_items",
+                "df/block0_values",
+                "df/block1_items",
+                "df/block1_values",
+                "df/block2_items",
+                "df/block2_values",
+            ]
             for entry in required_entries:
                 if entry in h5r.keys():
                     self.supported += 1
@@ -198,9 +234,11 @@ class ReadPyccaptRangingFileFormat():
                 if self.df.iloc[idx, 6] == "unranged":
                     continue
 
-            ivec = get_nuclide_hash_from_fau_list(elements=self.df.iloc[idx, 6],
-                                                  complexs=self.df.iloc[idx, 7],
-                                                  isotopes=self.df.iloc[idx, 8])
+            ivec = get_nuclide_hash_from_fau_list(
+                elements=self.df.iloc[idx, 6],
+                complexs=self.df.iloc[idx, 7],
+                isotopes=self.df.iloc[idx, 8],
+            )
             m_ion = NxIon()
             m_ion.nuclide_hash.values = ivec
             m_ion.nuclide_list.values = nuclide_hash_to_nuclide_list(ivec)

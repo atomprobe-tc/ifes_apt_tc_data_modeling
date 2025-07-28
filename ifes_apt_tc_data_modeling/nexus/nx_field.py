@@ -19,7 +19,7 @@
 """Set of utility tools for parsing file formats used by atom probe."""
 
 
-class NxField():
+class NxField:
     """Representative of a NeXus field."""
 
     def __init__(self, values=None, unit: str = ""):

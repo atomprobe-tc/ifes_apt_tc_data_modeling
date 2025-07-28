@@ -658,13 +658,11 @@ EXPECTED_SECTIONS["Vap"].set_wc_data_unit("V")
 EXPECTED_SECTIONS["Vap"].set_accepted_units(["V"])
 
 EXPECTED_SECTIONS["Detector Coordinates"] = AptFileSectionMetadata()
-EXPECTED_SECTIONS["Detector Coordinates"].set_section_name(
-    "Detector Coordinates")
+EXPECTED_SECTIONS["Detector Coordinates"].set_section_name("Detector Coordinates")
 EXPECTED_SECTIONS["Detector Coordinates"].set_c_signature()
 EXPECTED_SECTIONS["Detector Coordinates"].set_i_header_size(148)
 EXPECTED_SECTIONS["Detector Coordinates"].set_i_header_version(2)
-EXPECTED_SECTIONS["Detector Coordinates"].set_wc_section_type(
-    "Detector Coordinates")
+EXPECTED_SECTIONS["Detector Coordinates"].set_wc_section_type("Detector Coordinates")
 EXPECTED_SECTIONS["Detector Coordinates"].set_i_section_version(1)
 EXPECTED_SECTIONS["Detector Coordinates"].set_e_relationship_type(1)
 EXPECTED_SECTIONS["Detector Coordinates"].set_e_record_type(1)

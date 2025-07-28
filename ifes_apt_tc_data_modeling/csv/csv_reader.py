@@ -27,12 +27,14 @@ import pandas as pd
 from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
 
 
-class ReadCsvFileFormat():
+class ReadCsvFileFormat:
     """Read CSV file assuming (n_ions, 4) like in POS."""
 
     def __init__(self, file_path: str):
         if (len(file_path) <= 4) or (file_path.lower().endswith(".csv") is False):
-            raise ImportError("WARNING::CSV file incorrect file_path ending or file type!")
+            raise ImportError(
+                "WARNING::CSV file incorrect file_path ending or file type!"
+            )
         self.file_path = file_path
 
         self.file_size = os.path.getsize(self.file_path)
@@ -43,7 +45,9 @@ class ReadCsvFileFormat():
         if shp[0] > 0 and shp[1] == 4:
             self.number_of_events = shp[0]
         else:
-            raise ImportError("CSV file unsupported version because not formatted like POS!")
+            raise ImportError(
+                "CSV file unsupported version because not formatted like POS!"
+            )
 
     def get_reconstructed_positions(self):
         """Read xyz columns."""

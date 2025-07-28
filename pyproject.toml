@@ -1,38 +1,36 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=78.1.1", "setuptools-scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "ifes_apt_tc_data_modeling"
-version = "0.2.2"
+dynamic = ["version"]
 authors = [
     { name = "The NOMAD Authors" },
 ]
 description = "Foster exchange about data models and work towards clear specifications of file formats and data models in the research fields of atom probe tomography and related field-ion microscopy (atom probe microscopy)."
 readme = "README.md"
-license = { file = "LICENSE.txt" }
-requires-python = ">=3.8"
+license = { file = "LICENSE" }
+requires-python = ">=3.9"
 classifiers = [
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
 ]
 dependencies = [
     "h5py>=3.6.0",
-    "numpy>=1.21.2",
+    "numpy<2.0.0",
     "ase>=3.19.0",
     "radioactivedecay>=0.4.16",
+    "pint",
     "pandas",
     "tables",
     "flatdict",
     "xmltodict",
-    "jupyter",
-    "jupyterlab",
-    "jupyterlab_h5web"
 ]
 
 [project.optional-dependencies]
@@ -40,8 +38,16 @@ dev = [
     "pip-tools",
     "twine",
     "mypy",
+    "types-xmltodict",
+    "pandas-stubs",
+    "ruff>=0.12.0",
     "pylint",
-    "pycodestyle"
+    "uv",
+]
+ipynb = [
+    "jupyter",
+    "jupyterlab",
+    "jupyterlab_h5web"
 ]
 
 # [tool.setuptools]

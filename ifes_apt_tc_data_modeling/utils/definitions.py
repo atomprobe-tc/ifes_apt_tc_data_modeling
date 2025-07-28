@@ -25,14 +25,14 @@ MAX_NUMBER_OF_ION_SPECIES = 256
 # restrict number of atoms for molecular ion fragments
 MAX_NUMBER_OF_ATOMS_PER_ION = 32
 # practical and required minimum mass-resolution Da or atomic mass unit (amu)
-MQ_EPSILON = np.float64(1. / 2000.)
+MQ_EPSILON = np.float64(1.0 / 2000.0)
 
 
 # do not consider isotopes with a very low natural abundance
 PRACTICAL_ABUNDANCE = 1.0e-6  # 0.  # 1.0e-6
 # do not consider candidate isotopically different molecular ions
 # if their natural abundance product is too low
-PRACTICAL_ABUNDANCE_PRODUCT = 0.  # 1.0e-6  # 0.  # 1.0e-12
+PRACTICAL_ABUNDANCE_PRODUCT = 0.0  # 1.0e-6  # 0.  # 1.0e-12
 # do consider too shortliving isotopes
 PRACTICAL_MIN_HALF_LIFE = np.inf
 # many examples of ranges are not constrainted strongly enough so that

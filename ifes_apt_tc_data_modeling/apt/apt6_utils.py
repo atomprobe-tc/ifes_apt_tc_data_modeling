@@ -26,7 +26,7 @@ APT_SECTION_TYPE_MAX_LENGTH = 32
 
 def np_uint16_to_string(uint16_array: np.ndarray) -> str:
     """Create string from array of uint16 numbers (UTF-16)."""
-    str_parsed = ''
+    str_parsed = ""
     for value in uint16_array:
         if value != 0:  # '\x00'
             str_parsed += chr(value)

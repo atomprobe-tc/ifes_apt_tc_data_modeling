@@ -24,8 +24,10 @@ import numpy as np
 
 from ase.data import atomic_numbers, chemical_symbols
 from ifes_apt_tc_data_modeling.utils.nist_isotope_data import isotopes
-from ifes_apt_tc_data_modeling.utils.definitions import \
-    MAX_NUMBER_OF_ATOMS_PER_ION, MQ_EPSILON
+from ifes_apt_tc_data_modeling.utils.definitions import (
+    MAX_NUMBER_OF_ATOMS_PER_ION,
+    MQ_EPSILON,
+)
 
 
 def get_smart_chemical_symbols():
@@ -40,11 +42,12 @@ def get_smart_chemical_symbols():
     return priority_queue
 
 
-def isotope_to_hash(proton_number: int = 0,
-                    neutron_number: int = 0) -> int:
+def isotope_to_hash(proton_number: int = 0, neutron_number: int = 0) -> int:
     """Encode an isotope to a hashvalue."""
     if (0 <= proton_number < 256) and (0 <= neutron_number < 256):
-        return int(np.uint16(proton_number) + (np.uint16(256) * np.uint16(neutron_number)))
+        return int(
+            np.uint16(proton_number) + (np.uint16(256) * np.uint16(neutron_number))
+        )
     return 0
 
 
@@ -54,7 +57,9 @@ def hash_to_isotope(hashvalue: int = 0) -> Tuple[int, int]:
     #     "Argument hashvalue needs to be integer!"
     if 0 <= hashvalue <= int(np.iinfo(np.uint16).max):
         neutron_number = np.uint16(np.uint16(hashvalue) / np.uint16(256))
-        proton_number = np.uint16(np.uint16(hashvalue) - neutron_number * np.uint16(256))
+        proton_number = np.uint16(
+            np.uint16(hashvalue) - neutron_number * np.uint16(256)
+        )
         return (int(proton_number), int(neutron_number))
     return (0, 0)
 
@@ -74,18 +79,32 @@ def create_nuclide_hash(building_blocks: list) -> np.ndarray:
                 if block.count("-") == 0:  # an element
                     if (block not in symbol_to_proton_number) or (block == "X"):
                         return ivec
-                    hashvector.append(isotope_to_hash(symbol_to_proton_number[block], 0))
+                    hashvector.append(
+                        isotope_to_hash(symbol_to_proton_number[block], 0)
+                    )
                 elif block.count("-") == 1:
                     symb_mass = block.split("-")
-                    if (len(symb_mass) != 2) or (symb_mass[0] not in symbol_to_proton_number) or (symb_mass[0] == "X"):
-                        print(f"WARNING:: {block} is not properly formatted <symbol>-<mass_number>!")
+                    if (
+                        (len(symb_mass) != 2)
+                        or (symb_mass[0] not in symbol_to_proton_number)
+                        or (symb_mass[0] == "X")
+                    ):
+                        print(
+                            f"WARNING:: {block} is not properly formatted <symbol>-<mass_number>!"
+                        )
                         return ivec
                     proton_number = symbol_to_proton_number[symb_mass[0]]
                     mass_number = int(symb_mass[1])
                     neutron_number = mass_number - proton_number
-                    if (proton_number in isotopes) and (mass_number in isotopes[proton_number]):
-                        hashvector.append(isotope_to_hash(proton_number, neutron_number))
-        ivec[0:len(hashvector)] = np.sort(np.asarray(hashvector, np.uint16), kind="stable")[::-1]
+                    if (proton_number in isotopes) and (
+                        mass_number in isotopes[proton_number]
+                    ):
+                        hashvector.append(
+                            isotope_to_hash(proton_number, neutron_number)
+                        )
+        ivec[0 : len(hashvector)] = np.sort(
+            np.asarray(hashvector, np.uint16), kind="stable"
+        )[::-1]
     return ivec
 
 
@@ -100,7 +119,9 @@ def nuclide_hash_to_nuclide_list(ivec: np.ndarray) -> np.ndarray:
                     nuclide_list[idx, 0] = n_protons + n_neutrons
                 nuclide_list[idx, 1] = n_protons
         return nuclide_list
-    print(f"WARNING:: Argument nuclide_hash needs to be shaped ({MAX_NUMBER_OF_ATOMS_PER_ION},) !")
+    print(
+        f"WARNING:: Argument nuclide_hash needs to be shaped ({MAX_NUMBER_OF_ATOMS_PER_ION},) !"
+    )
     return nuclide_list
 
 
@@ -113,7 +134,9 @@ def nuclide_hash_to_dict_keyword(ivec: np.ndarray) -> str:
                 lst.append(f"{hashvalue}")
         if len(lst) > 0:
             return "_".join(lst)
-    return "0"  # "_".join(np.asarray(np.zeros((MAX_NUMBER_OF_ATOMS_PER_ION,)), np.uint16))
+    return (
+        "0"  # "_".join(np.asarray(np.zeros((MAX_NUMBER_OF_ATOMS_PER_ION,)), np.uint16))
+    )
 
 
 def nuclide_hash_to_human_readable_name(ivec: np.ndarray, charge_state: np.int8) -> str:
@@ -138,18 +161,18 @@ def nuclide_hash_to_human_readable_name(ivec: np.ndarray, charge_state: np.int8)
     return "unknown_iontype"
 
 
-def is_range_overlapping(interval: np.ndarray,
-                         interval_set: np.ndarray) -> bool:
+def is_range_overlapping(interval: np.ndarray, interval_set: np.ndarray) -> bool:
     """Check if interval overlaps within with members of interval set."""
-    if (np.shape(interval) == (2,)) and (np.shape(interval_set)[0] >= 1) \
-            and (np.shape(interval_set)[1] == 2):
+    if (
+        (np.shape(interval) == (2,))
+        and (np.shape(interval_set)[0] >= 1)
+        and (np.shape(interval_set)[1] == 2)
+    ):
         # interval = np.array([53.789, 54.343])
         # interval_set = np.array([[27.778, 28.33]])  # for testing purposes
         left_and_right_delta = np.zeros([np.shape(interval_set)[0], 2], bool)
-        left_and_right_delta[:, 0] = (interval_set[:, 0] - interval[1]) \
-            > MQ_EPSILON
-        left_and_right_delta[:, 1] = (interval[0] - interval_set[:, 1]) \
-            > MQ_EPSILON
+        left_and_right_delta[:, 0] = (interval_set[:, 0] - interval[1]) > MQ_EPSILON
+        left_and_right_delta[:, 1] = (interval[0] - interval_set[:, 1]) > MQ_EPSILON
         no_overlap = np.array([np.any(i) for i in left_and_right_delta])
         if np.all(no_overlap):
             return False
@@ -159,7 +182,7 @@ def is_range_overlapping(interval: np.ndarray,
 
 def is_range_significant(left: np.float64, right: np.float64) -> bool:
     """Check if inclusive interval bounds [left, right] span a finite range."""
-    if (np.float64(0.) <= left) and (np.float64(0.) <= right):
+    if (np.float64(0.0) <= left) and (np.float64(0.0) <= right):
         if (right - left) >= MQ_EPSILON:
             return True
     return False
@@ -177,15 +200,25 @@ def is_convertible_to_isotope_hash(symbol: str):
     # alternative case eventually specific nuclide e.g. "K-40"
     symb_mass = symbol.split("-")
     if len(symb_mass) != 2:
-        raise TypeError("Argument symbol is not properly formatted <symbol>-<mass_number>!")
+        raise TypeError(
+            "Argument symbol is not properly formatted <symbol>-<mass_number>!"
+        )
     if len(symb_mass[0]) != 1 and len(symb_mass[0]) != 2:
-        raise ValueError("Argument symbol is not properly formatted <symbol>-<mass_number>!")
+        raise ValueError(
+            "Argument symbol is not properly formatted <symbol>-<mass_number>!"
+        )
     if len(symb_mass[1]) <= 0:
-        raise ValueError(f"Argument symbol {symb_mass[1]} needs to be a physical mass number!")
+        raise ValueError(
+            f"Argument symbol {symb_mass[1]} needs to be a physical mass number!"
+        )
     if symb_mass[0] not in get_smart_chemical_symbols():
-        raise ValueError(f"{symb_mass[0]} is not a symbol in {get_smart_chemical_symbols()}!")
+        raise ValueError(
+            f"{symb_mass[0]} is not a symbol in {get_smart_chemical_symbols()}!"
+        )
     if int(symb_mass[1]) not in isotopes[atomic_numbers[symb_mass[0]]].keys():
-        raise ValueError(f"No value for isotopes[atomic_numbers[{symb_mass[0]}][{int(symb_mass[1])}] exists!")
+        raise ValueError(
+            f"No value for isotopes[atomic_numbers[{symb_mass[0]}][{int(symb_mass[1])}] exists!"
+        )
     return 2
 
 
@@ -197,14 +230,16 @@ def element_or_nuclide_to_hash(symbol: str):
         return isotope_to_hash(atomic_numbers[symbol], 0)
     if case == 2:
         symb_mass = symbol.split("-")
-        return isotope_to_hash(atomic_numbers[symb_mass[0]],
-                               int(symb_mass[1]) - atomic_numbers[symb_mass[0]])
+        return isotope_to_hash(
+            atomic_numbers[symb_mass[0]],
+            int(symb_mass[1]) - atomic_numbers[symb_mass[0]],
+        )
     return isotope_to_hash(0, 0)
 
 
-def symbol_lst_to_matrix_of_nuclide_vector(method: str = "resolve_all",
-                                           symbol_lst: list = [],
-                                           **kwargs):
+def symbol_lst_to_matrix_of_nuclide_vector(
+    method: str = "resolve_all", symbol_lst: list = [], **kwargs
+):
     """Parse human-readable element/isotope names to paraprobe."""
     # method = "resolve_all"
     # method = "resolve_unknown"
@@ -222,12 +257,18 @@ def symbol_lst_to_matrix_of_nuclide_vector(method: str = "resolve_all",
     supported = ("resolve_element", "resolve_ion", "resolve_isotope")
     if method not in supported:
         raise ValueError(f"Argument method needs to be in {supported} !")
-    if not isinstance(symbol_lst, list) and all(isinstance(lst, list) for lst in symbol_lst):
+    if not isinstance(symbol_lst, list) and all(
+        isinstance(lst, list) for lst in symbol_lst
+    ):
         raise TypeError("Argument symbol_lst must be a list of lists!")
     if not all(len(np.shape(lst)) == 1 for lst in symbol_lst):
-        raise ValueError("One list in argument symbol_lst is not a 1d list or an empty list!")
+        raise ValueError(
+            "One list in argument symbol_lst is not a 1d list or an empty list!"
+        )
     if not all(np.shape(lst)[0] >= 1 for lst in symbol_lst):
-        raise ValueError("One list in argument symbol_lst is not a 1d list or an empty list!")
+        raise ValueError(
+            "One list in argument symbol_lst is not a 1d list or an empty list!"
+        )
     matrix = np.zeros([len(symbol_lst), MAX_NUMBER_OF_ATOMS_PER_ION])
     charge = []
     if (method == "resolve_ion") and ("charge_lst" in kwargs):
@@ -236,25 +277,33 @@ def symbol_lst_to_matrix_of_nuclide_vector(method: str = "resolve_all",
         if not all(isinstance(val, int) for val in kwargs["charge_lst"]):
             raise ValueError("Keyword argument charge_lst needs to be a list of int !")
         if np.shape(symbol_lst)[0] != np.shape(kwargs["charge_lst"])[0]:
-            raise ValueError("Argument symbol_lst and keyword argument charge_lst need to have the same length !")
+            raise ValueError(
+                "Argument symbol_lst and keyword argument charge_lst need to have the same length !"
+            )
     for idx, lst in enumerate(symbol_lst):
         ivec = np.zeros([1, MAX_NUMBER_OF_ATOMS_PER_ION])
         if lst == []:
             raise ValueError("Argument molecular ion must not be an empty list!")
         if len(lst) > MAX_NUMBER_OF_ATOMS_PER_ION:
-            raise ValueError(f"Argument molecular ion must not contain more than "
-                             f"{MAX_NUMBER_OF_ATOMS_PER_ION} entries!")
+            raise ValueError(
+                f"Argument molecular ion must not contain more than "
+                f"{MAX_NUMBER_OF_ATOMS_PER_ION} entries!"
+            )
         jdx = 0
         for symbol in lst:
             if method == "resolve_element":
                 if symbol in atomic_numbers:
-                    ivec[0, jdx] = isotope_to_hash(atomic_numbers[symbol], 0)  # do not encode isotope information
+                    ivec[0, jdx] = isotope_to_hash(
+                        atomic_numbers[symbol], 0
+                    )  # do not encode isotope information
                     jdx += 1
                 else:
                     # it might be that we have a specific nuclide e.g. K-40 try to parse element symbol
                     candidate = symbol.split("-", 1)[0]
                     if candidate not in atomic_numbers:
-                        raise KeyError(f"symbol_lst[{idx}] candidate does not specify an element!")
+                        raise KeyError(
+                            f"symbol_lst[{idx}] candidate does not specify an element!"
+                        )
                     ivec[0, jdx] = isotope_to_hash(atomic_numbers[candidate], 0)
                     jdx += 1
             else:  # "resolve_isotope", "resolve_ion":
