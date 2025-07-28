@@ -8,31 +8,7 @@ Work towards ideally semantically specified file formats and data models.
 ## Getting started:
 
 ### Create an environment
-To use this library create a conda or a virtual environment. We tested on Ubuntu with Python 3.8 and newer version.
-In what follows the version (tag) 3.8 is a placeholder whereby we show how to proceed when using e.g. Python version 3.8.
-Using newer versions of Python should work the same by replacing 3.8 with the respective version (tag). As of 2024,
-using Python in versions higher than 3.9 becomes more and more common. The support for users to install modern
-Python version has also improved. Therefore, the following commands typically enable you to create a 
-specifically-versioned virtual environment:
-
-```
-mkdir <your-brand-new-folder>
-cd <your-brand-new-folder>
-pip install virtualenv
-virtualenv --python=python3.8 .py38
-source .py38/bin/activate
-```
-
-If you wish to use or still demand to use older versions of Python, like 3.8 or 3.9, you can conveniently install them
-via the deadsnakes repository (or via conda). For using deadsnakes proceed with the following commands:
-
-```
-sudo add-apt-repository ppa:deadsnakes/ppa
-sudo apt install python3.8 python3-dev libpython3.8-dev python3.8-venv
-```
-
-In some cases when using Python3.8, it was necessary to install python-numpy.
-Please consider this if you run into issues when continuing with this manual.
+To use this library create a conda or a virtual environment. We recommend using Python 3.12.
 
 ### Install the ifes_apt_tc_data_modeling modules as a user
 
@@ -40,10 +16,18 @@ Please consider this if you run into issues when continuing with this manual.
 git clone https://www.github.com/atomprobe-tc/ifes_apt_tc_data_modeling.git
 cd ifes_apt_tc_data_modeling
 python -m pip install --upgrade pip
-python -m pip install -e .
-python -m pip install -e ".[dev]"
-python -m pip list
+python -m pip install -e ".[ipynb]"
+```
+This will install a jupyterlab that can be started to explore the tests and examples
+which show how the individual format parsers can be used. Jupyterlab can be started with
+
+```
 jupyter-lab
+```
+
+### Additional dependencies to install for developer purposes
+```
+python -m pip install -e ".[dev,ipynb]"
 ```
 
 ## Context, status quo, file formats used for atom probe research
