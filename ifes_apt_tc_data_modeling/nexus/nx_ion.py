@@ -48,7 +48,7 @@ def try_to_reduce_to_unique_definitions(inp: list) -> list:
             continue
         else:
             raise ValueError(
-                f"Argument inp to try_to_reduce_to_unique_definitions needs to list of NxIon!"
+                "Argument inp to try_to_reduce_to_unique_definitions needs to list of NxIon!"
             )
     unique = []
     # unique if mqival does not overlap (but can touch) either side

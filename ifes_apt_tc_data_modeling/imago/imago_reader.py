@@ -97,7 +97,7 @@ class ReadImagoAnalysisFileFormat:
                         for req in reqs:
                             if req not in cand_dct.keys():
                                 all_reqs_exist = False
-                        if all_reqs_exist == False:
+                        if not all_reqs_exist:
                             continue
 
                         if (
