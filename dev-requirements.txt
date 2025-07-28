@@ -103,6 +103,7 @@ numpy==1.26.4
     #   matplotlib
     #   numexpr
     #   pandas
+    #   pandas-stubs
     #   radioactivedecay
     #   scipy
     #   tables
@@ -116,6 +117,8 @@ pandas==2.3.1
     # via
     #   ifes-apt-tc-data-modeling (pyproject.toml)
     #   radioactivedecay
+pandas-stubs==2.3.0.250703
+    # via ifes-apt-tc-data-modeling (pyproject.toml)
 pathspec==0.12.1
     # via mypy
 pillow==11.3.0
@@ -192,6 +195,10 @@ tables==3.10.2
 tomlkit==0.13.3
     # via pylint
 twine==6.1.0
+    # via ifes-apt-tc-data-modeling (pyproject.toml)
+types-pytz==2025.2.0.20250516
+    # via pandas-stubs
+types-xmltodict==0.14.0.20241009
     # via ifes-apt-tc-data-modeling (pyproject.toml)
 typing-extensions==4.14.1
     # via
