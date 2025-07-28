@@ -24,8 +24,10 @@ import re
 import numpy as np
 
 from ifes_apt_tc_data_modeling.nexus.nx_ion import NxField, NxIon
-from ifes_apt_tc_data_modeling.utils.utils import \
-    create_nuclide_hash, is_range_significant
+from ifes_apt_tc_data_modeling.utils.utils import (
+    create_nuclide_hash,
+    is_range_significant,
+)
 from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
 from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
 
@@ -35,15 +37,18 @@ from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
 
 
 def evaluate_rng_range_line(
-        i: int, line: str, column_id_to_label: dict, n_columns: int) -> dict:
+    i: int, line: str, column_id_to_label: dict, n_columns: int
+) -> dict:
     """Represent information content of a single range line."""
     # example line: ". 107.7240 108.0960 1 0 0 0 0 0 0 0 0 0 3 0 0 0"
-    info: dict = {"identifier": f"Range{i}",
-                  "range": np.asarray([0., MQ_EPSILON], np.float64),
-                  "atoms": [],
-                  "volume": np.float64(0.),
-                  "color": "",
-                  "name": ""}
+    info: dict = {
+        "identifier": f"Range{i}",
+        "range": np.asarray([0.0, MQ_EPSILON], np.float64),
+        "atoms": [],
+        "volume": np.float64(0.0),
+        "color": "",
+        "name": "",
+    }
 
     tmp = re.split(r"\s+", line)
     if len(tmp) != n_columns:
@@ -56,7 +61,7 @@ def evaluate_rng_range_line(
     info["range"] = np.asarray([tmp[1], tmp[2]], np.float64)
 
     # line encodes multiplicity of element via array of multiplicity counts
-    element_multiplicity = np.asarray(tmp[3:len(tmp)], np.uint32)
+    element_multiplicity = np.asarray(tmp[3 : len(tmp)], np.uint32)
     if np.sum(element_multiplicity) < 0:
         # raise ValueError(f"Line {line} no element counts!")
         return info
@@ -64,12 +69,16 @@ def evaluate_rng_range_line(
         for jdx in np.arange(0, len(element_multiplicity)):
             if element_multiplicity[jdx] < 0:
                 # raise ValueError(f"Line {line} no negative element counts!")
-                raise ValueError(f"element_multiplicity[jdx] {element_multiplicity[jdx]} needs to be positive!")
+                raise ValueError(
+                    f"element_multiplicity[jdx] {element_multiplicity[jdx]} needs to be positive!"
+                )
             if element_multiplicity[jdx] > 0:
                 symbol = column_id_to_label[jdx + 1]
                 if symbol in get_chemical_symbols():
-                    info["atoms"] = np.append(info["atoms"],
-                                              [column_id_to_label[jdx + 1]] * int(element_multiplicity[jdx]))
+                    info["atoms"] = np.append(
+                        info["atoms"],
+                        [column_id_to_label[jdx + 1]] * int(element_multiplicity[jdx]),
+                    )
                 else:
                     info["name"] = symbol
                     info["atoms"] = []  # will map to unknown type
@@ -96,16 +105,16 @@ def evaluate_rng_ion_type_header(line: str) -> dict:
     return info
 
 
-class ReadRngFileFormat():
+class ReadRngFileFormat:
     """Read *.rng file format."""
 
     def __init__(self, file_path: str):
         if (len(file_path) <= 4) or (file_path.lower().endswith(".rng") is False):
-            raise ImportError("WARNING::RNG file incorrect file_path ending or file type!")
+            raise ImportError(
+                "WARNING::RNG file incorrect file_path ending or file type!"
+            )
         self.file_path = file_path
-        self.rng: dict = {"ranges": {},
-                          "ions": {},
-                          "molecular_ions": []}
+        self.rng: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
         self.read_rng()
 
     def read_rng(self):
@@ -115,8 +124,11 @@ class ReadRngFileFormat():
 
         txt = txt.replace("\r\n", "\n")  # windows to unix EOL conversion
         txt = txt.replace(",", ".")  # use decimal dots instead of comma
-        txt_stripped = [line for line in txt.split("\n")
-                        if line.strip() != "" and line.startswith("#") is False]
+        txt_stripped = [
+            line
+            for line in txt.split("\n")
+            if line.strip() != "" and line.startswith("#") is False
+        ]
         del txt
 
         # see DOI: 10.1007/978-1-4899-7430-3 for further details to this
@@ -153,14 +165,18 @@ class ReadRngFileFormat():
 
         for idx in np.arange(current_line_id + 1, current_line_id + 1 + n_ranges):
             dct = evaluate_rng_range_line(
-                idx - current_line_id, txt_stripped[idx],
+                idx - current_line_id,
+                txt_stripped[idx],
                 header["column_id_to_label"],
-                n_element_symbols + 3)
+                n_element_symbols + 3,
+            )
             if dct is None:
                 print(f"WARNING::RNG line {txt_stripped[idx]} is corrupted!")
                 continue
 
-            m_ion = NxIon(nuclide_hash=create_nuclide_hash(dct["atoms"]), charge_state=0)
+            m_ion = NxIon(
+                nuclide_hash=create_nuclide_hash(dct["atoms"]), charge_state=0
+            )
             m_ion.add_range(dct["range"][0], dct["range"][1])
             m_ion.comment = NxField(dct["name"], "")
             m_ion.apply_combinatorics()

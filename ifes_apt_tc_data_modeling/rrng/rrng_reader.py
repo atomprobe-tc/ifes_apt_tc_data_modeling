@@ -23,13 +23,17 @@
 import re
 import numpy as np
 
-from ifes_apt_tc_data_modeling.nexus.nx_ion import NxField, NxIon, \
-    try_to_reduce_to_unique_definitions
-from ifes_apt_tc_data_modeling.utils.utils import \
-    create_nuclide_hash, is_range_significant
+from ifes_apt_tc_data_modeling.nexus.nx_ion import (
+    NxField,
+    NxIon,
+    try_to_reduce_to_unique_definitions,
+)
+from ifes_apt_tc_data_modeling.utils.utils import (
+    create_nuclide_hash,
+    is_range_significant,
+)
 from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
-from ifes_apt_tc_data_modeling.utils.molecular_ions import \
-    get_chemical_symbols
+from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
 
 
 def evaluate_rrng_range_line(i: int, line: str) -> dict:
@@ -39,12 +43,14 @@ def evaluate_rrng_range_line(i: int, line: str) -> dict:
     # according to DOI: 10.1007/978-1-4614-8721-0
     # mqmin, mqmax, vol, ion composition is required,
     #     name and color fields are optional
-    info: dict = {"identifier": f"Range{i}",
-                  "range": np.asarray([0., MQ_EPSILON], np.float64),
-                  "atoms": [],
-                  "volume": np.float64(0.),
-                  "color": "",
-                  "name": ""}
+    info: dict = {
+        "identifier": f"Range{i}",
+        "range": np.asarray([0.0, MQ_EPSILON], np.float64),
+        "atoms": [],
+        "volume": np.float64(0.0),
+        "color": "",
+        "name": "",
+    }
 
     tmp = re.split(r"[\s=]+", line)
     if len(tmp) < 6:
@@ -57,8 +63,9 @@ def evaluate_rrng_range_line(i: int, line: str) -> dict:
 
     if tmp[3].lower().startswith("vol:"):
         info["volume"] = np.float64(re.split(r":", tmp[3])[1])
-    if (tmp[-1].lower().startswith("color:")) and \
-       (len(re.split(r":", tmp[-1])[1]) == 6):
+    if (tmp[-1].lower().startswith("color:")) and (
+        len(re.split(r":", tmp[-1])[1]) == 6
+    ):
         info["color"] = "#" + re.split(r":", tmp[-1])[1]
     # HEX_COLOR_REGEX = r"^([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
     # replace r"^#( ...
@@ -68,8 +75,10 @@ def evaluate_rrng_range_line(i: int, line: str) -> dict:
     for information in tmp[4:-1]:
         element_multiplicity = re.split(r":+", information)
         if len(element_multiplicity) != 2:
-            raise ValueError(f"Line {line}, element multiplicity is not "
-                             f"correctly formatted {len(element_multiplicity)}!")
+            raise ValueError(
+                f"Line {line}, element multiplicity is not "
+                f"correctly formatted {len(element_multiplicity)}!"
+            )
         # skip vol, name, and color information
         if element_multiplicity[0].lower() == "name":
             info["name"] = f"{element_multiplicity[1]}"
@@ -84,28 +93,33 @@ def evaluate_rrng_range_line(i: int, line: str) -> dict:
                 # raise ValueError(f"WARNING::Line {line} contains an invalid chemical symbol {symbol}!")
                 return info
             # if np.uint32(element_multiplicity[1]) <= 0:
-                # raise ValueError(f"Line {line} zero or negative multiplicity !")
+            # raise ValueError(f"Line {line} zero or negative multiplicity !")
             if np.uint32(element_multiplicity[1]) >= 256:
                 # raise ValueError(f"Line {line} unsupported high multiplicity "
                 #                  f"{np.uint32(element_multiplicity)}!")
                 return info
-            info["atoms"] = np.append(info["atoms"],
-                                      [symbol] * int(element_multiplicity[1]))
+            info["atoms"] = np.append(
+                info["atoms"], [symbol] * int(element_multiplicity[1])
+            )
     return info
 
 
-class ReadRrngFileFormat():
+class ReadRrngFileFormat:
     """Read *.rrng file format."""
 
     def __init__(self, file_path: str, unique=False, verbose=False):
         """Initialize the class."""
         if (len(file_path) <= 5) or (file_path.lower().endswith(".rrng") is False):
-            raise ImportError("WARNING::RRNG file incorrect file_path ending or file type!")
+            raise ImportError(
+                "WARNING::RRNG file incorrect file_path ending or file type!"
+            )
         self.file_path = file_path
-        self.rrng: dict = {"ionnames": [],
-                           "ranges": {},
-                           "ions": {},
-                           "molecular_ions": []}
+        self.rrng: dict = {
+            "ionnames": [],
+            "ranges": {},
+            "ions": {},
+            "molecular_ions": [],
+        }
         self.unique = unique
         self.verbose = verbose
         self.read_rrng()
@@ -117,8 +131,11 @@ class ReadRrngFileFormat():
 
         txt = txt.replace("\r\n", "\n")  # windows to unix EOL conversion
         txt = txt.replace(",", ".")  # use decimal dots instead of comma
-        txt_stripped = [line for line in txt.split("\n")
-                        if line.strip() != "" and line.startswith("#") is False]
+        txt_stripped = [
+            line
+            for line in txt.split("\n")
+            if line.strip() != "" and line.startswith("#") is False
+        ]
         del txt
 
         # see DOI: 10.1007/978-1-4899-7430-3 for further details to this
@@ -129,8 +146,7 @@ class ReadRrngFileFormat():
         # to specify ranges they consider special
         # these are loaded as user types
         # with nuclide_hash np.iinfo(np.uint16).max
-        where = [idx for idx, element in
-                 enumerate(txt_stripped) if element == "[Ions]"]
+        where = [idx for idx, element in enumerate(txt_stripped) if element == "[Ions]"]
         if isinstance(where, list) is False:
             raise ValueError("Section [Ions] not found!")
         if len(where) != 1:
@@ -139,28 +155,43 @@ class ReadRrngFileFormat():
 
         tmp = re.split(r"[\s=]+", txt_stripped[current_line_id])
         if len(tmp) != 2:
-            raise ValueError(f"Line {txt_stripped[current_line_id]} [Ions]/Number line corrupted!")
+            raise ValueError(
+                f"Line {txt_stripped[current_line_id]} [Ions]/Number line corrupted!"
+            )
         if tmp[0] != "Number":
-            raise ValueError(f"Line {txt_stripped[current_line_id]} [Ions]/Number incorrectly formatted!")
+            raise ValueError(
+                f"Line {txt_stripped[current_line_id]} [Ions]/Number incorrectly formatted!"
+            )
         if tmp[1].isnumeric() is False:
-            raise ValueError(f"Line {txt_stripped[current_line_id]} [Ions]/Number not a number!")
+            raise ValueError(
+                f"Line {txt_stripped[current_line_id]} [Ions]/Number not a number!"
+            )
         number_of_ion_names = int(tmp[1])
         if number_of_ion_names <= 0:
-            raise ValueError(f"Line {txt_stripped[current_line_id]} no ion names defined!")
+            raise ValueError(
+                f"Line {txt_stripped[current_line_id]} no ion names defined!"
+            )
         current_line_id += 1
         for i in np.arange(0, number_of_ion_names):
             tmp = re.split(r"[\s=]+", txt_stripped[current_line_id + i])
             if len(tmp) != 2:
-                raise ValueError(f"Line {txt_stripped[current_line_id + i]} [Ions]/Ion line corrupted!")
+                raise ValueError(
+                    f"Line {txt_stripped[current_line_id + i]} [Ions]/Ion line corrupted!"
+                )
             if tmp[0] != f"Ion{i + 1}":
-                raise ValueError(f"Line {txt_stripped[current_line_id + i]} [Ions]/Ion incorrectly formatted!")
+                raise ValueError(
+                    f"Line {txt_stripped[current_line_id + i]} [Ions]/Ion incorrectly formatted!"
+                )
             if isinstance(tmp[1], str) is False:
-                raise ValueError(f"Line {txt_stripped[current_line_id + i]} [Ions]/Name not a string!")
+                raise ValueError(
+                    f"Line {txt_stripped[current_line_id + i]} [Ions]/Name not a string!"
+                )
             self.rrng["ionnames"].append(tmp[1])
 
         # second, parse [Ranges] section
-        where = [idx for idx, element in
-                 enumerate(txt_stripped) if element == "[Ranges]"]
+        where = [
+            idx for idx, element in enumerate(txt_stripped) if element == "[Ranges]"
+        ]
         if isinstance(where, list) is False:
             raise ValueError("Section [Ranges] not found!")
         if len(where) != 1:
@@ -169,14 +200,22 @@ class ReadRrngFileFormat():
 
         tmp = re.split(r"[\s=]+", txt_stripped[current_line_id])
         if len(tmp) != 2:
-            raise ValueError(f"Line {txt_stripped[current_line_id]} [Ranges]/Number line corrupted!")
+            raise ValueError(
+                f"Line {txt_stripped[current_line_id]} [Ranges]/Number line corrupted!"
+            )
         if tmp[0] != "Number":
-            raise ValueError(f"Line {txt_stripped[current_line_id]} [Ranges]/Number incorrectly formatted!")
+            raise ValueError(
+                f"Line {txt_stripped[current_line_id]} [Ranges]/Number incorrectly formatted!"
+            )
         if tmp[1].isnumeric() is False:
-            raise ValueError(f"Line {txt_stripped[current_line_id]} [Ranges]/Number not a number!")
+            raise ValueError(
+                f"Line {txt_stripped[current_line_id]} [Ranges]/Number not a number!"
+            )
         number_of_ranges = int(tmp[1])
         if number_of_ranges <= 0:
-            raise ValueError(f"Line {txt_stripped[current_line_id]}  No ranges defined!")
+            raise ValueError(
+                f"Line {txt_stripped[current_line_id]}  No ranges defined!"
+            )
         current_line_id += 1
 
         m_ions = []
@@ -185,10 +224,14 @@ class ReadRrngFileFormat():
                 print(f"{txt_stripped[current_line_id + jdx]}")
             dct = evaluate_rrng_range_line(jdx + 1, txt_stripped[current_line_id + jdx])
             if dct is None:
-                print(f"WARNING::RRNG line {txt_stripped[current_line_id + jdx]} is corrupted!")
+                print(
+                    f"WARNING::RRNG line {txt_stripped[current_line_id + jdx]} is corrupted!"
+                )
                 continue
 
-            m_ion = NxIon(nuclide_hash=create_nuclide_hash(dct["atoms"]), charge_state=0)
+            m_ion = NxIon(
+                nuclide_hash=create_nuclide_hash(dct["atoms"]), charge_state=0
+            )
             m_ion.add_range(dct["range"][0], dct["range"][1])
             m_ion.comment = NxField(dct["name"], "")
             m_ions.append(m_ion)
@@ -196,10 +239,14 @@ class ReadRrngFileFormat():
 
         if self.unique:
             unique_m_ions = try_to_reduce_to_unique_definitions(m_ions)
-            print(f"Found {len(m_ions)} ranging definitions, performed reduction to {len(unique_m_ions)} unique ones")
+            print(
+                f"Found {len(m_ions)} ranging definitions, performed reduction to {len(unique_m_ions)} unique ones"
+            )
         else:
             unique_m_ions = m_ions.copy()
-            print(f"Found {len(m_ions)} ranging definitions, no reduction, {len(unique_m_ions)} remain.")
+            print(
+                f"Found {len(m_ions)} ranging definitions, no reduction, {len(unique_m_ions)} remain."
+            )
         del m_ions
 
         for m_ion in unique_m_ions:

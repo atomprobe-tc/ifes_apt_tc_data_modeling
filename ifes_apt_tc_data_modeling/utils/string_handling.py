@@ -22,5 +22,5 @@
 def rchop(string: str = "", suffix: str = "") -> str:
     """Right-chop a string."""
     if suffix and string.endswith(suffix):
-        return string[:-len(suffix)]
+        return string[: -len(suffix)]
     return string

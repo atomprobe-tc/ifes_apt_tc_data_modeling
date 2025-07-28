@@ -27,20 +27,24 @@ from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
 from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
 
 
-class ReadPosFileFormat():
+class ReadPosFileFormat:
     """Read *.pos file format."""
 
     def __init__(self, file_path: str):
         """Initialize the reader."""
         if (len(file_path) <= 4) or (file_path.lower().endswith(".pos") is False):
-            raise ImportError("WARNING::POS file incorrect file_path ending or file type!")
+            raise ImportError(
+                "WARNING::POS file incorrect file_path ending or file type!"
+            )
         self.file_path = file_path
 
         self.file_size = os.path.getsize(self.file_path)
-        assert self.file_size % 4 * 4 == 0, \
+        assert self.file_size % 4 * 4 == 0, (
             "POS file_size not integer multiple of 4*4B!"
-        assert np.uint32(self.file_size / (4 * 4)) < np.iinfo(np.uint32).max, \
+        )
+        assert np.uint32(self.file_size / (4 * 4)) < np.iinfo(np.uint32).max, (
             "POS file is too large, currently only 2*32 supported!"
+        )
         self.number_of_events = np.uint32(self.file_size / (4 * 4))
         # print("Initialized access to " + self.file_path + " successfully")
 
@@ -57,15 +61,15 @@ class ReadPosFileFormat():
         xyz.values = np.zeros([self.number_of_events, 3], np.float32)
         xyz.unit = "nm"
 
-        xyz.values[:, 0] = \
-            get_memory_mapped_data(self.file_path, ">f4",
-                                   0 * 4, 4 * 4, self.number_of_events)  # x
-        xyz.values[:, 1] = \
-            get_memory_mapped_data(self.file_path, ">f4",
-                                   1 * 4, 4 * 4, self.number_of_events)  # y
-        xyz.values[:, 2] = \
-            get_memory_mapped_data(self.file_path, ">f4",
-                                   2 * 4, 4 * 4, self.number_of_events)  # z
+        xyz.values[:, 0] = get_memory_mapped_data(
+            self.file_path, ">f4", 0 * 4, 4 * 4, self.number_of_events
+        )  # x
+        xyz.values[:, 1] = get_memory_mapped_data(
+            self.file_path, ">f4", 1 * 4, 4 * 4, self.number_of_events
+        )  # y
+        xyz.values[:, 2] = get_memory_mapped_data(
+            self.file_path, ">f4", 2 * 4, 4 * 4, self.number_of_events
+        )  # z
         return xyz
 
     def get_mass_to_charge_state_ratio(self):
@@ -75,7 +79,7 @@ class ReadPosFileFormat():
         m_n.values = np.zeros([self.number_of_events, 1], np.float32)
         m_n.unit = "Da"
 
-        m_n.values[:, 0] = \
-            get_memory_mapped_data(self.file_path, ">f4",
-                                   3 * 4, 4 * 4, self.number_of_events)
+        m_n.values[:, 0] = get_memory_mapped_data(
+            self.file_path, ">f4", 3 * 4, 4 * 4, self.number_of_events
+        )
         return m_n

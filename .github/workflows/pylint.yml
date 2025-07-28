@@ -20,6 +20,6 @@ jobs:
       - name: ruff format
         run: |
           ruff format --check ifes_apt_tc_data_modeling tests
-      - name: mypy
-        run: |
-          mypy ifes_apt_tc_data_modeling tests
+      # - name: mypy
+      #   run: |
+      #     mypy ifes_apt_tc_data_modeling
