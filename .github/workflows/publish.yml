@@ -1,0 +1,97 @@
+name: Upload Python Package
+
+on:
+  release:
+    types: [published]
+
+env:
+  python-version: 3.12
+
+jobs:
+  setup:
+    name: Checkout and Install
+    runs-on: ubuntu-latest
+    outputs:
+      git_tag_version: ${{ steps.git_tag_version.outputs.version }}
+      citation_version: ${{ steps.citation_version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+      - name: Install uv and set the python version to ${{ env.python-version }}
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ env.python-version }}
+      - name: Git tag version
+        id: git_tag_version
+        run: |
+          GIT_TAG_VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$GIT_TAG_VERSION" >> "$GITHUB_OUTPUT"
+      - name: Citation version
+        id: citation_version
+        run: |
+          CITATION_VERSION=$(grep '^version:' CITATION.cff | cut -d' ' -f2)
+          echo "version=$CITATION_VERSION" >> "$GITHUB_OUTPUT"
+
+  test:
+    name: Run Tests
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+      - name: Install uv and set the python version to ${{ env.python-version }}
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ env.python-version }}
+      - name: Install ifes_apt_tc_data_modeling
+        run: |
+          uv pip install -e ".[dev]"
+      - name: Test with pytest
+        run: pytest tests/
+
+  build:
+    name: Build Package
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+      - name: Install uv and set the python version to ${{ env.python-version }}
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ env.python-version }}
+      - name: Build package
+        run: uv build
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-artifacts
+          path: dist/
+
+  deploy:
+    name: Upload to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/ifes_apt_tc_data_modeling
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+      - name: Download dist artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-artifacts
+          path: dist/
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
