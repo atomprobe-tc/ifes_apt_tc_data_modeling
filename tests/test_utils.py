@@ -130,11 +130,11 @@ def test_nuclide_hash_to_dict_keyword():
     "ivec, charge_state, expected",
     [
         (create_nuclide_hash([]), 0, "unknown_iontype"),
-        (create_nuclide_hash(["Tc-99", "Fe"]), +8, "unknown_iontype"),
-        (create_nuclide_hash(["Tc-99", "Fe"]), +3, "Fe 99Tc +++"),
-        (create_nuclide_hash(["Tc-99", "Fe"]), 0, "Fe 99Tc"),
-        (create_nuclide_hash(["Tc-99", "Fe"]), -3, "Fe 99Tc ---"),
-        (create_nuclide_hash(["Tc-99", "Fe"]), -8, "unknown_iontype"),
+        (create_nuclide_hash(["Tc-99", "Fe"]), np.int8(+8), "unknown_iontype"),
+        (create_nuclide_hash(["Tc-99", "Fe"]), np.int8(+3), "Fe 99Tc +++"),
+        (create_nuclide_hash(["Tc-99", "Fe"]), np.int8(0), "Fe 99Tc"),
+        (create_nuclide_hash(["Tc-99", "Fe"]), np.int8(-3), "Fe 99Tc ---"),
+        (create_nuclide_hash(["Tc-99", "Fe"]), np.int8(-8), "unknown_iontype"),
     ],
     ids=[
         "nuclide_hash_to_human_readable_name_positive_zero_neutral",
@@ -146,7 +146,7 @@ def test_nuclide_hash_to_dict_keyword():
     ],
 )
 def test_nuclide_hash_to_human_readable_name(
-    ivec: np.ndarray, charge_state: int, expected: str
+    ivec: np.ndarray, charge_state: np.int8, expected: str
 ):
     assert expected == nuclide_hash_to_human_readable_name(ivec, charge_state)
 
