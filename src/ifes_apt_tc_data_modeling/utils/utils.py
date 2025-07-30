@@ -42,8 +42,14 @@ def get_smart_chemical_symbols():
     return priority_queue
 
 
-def isotope_to_hash(proton_number: int = 0, neutron_number: int = 0) -> int:
+def isotope_to_hash(proton_number: int = 0, neutron_number: int = 255) -> int:
     """Encode an isotope to a hashvalue."""
+    # the acceptance of NXapm introduced a breaking change for this mapping
+    # previously meaning the element, i.e., irrespective its isotopes used 0
+    #   this case is degenerate though for the 1H isotope and hydrogen element
+    # the new mapping therefore uses neutron_number = 255 as the offset to
+    # highlight when elements are meant instead of specific isotopes, i.e.
+    # 1H is mapped to 1 + 0 * 256, while hydrogen is mapped to 1 + 255 * 256
     if (0 <= proton_number < 256) and (0 <= neutron_number < 256):
         return int(
             np.uint16(proton_number) + (np.uint16(256) * np.uint16(neutron_number))
@@ -53,8 +59,7 @@ def isotope_to_hash(proton_number: int = 0, neutron_number: int = 0) -> int:
 
 def hash_to_isotope(hashvalue: int = 0) -> Tuple[int, int]:
     """Decode a hashvalue to an isotope."""
-    # assert isinstance(hashvalue, int), \
-    #     "Argument hashvalue needs to be integer!"
+    # see comment on isotope_to_hash
     if 0 <= hashvalue <= int(np.iinfo(np.uint16).max):
         neutron_number = np.uint16(np.uint16(hashvalue) / np.uint16(256))
         proton_number = np.uint16(

@@ -40,8 +40,8 @@ dev = [
     "types-xmltodict",
     "pandas-stubs",
     "pytest",
-
     "uv",
+    "pre-commit"
 ]
 ipynb = [
     "jupyter",
