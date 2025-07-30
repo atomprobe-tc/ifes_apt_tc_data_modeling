@@ -18,6 +18,7 @@
 
 import pytest
 import numpy as np
+from ifes_apt_tc_data_modeling.utils.definitions import NEUTRON_NUMBER_FOR_ELEMENT
 from ifes_apt_tc_data_modeling.utils.utils import (
     get_smart_chemical_symbols,
     isotope_to_hash,
@@ -41,7 +42,14 @@ def test_get_smart_chemical_symbols():
 
 @pytest.mark.parametrize(
     "proton_number, neutron_number, expected",
-    [(0, 0, 0), (1, 255, 65281), (1, 0, 1), (1, 1, 257), (1, 2, 513), (43, 56, 14379)],
+    [
+        (0, 0, 0),
+        (1, NEUTRON_NUMBER_FOR_ELEMENT, 65281),
+        (1, 0, 1),
+        (1, 1, 257),
+        (1, 2, 513),
+        (43, 56, 14379),
+    ],
     ids=[
         "isotope_to_hash_zerozero",
         "isotope_to_hash_hydrogen",
@@ -59,7 +67,7 @@ def test_isotope_to_hash(proton_number: int, neutron_number: int, expected: int)
     "hashvalue, expected",
     [
         (0, (0, 0)),
-        (65281, (1, 255)),
+        (65281, (1, NEUTRON_NUMBER_FOR_ELEMENT)),
         (1, (1, 0)),
         (257, (1, 1)),
         (513, (1, 2)),
@@ -87,10 +95,10 @@ def test_create_nuclide_hash():
                     np.array(
                         [
                             isotope_to_hash(43, 56),
-                            isotope_to_hash(26, 255),
-                            isotope_to_hash(8, 255),
-                            isotope_to_hash(8, 255),
-                            isotope_to_hash(8, 255),
+                            isotope_to_hash(26, NEUTRON_NUMBER_FOR_ELEMENT),
+                            isotope_to_hash(8, NEUTRON_NUMBER_FOR_ELEMENT),
+                            isotope_to_hash(8, NEUTRON_NUMBER_FOR_ELEMENT),
+                            isotope_to_hash(8, NEUTRON_NUMBER_FOR_ELEMENT),
                         ],
                         np.uint16,
                     ),
