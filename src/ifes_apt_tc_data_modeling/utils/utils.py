@@ -85,7 +85,9 @@ def create_nuclide_hash(building_blocks: list) -> np.ndarray:
                     if (block not in symbol_to_proton_number) or (block == "X"):
                         return ivec
                     hashvector.append(
-                        isotope_to_hash(symbol_to_proton_number[block], 0)
+                        isotope_to_hash(
+                            symbol_to_proton_number[block], 255
+                        )  # cuz of breaking change see isotope_to_hash
                     )
                 elif block.count("-") == 1:
                     symb_mass = block.split("-")
@@ -120,7 +122,7 @@ def nuclide_hash_to_nuclide_list(ivec: np.ndarray) -> np.ndarray:
         for idx in np.arange(0, MAX_NUMBER_OF_ATOMS_PER_ION):
             if ivec[idx] != 0:
                 n_protons, n_neutrons = hash_to_isotope(int(ivec[idx]))
-                if n_neutrons != 0:
+                if 0 < n_neutrons < 255:  # see breaking change isotope_to_hash
                     nuclide_list[idx, 0] = n_protons + n_neutrons
                 nuclide_list[idx, 1] = n_protons
         return nuclide_list
@@ -146,12 +148,12 @@ def nuclide_hash_to_dict_keyword(ivec: np.ndarray) -> str:
 
 def nuclide_hash_to_human_readable_name(ivec: np.ndarray, charge_state: np.int8) -> str:
     """Get human-readable name from an nuclide_hash."""
-    if len(ivec) <= MAX_NUMBER_OF_ATOMS_PER_ION:
+    if len(ivec) <= MAX_NUMBER_OF_ATOMS_PER_ION and -8 < charge_state < 8:
         human_readable = ""
         for hashvalue in ivec:
             if hashvalue != 0:
                 protons, neutrons = hash_to_isotope(int(hashvalue))
-                if neutrons > 0:
+                if 0 < neutrons < 255:
                     human_readable += f"{protons + neutrons}{chemical_symbols[protons]}"
                 else:
                     human_readable += f"{chemical_symbols[protons]}"
@@ -162,7 +164,8 @@ def nuclide_hash_to_human_readable_name(ivec: np.ndarray, charge_state: np.int8)
             human_readable += "-" * -charge_state
         else:
             human_readable = human_readable.rstrip()
-        return human_readable
+        if human_readable != "":
+            return human_readable
     return "unknown_iontype"
 
 

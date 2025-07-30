@@ -23,6 +23,9 @@ from ifes_apt_tc_data_modeling.utils.utils import (
     isotope_to_hash,
     hash_to_isotope,
     create_nuclide_hash,
+    nuclide_hash_to_nuclide_list,
+    nuclide_hash_to_dict_keyword,
+    nuclide_hash_to_human_readable_name,
 )
 
 
@@ -40,7 +43,7 @@ def test_get_smart_chemical_symbols():
         "isotope_to_hash_1h",
         "isotope_to_hash_2h",
         "isotope_to_hash_3h",
-        "isotope_to_hash_99te",
+        "isotope_to_hash_99tc",
     ],
 )
 def test_isotope_to_hash(proton_number: int, neutron_number: int, expected: int):
@@ -63,14 +66,87 @@ def test_isotope_to_hash(proton_number: int, neutron_number: int, expected: int)
         "hash_to_isotope_1h",
         "hash_to_isotope_2h",
         "hash_to_isotope_3h",
-        "hash_to_isotope_99te",
+        "hash_to_isotope_99tc",
     ],
 )
 def test_hash_to_isotope(hashvalue: int, expected: tuple):
     assert hash_to_isotope(hashvalue) == expected
 
 
-def test_create_nuclide_hash(building_blocks: list) -> np.ndarray:
-    tmp = create_nuclide_hash(["Fe", "Fe", "O", "O", "O"])
-    print(f"{tmp}____{type(tmp)}____{np.shape(tmp)}")
-    assert True
+def test_create_nuclide_hash():
+    assert np.array_equal(
+        create_nuclide_hash(["Tc-99", "Fe", "O", "O", "O"]),
+        np.sort(
+            np.concatenate(
+                (
+                    np.array(
+                        [
+                            isotope_to_hash(43, 56),
+                            isotope_to_hash(26, 255),
+                            isotope_to_hash(8, 255),
+                            isotope_to_hash(8, 255),
+                            isotope_to_hash(8, 255),
+                        ],
+                        np.uint16,
+                    ),
+                    np.array([isotope_to_hash(0, 0)] * (32 - 5), np.uint16),
+                ),
+                axis=0,
+            ),
+            kind="stable",
+        )[::-1],  # descending order
+    )
+
+
+def test_nuclide_hash_to_nuclide_list():
+    assert np.array_equal(
+        nuclide_hash_to_nuclide_list(
+            create_nuclide_hash(["Tc-99", "Fe", "O", "O", "O"])
+        ),
+        np.concatenate(
+            (
+                np.array([[0, 26], [0, 8], [0, 8], [0, 8], [99, 43]], np.uint16),
+                np.zeros((32 - 5, 2), np.uint16),
+            ),
+            axis=0,
+        ),
+    )
+
+
+def test_nuclide_hash_to_nuclide_list():
+    assert (
+        nuclide_hash_to_dict_keyword(
+            create_nuclide_hash(["Tc-99", "Fe", "O", "O", "O"])
+        )
+        == "65306_65288_65288_65288_14379"
+    )
+
+
+@pytest.mark.parametrize(
+    "ivec, charge_state, expected",
+    [
+        (create_nuclide_hash([]), 0, "unknown_iontype"),
+        (create_nuclide_hash(["Tc-99", "Fe"]), +8, "unknown_iontype"),
+        (create_nuclide_hash(["Tc-99", "Fe"]), +3, "Fe 99Tc +++"),
+        (create_nuclide_hash(["Tc-99", "Fe"]), 0, "Fe 99Tc"),
+        (create_nuclide_hash(["Tc-99", "Fe"]), -3, "Fe 99Tc ---"),
+        (create_nuclide_hash(["Tc-99", "Fe"]), -8, "unknown_iontype"),
+    ],
+    ids=[
+        "nuclide_hash_to_human_readable_name_positive_zero_neutral",
+        "nuclide_hash_to_human_readable_name_positive_too_high",
+        "nuclide_hash_to_human_readable_name_positive_high",
+        "nuclide_hash_to_human_readable_name_positive_neutral",
+        "nuclide_hash_to_human_readable_name_positive_negative",
+        "nuclide_hash_to_human_readable_name_positive_too_negative",
+    ],
+)
+def test_nuclide_hash_to_human_readable_name(
+    ivec: np.ndarray, charge_state: int, expected: str
+):
+    assert expected == nuclide_hash_to_human_readable_name(ivec, charge_state)
+
+
+# tmp = create_nuclide_hash(["Tc-99", "Fe", "O", "O", "O"])
+# print(f"{tmp}____{type(tmp)}____{tmp.dtype}____{np.shape(tmp)}")
+# assert True
