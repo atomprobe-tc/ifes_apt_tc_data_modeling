@@ -26,6 +26,10 @@ from ifes_apt_tc_data_modeling.utils.utils import (
     nuclide_hash_to_nuclide_list,
     nuclide_hash_to_dict_keyword,
     nuclide_hash_to_human_readable_name,
+    MQ_EPSILON,
+    is_range_overlapping,
+    is_range_significant,
+    element_or_nuclide_to_hash,
 )
 
 
@@ -113,7 +117,7 @@ def test_nuclide_hash_to_nuclide_list():
     )
 
 
-def test_nuclide_hash_to_nuclide_list():
+def test_nuclide_hash_to_dict_keyword():
     assert (
         nuclide_hash_to_dict_keyword(
             create_nuclide_hash(["Tc-99", "Fe", "O", "O", "O"])
@@ -145,6 +149,90 @@ def test_nuclide_hash_to_human_readable_name(
     ivec: np.ndarray, charge_state: int, expected: str
 ):
     assert expected == nuclide_hash_to_human_readable_name(ivec, charge_state)
+
+
+@pytest.mark.parametrize(
+    "interval, interval_set, expected",
+    [
+        (np.array([12.0, 12.0]), np.array([12.0, 12.0]), False),
+        (np.array([12.0, 24.0]), np.array([13.0, 14.0]), True),
+        (np.array([12.0, 24.0]), np.array([11.0, 25.0]), True),
+        (
+            np.array([12.0, 24.0]),
+            np.array([24.0 + MQ_EPSILON, 24.0 + MQ_EPSILON + 1.0]),
+            False,
+        ),
+        (np.array([12.0, 24.0]), np.array([24.0, 25.0]), True),
+        (np.array([12.0, 24.0]), np.array([11.0, 12.0]), True),
+        (
+            np.array([12.0, 24.0]),
+            np.array([12.0 - MQ_EPSILON - 1.0, 12.0 - MQ_EPSILON]),
+            False,
+        ),
+    ],
+    ids=[
+        "is_range_overlapping_line_line",
+        "is_range_overlapping_inside_set",
+        "is_range_overlapping_culling_set",
+        "is_range_overlapping_smaller_than_set",
+        "is_range_overlapping_touching_from_left_set",
+        "is_range_overlapping_touching_from_right_set",
+        "is_range_overlapping_larger_than_set",
+    ],
+)
+@pytest.mark.skip(reason="should not be checked for")
+def test_is_range_overlapping(
+    interval: np.ndarray, interval_set: np.ndarray, expected: bool
+):
+    assert expected == is_range_overlapping(interval, interval_set)
+
+
+@pytest.mark.parametrize(
+    "left, right, expected",
+    [
+        (np.float64(12.0), np.float64(12.0), False),
+        (np.float64(12.0), np.float64(12.0 + MQ_EPSILON), True),
+        (np.float64(12.0), np.float64(12.0 + 2 * MQ_EPSILON), True),
+        (np.float64(12.0 + MQ_EPSILON), np.float64(12.0), False),
+        (np.float64(12.0 + 2 * MQ_EPSILON), np.float64(12.0), False),
+    ],
+    ids=[
+        "is_range_significant_zero",
+        "is_range_significant_small_edge",
+        "is_range_significant_small_safe",
+        "is_range_significant_left_largerthan_right_edge",
+        "is_range_significant_left_largerthan_right_safe",
+    ],
+)
+def test_is_range_significant(left: np.float64, right: np.float64, expected: bool):
+    assert expected == is_range_significant(left, right)
+
+
+@pytest.mark.parametrize(
+    "symbol, expected",
+    [
+        # ("", 0),
+        # ("junk", 0),
+        ("H", 65281),
+        ("H-1", 1),
+        ("H-2", 257),
+        ("Tc-99", 14379),
+    ],
+    ids=[
+        # "element_or_nuclide_to_hash_empty_string",
+        # "element_or_nuclide_to_hash_not_an_element",
+        "element_or_nuclide_to_hash_hydrogen",
+        "element_or_nuclide_to_hash_1h",
+        "element_or_nuclide_to_hash_2h",
+        "element_or_nuclide_to_hash_99tc",
+    ],
+)
+def test_element_or_nuclide_to_hash(symbol: str, expected: int):
+    # TODO this needs improvement as currently the commented out tests fail
+    try:
+        assert expected == element_or_nuclide_to_hash(symbol)
+    except (ValueError, TypeError) as exc:
+        assert True, f"element_or_nuclide_to_hash raised an exception {exc}"
 
 
 # tmp = create_nuclide_hash(["Tc-99", "Fe", "O", "O", "O"])

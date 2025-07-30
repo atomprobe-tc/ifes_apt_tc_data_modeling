@@ -235,7 +235,9 @@ def element_or_nuclide_to_hash(symbol: str):
     # consider moving this to the ifes_apt_tc_data_modeling library
     case = is_convertible_to_isotope_hash(symbol)
     if case == 1:
-        return isotope_to_hash(atomic_numbers[symbol], 0)
+        return isotope_to_hash(
+            atomic_numbers[symbol], 255
+        )  # see breaking change isotope_to_hash
     if case == 2:
         symb_mass = symbol.split("-")
         return isotope_to_hash(
