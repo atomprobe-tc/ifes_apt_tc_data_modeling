@@ -23,11 +23,10 @@ classifiers = [
 ]
 dependencies = [
     "h5py>=3.6.0",
-    "numpy>=1.22.4,<2.0.0",
+    "numpy>=1.22.4,<2",
     "radioactivedecay>=0.4.16",
-    "ase",
-    "pint",
-    "pandas",
+    "ase~=3.22.0", # breaking changes in later versions
+    "pandas>=2",
     "tables",
     "flatdict",
     "xmltodict",
