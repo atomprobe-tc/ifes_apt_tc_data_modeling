@@ -23,9 +23,9 @@ classifiers = [
 ]
 dependencies = [
     "h5py>=3.6.0",
-    "numpy<2.0.0",
-    "ase>=3.19.0",
+    "numpy>=1.22.4,<2.0.0",
     "radioactivedecay>=0.4.16",
+    "ase",
     "pint",
     "pandas",
     "tables",
@@ -35,13 +35,12 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pip-tools",
-    "twine",
     "mypy",
+    "ruff>=0.12.0",
     "types-xmltodict",
     "pandas-stubs",
-    "ruff>=0.12.0",
-    "pylint",
+    "pytest",
+
     "uv",
 ]
 ipynb = [
@@ -50,5 +49,56 @@ ipynb = [
     "jupyterlab_h5web"
 ]
 
-# [tool.setuptools]
-# packages = ["apt", "ato", "epos", "fig", "imago", "nexus", "pos", "pyccapt", "rng", "rrng", "utils"]
+[project.urls]
+"Homepage" = "https://github.com/atomprobe-tc/ifes_apt_tc_data_modeling"
+
+[tool.setuptools.packages.find]
+where = [
+    "src",
+]
+
+[tool.setuptools_scm]
+version_scheme = "no-guess-dev"
+local_scheme = "node-and-date"
+
+[tool.ruff]
+include = ["src/*.py", "tests/*.py"]
+line-length = 88
+indent-width = 4
+
+[tool.ruff.lint]
+select = [
+    "E", # pycodestyle
+    "W", # pycodestyle
+    "PL", # pylint
+    # "NPY201", # reactivate when using numpy > 2.0
+]
+ignore = [
+    "E501", # Line too long ({width} > {limit} characters)
+    "E701", # Multiple statements on one line (colon)
+    "E731", # Do not assign a lambda expression, use a def
+    "E402",  # Module level import not at top of file
+    "PLR0911", # Too many return statements
+    "PLR0912", # Too many branches
+    "PLR0913", # Too many arguments in function definition
+    "PLR0915", # Too many statements
+    "PLR2004", # Magic value used instead of constant
+    "PLW0603", # Using the global statement
+    "PLW2901", # redefined-loop-name
+    "PLR1714", # consider-using-in
+    "PLR5501", # else-if-used
+]
+fixable = ["ALL"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.mypy]
+strict = false
+ignore_missing_imports = true
+follow_imports = "silent"
+no_strict_optional = true
+disable_error_code = "import, annotation-unchecked"
