@@ -30,6 +30,7 @@ from ifes_apt_tc_data_modeling.utils.utils import (
     is_range_overlapping,
     is_range_significant,
     element_or_nuclide_to_hash,
+    symbol_lst_to_matrix_of_nuclide_vector,
 )
 
 
@@ -235,6 +236,33 @@ def test_element_or_nuclide_to_hash(symbol: str, expected: int):
         assert True, f"element_or_nuclide_to_hash raised an exception {exc}"
 
 
+"""
+@pytest.mark.parametrize(
+    "method, symbol_lst, charge_lst, expected",
+    [
+        ("resolve_all", [["K", "C"], ["U-238", "H-2"]], None, ""),
+        ("resolve_unknown", [["K", "C"], ["U-238", "H-2"]], None, ""),
+        ("resolve_element", [["K", "C"], ["U-238", "H-2"]], None, ""),
+        ("resolve_isotope", [["K", "C"], ["U-238", "H-2"]], None, ""),
+        ("resolve_ion", [["K", "C"], ["U-238", "H-2"]], None, ""),
+        # TODO the following need fixing [["K-40", "C-14"], ["U-238", "H-2"]]
+    ],
+    ids=[
+        "symbol_lst_to_matrix_all_one",
+        "symbol_lst_to_matrix_unknown_one",
+        "symbol_lst_to_matrix_element_one",
+        "symbol_lst_to_matrix_isotope_one",
+        "symbol_lst_to_matrix_ion_one",
+    ],
+)
+def test_symbol_lst_to_matrix_of_nuclide_vector(
+    method: str, symbol_lst: list, charge_lst: list, expected: str
+):
+    print(f">>>>>>>>>{method}>>>>>>>>>")
+    print(f"{symbol_lst_to_matrix_of_nuclide_vector(method, symbol_lst, charge_lst)}")
+    assert True
+
 # tmp = create_nuclide_hash(["Tc-99", "Fe", "O", "O", "O"])
 # print(f"{tmp}____{type(tmp)}____{tmp.dtype}____{np.shape(tmp)}")
 # assert True
+"""

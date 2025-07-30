@@ -35,7 +35,7 @@ PRACTICAL_ABUNDANCE = 1.0e-6  # 0.  # 1.0e-6
 PRACTICAL_ABUNDANCE_PRODUCT = 0.0  # 1.0e-6  # 0.  # 1.0e-12
 # do consider too shortliving isotopes
 PRACTICAL_MIN_HALF_LIFE = np.inf
-# many examples of ranges are not constrainted strongly enough so that
+# many examples of ranges are not constrained strongly enough so that
 # there are many isotopes (many of which admittedly hypothetical) ones
 # which are within the range, this option lifts the constraint that
 # there should be only one set of isotopically different molecular ions

@@ -209,7 +209,7 @@ class NxIon:
         )
 
     def apply_combinatorics(self):
-        """Apply specifically constrainted combinatorial analysis."""
+        """Apply specifically constrained combinatorial analysis."""
         crawler = MolecularIonBuilder(
             min_abundance=PRACTICAL_ABUNDANCE,
             min_abundance_product=PRACTICAL_ABUNDANCE_PRODUCT,
