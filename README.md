@@ -30,6 +30,12 @@ jupyter-lab
 python -m pip install -e ".[dev,ipynb]"
 ```
 
+With such an installation performing unit testing via the pytest framework for core functionalities
+is possible using the following command:
+```
+pytest -sv tests
+```
+
 ## Context, status quo, file formats used for atom probe research
 A lack of detailed technical specifications of the file formats and a lack of usage of magic numbers as identifiers for specific file formats
 are a key blocker to parsing and semantic interpretation of information content stored in current file formats within the research field of

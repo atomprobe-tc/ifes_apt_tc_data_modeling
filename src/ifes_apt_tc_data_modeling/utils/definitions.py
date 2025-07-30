@@ -20,6 +20,12 @@
 
 import numpy as np
 
+# default value for isotope_to_hash when the element is meant irrespective of its isotopes
+# see also comment in ifes_apt_tc_data_modeling.utils.utils isotope_to_hash on a breaking
+# change coming with the NIAC standardized NXapm uses 255 for marking the element while
+# before the default value was 0
+NEUTRON_NUMBER_FOR_ELEMENT = 255
+# was 0 before breaking change, now required 255 as per NIAC standard, see NXatom nuclid_hash docstring
 # restrict the number distinguished ion types
 MAX_NUMBER_OF_ION_SPECIES = 256
 # restrict number of atoms for molecular ion fragments
@@ -35,7 +41,7 @@ PRACTICAL_ABUNDANCE = 1.0e-6  # 0.  # 1.0e-6
 PRACTICAL_ABUNDANCE_PRODUCT = 0.0  # 1.0e-6  # 0.  # 1.0e-12
 # do consider too shortliving isotopes
 PRACTICAL_MIN_HALF_LIFE = np.inf
-# many examples of ranges are not constrainted strongly enough so that
+# many examples of ranges are not constrained strongly enough so that
 # there are many isotopes (many of which admittedly hypothetical) ones
 # which are within the range, this option lifts the constraint that
 # there should be only one set of isotopically different molecular ions

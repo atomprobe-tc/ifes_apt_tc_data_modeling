@@ -20,7 +20,7 @@
 
 # pylint: disable=fixme
 
-from typing import Dict
+from typing import Any
 import os
 import h5py
 import numpy as np
@@ -127,7 +127,6 @@ class ReadPyccaptCalibrationFileFormat:
         self.file_size = os.path.getsize(self.file_path)
         self.number_of_events = None
         self.version = SUPPORTED_PYCCAPT_VERSION
-        self.df: dict = {}
 
         with h5py.File(self.file_path, "r") as h5r:
             self.supported = 0  # voting-based
@@ -226,24 +225,24 @@ class ReadPyccaptRangingFileFormat:
                 return
 
         self.df = pd.read_hdf(self.file_path)
-        self.rng: Dict = {}
+        self.rng: dict[str, Any] = {}
         self.rng["molecular_ions"] = []
         print(np.shape(self.df)[0])
         for idx in np.arange(0, np.shape(self.df)[0]):
-            if isinstance(self.df.iloc[idx, 6], str) is True:
-                if self.df.iloc[idx, 6] == "unranged":
+            if isinstance(self.df.iat[idx, 6], str) is True:
+                if self.df.iat[idx, 6] == "unranged":
                     continue
 
             ivec = get_nuclide_hash_from_fau_list(
-                elements=self.df.iloc[idx, 6],
-                complexs=self.df.iloc[idx, 7],
-                isotopes=self.df.iloc[idx, 8],
+                elements=self.df.iat[idx, 6],
+                complexs=self.df.iat[idx, 7],
+                isotopes=self.df.iat[idx, 8],
             )
             m_ion = NxIon()
             m_ion.nuclide_hash.values = ivec
             m_ion.nuclide_list.values = nuclide_hash_to_nuclide_list(ivec)
-            m_ion.charge_state.values = np.int8(self.df.iloc[idx, 9])
-            m_ion.add_range(self.df.iloc[idx, 3], self.df.iloc[idx, 4])
+            m_ion.charge_state.values = np.int8(self.df.iat[idx, 9])
+            m_ion.add_range(self.df.iat[idx, 3], self.df.iat[idx, 4])
             m_ion.apply_combinatorics()
             # m_ion.report()
             self.rng["molecular_ions"].append(m_ion)

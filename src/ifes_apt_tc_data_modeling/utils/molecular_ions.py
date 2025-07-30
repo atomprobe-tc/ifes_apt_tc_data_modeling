@@ -132,12 +132,10 @@ class MolecularIonBuilder:
                         # unclear_half_life = True
 
                     # get ase abundance data
-                    n_protons = atomic_numbers[symbol]
+                    n_protons = atomic_number
                     n_neutrons = mass_number - n_protons
-                    mass = isotopes[atomic_numbers[symbol]][mass_number]["mass"]
-                    abundance = isotopes[atomic_numbers[symbol]][mass_number][
-                        "composition"
-                    ]
+                    mass = isotopes[n_protons][mass_number]["mass"]
+                    abundance = isotopes[n_protons][mass_number]["composition"]
                     hashvalue = isotope_to_hash(int(n_protons), int(n_neutrons))
                     if hashvalue != 0:
                         self.nuclides = np.append(self.nuclides, hashvalue)
@@ -181,7 +179,7 @@ class MolecularIonBuilder:
         min_half_life = self.parms["min_half_life"]
         for hashvalue in nuclide_arr:
             if hashvalue != 0:
-                if self.nuclide_halflife[hashvalue] != np.nan:
+                if np.isnan(self.nuclide_halflife[hashvalue]):
                     min_half_life = np.min(
                         (min_half_life, self.nuclide_halflife[hashvalue])
                     )

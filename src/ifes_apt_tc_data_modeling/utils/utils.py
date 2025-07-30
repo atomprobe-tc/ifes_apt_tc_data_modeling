@@ -27,6 +27,7 @@ from ifes_apt_tc_data_modeling.utils.nist_isotope_data import isotopes
 from ifes_apt_tc_data_modeling.utils.definitions import (
     MAX_NUMBER_OF_ATOMS_PER_ION,
     MQ_EPSILON,
+    NEUTRON_NUMBER_FOR_ELEMENT,
 )
 
 
@@ -42,8 +43,17 @@ def get_smart_chemical_symbols():
     return priority_queue
 
 
-def isotope_to_hash(proton_number: int = 0, neutron_number: int = 0) -> int:
+def isotope_to_hash(
+    proton_number: int = 0, neutron_number: int = NEUTRON_NUMBER_FOR_ELEMENT
+) -> int:
     """Encode an isotope to a hashvalue."""
+    # the acceptance of NXapm introduced a breaking change for this mapping
+    # previously meaning the element, i.e., irrespective its isotopes used 0
+    #   this case is degenerate though for the 1H isotope and hydrogen element
+    # the new mapping therefore uses neutron_number = NEUTRON_NUMBER_FOR_ELEMENT
+    # as the offset to, highlight when elements are meant instead of specific isotopes, i.e.
+    # with NEUTRON_NUMBER_FOR_ELEMENT == 255
+    # 1H is mapped to 1 + 0 * 256, while hydrogen as an element is mapped to 1 + 255 * 256
     if (0 <= proton_number < 256) and (0 <= neutron_number < 256):
         return int(
             np.uint16(proton_number) + (np.uint16(256) * np.uint16(neutron_number))
@@ -53,8 +63,7 @@ def isotope_to_hash(proton_number: int = 0, neutron_number: int = 0) -> int:
 
 def hash_to_isotope(hashvalue: int = 0) -> Tuple[int, int]:
     """Decode a hashvalue to an isotope."""
-    # assert isinstance(hashvalue, int), \
-    #     "Argument hashvalue needs to be integer!"
+    # see comment on isotope_to_hash
     if 0 <= hashvalue <= int(np.iinfo(np.uint16).max):
         neutron_number = np.uint16(np.uint16(hashvalue) / np.uint16(256))
         proton_number = np.uint16(
@@ -80,7 +89,9 @@ def create_nuclide_hash(building_blocks: list) -> np.ndarray:
                     if (block not in symbol_to_proton_number) or (block == "X"):
                         return ivec
                     hashvector.append(
-                        isotope_to_hash(symbol_to_proton_number[block], 0)
+                        isotope_to_hash(
+                            symbol_to_proton_number[block], NEUTRON_NUMBER_FOR_ELEMENT
+                        )
                     )
                 elif block.count("-") == 1:
                     symb_mass = block.split("-")
@@ -115,7 +126,9 @@ def nuclide_hash_to_nuclide_list(ivec: np.ndarray) -> np.ndarray:
         for idx in np.arange(0, MAX_NUMBER_OF_ATOMS_PER_ION):
             if ivec[idx] != 0:
                 n_protons, n_neutrons = hash_to_isotope(int(ivec[idx]))
-                if n_neutrons != 0:
+                if 0 < n_neutrons < 255:
+                    # right bound must not be NEUTRON_NUMBER_FOR_ELEMENT but 255
+                    # see breaking change isotope_to_hash
                     nuclide_list[idx, 0] = n_protons + n_neutrons
                 nuclide_list[idx, 1] = n_protons
         return nuclide_list
@@ -141,12 +154,12 @@ def nuclide_hash_to_dict_keyword(ivec: np.ndarray) -> str:
 
 def nuclide_hash_to_human_readable_name(ivec: np.ndarray, charge_state: np.int8) -> str:
     """Get human-readable name from an nuclide_hash."""
-    if len(ivec) <= MAX_NUMBER_OF_ATOMS_PER_ION:
+    if len(ivec) <= MAX_NUMBER_OF_ATOMS_PER_ION and -8 < charge_state < 8:
         human_readable = ""
         for hashvalue in ivec:
             if hashvalue != 0:
                 protons, neutrons = hash_to_isotope(int(hashvalue))
-                if neutrons > 0:
+                if 0 < neutrons < 255:
                     human_readable += f"{protons + neutrons}{chemical_symbols[protons]}"
                 else:
                     human_readable += f"{chemical_symbols[protons]}"
@@ -157,7 +170,8 @@ def nuclide_hash_to_human_readable_name(ivec: np.ndarray, charge_state: np.int8)
             human_readable += "-" * -charge_state
         else:
             human_readable = human_readable.rstrip()
-        return human_readable
+        if human_readable != "":
+            return human_readable
     return "unknown_iontype"
 
 
@@ -227,7 +241,7 @@ def element_or_nuclide_to_hash(symbol: str):
     # consider moving this to the ifes_apt_tc_data_modeling library
     case = is_convertible_to_isotope_hash(symbol)
     if case == 1:
-        return isotope_to_hash(atomic_numbers[symbol], 0)
+        return isotope_to_hash(atomic_numbers[symbol], NEUTRON_NUMBER_FOR_ELEMENT)
     if case == 2:
         symb_mass = symbol.split("-")
         return isotope_to_hash(
@@ -294,7 +308,7 @@ def symbol_lst_to_matrix_of_nuclide_vector(
             if method == "resolve_element":
                 if symbol in atomic_numbers:
                     ivec[0, jdx] = isotope_to_hash(
-                        atomic_numbers[symbol], 0
+                        atomic_numbers[symbol], NEUTRON_NUMBER_FOR_ELEMENT
                     )  # do not encode isotope information
                     jdx += 1
                 else:
@@ -304,7 +318,9 @@ def symbol_lst_to_matrix_of_nuclide_vector(
                         raise KeyError(
                             f"symbol_lst[{idx}] candidate does not specify an element!"
                         )
-                    ivec[0, jdx] = isotope_to_hash(atomic_numbers[candidate], 0)
+                    ivec[0, jdx] = isotope_to_hash(
+                        atomic_numbers[candidate], NEUTRON_NUMBER_FOR_ELEMENT
+                    )
                     jdx += 1
             else:  # "resolve_isotope", "resolve_ion":
                 ivec[0, jdx] = element_or_nuclide_to_hash(symbol)

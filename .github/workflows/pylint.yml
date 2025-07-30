@@ -16,10 +16,10 @@ jobs:
           uv pip install ".[dev]"
       - name: ruff check
         run: |
-          ruff check ifes_apt_tc_data_modeling tests
+          ruff check src/ifes_apt_tc_data_modeling tests
       - name: ruff format
         run: |
-          ruff format --check ifes_apt_tc_data_modeling tests
-      # - name: mypy
-      #   run: |
-      #     mypy ifes_apt_tc_data_modeling
+          ruff format --check src/ifes_apt_tc_data_modeling tests
+      - name: mypy
+        run: |
+          mypy src/ifes_apt_tc_data_modeling tests

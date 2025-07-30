@@ -69,7 +69,7 @@ def try_to_reduce_to_unique_definitions(inp: list) -> list:
     for idx in np.arange(0, len(inp)):
         if not visited[idx]:
             # find all ranging definition value intersections with other ions
-            isect = []  #
+            isect = []
             for jdx in np.concatenate(
                 (np.arange(0, idx), np.arange(idx + 1, len(inp)))
             ):
@@ -111,10 +111,8 @@ def try_to_reduce_to_unique_definitions(inp: list) -> list:
                 mqmax = inp[idx].ranges.values[0, 1]
                 for ids in isect:
                     visited[ids] = True
-                    if inp[ids].ranges.values[0, 0] <= mqmin:
-                        mqmin = inp[ids].ranges.values[0, 0]
-                    if inp[ids].ranges.values[0, 1] >= mqmax:
-                        mqmax = inp[ids].ranges.values[0, 1]
+                    mqmin = min(inp[ids].ranges.values[0, 0], mqmin)
+                    mqmax = max(inp[ids].ranges.values[0, 1], mqmax)
                 joined_ion = NxIon(
                     nuclide_hash=inp[idx].nuclide_hash.values, charge_state=0
                 )
@@ -211,7 +209,7 @@ class NxIon:
         )
 
     def apply_combinatorics(self):
-        """Apply specifically constrainted combinatorial analysis."""
+        """Apply specifically constrained combinatorial analysis."""
         crawler = MolecularIonBuilder(
             min_abundance=PRACTICAL_ABUNDANCE,
             min_abundance_product=PRACTICAL_ABUNDANCE_PRODUCT,
