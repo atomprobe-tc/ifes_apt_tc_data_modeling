@@ -26,6 +26,7 @@ from ifes_apt_tc_data_modeling.apt.apt6_utils import (
     APT_SECTION_NAME_MAX_LENGTH,
     APT_SECTION_TYPE_MAX_LENGTH,
 )
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 
 
 class AptFileSectionMetadata:
@@ -92,163 +93,153 @@ class AptFileSectionMetadata:
 
     def set_section_name(self, value: str):
         """Check and set section name."""
-        if isinstance(value, str) is False:
-            raise ValueError(f"SectionName {value} must be a string!")
+        if not isinstance(value, str):
+            raise ValueError(f"SectionName {value} must be a string.")
         if value == "":
-            raise ValueError(f"SectionName {value} must not be an empty string!")
+            raise ValueError(f"SectionName {value} must not be an empty string.")
         if len(value) > APT_SECTION_NAME_MAX_LENGTH:
             raise ValueError(
                 f"SectionName {value} must not contain more than "
-                f"{APT_SECTION_NAME_MAX_LENGTH} characters!"
+                f"{APT_SECTION_NAME_MAX_LENGTH} characters."
             )
         # SectionName is not null-terminated!
         self.meta["section_name"] = value
 
     def set_c_signature(self):
         """Check and set c_signature."""
-        # assert isinstance(value, str), \
-        #     "cSignature needs to be a string!"
-        # assert value is not "", \
-        #     "cSignature must not be an empty string!"
-        # assert len(value) <= 4, \
-        #     "cSignature must not contain more than 4 characters!"
-        # assert value[-1] == "\0", \
-        #     "cSignature needs to include the null-terminator!
-        # assert value == "SEC\0", \
-        #    "cSignature must be SEC\0 which is a string!"
         # so far all example file indicated AMETEK implemented "SEC\0" hard
         self.meta["c_signature"] = string_to_typed_nparray("SEC\0", 4, np.uint8)
 
     def set_i_header_size(self, value: int):
         """Check and set i_header_size."""
-        if isinstance(value, int) is False:
-            raise ValueError(f"iHeaderSize {value} needs to be an int!")
+        if not isinstance(value, int):
+            raise ValueError(f"iHeaderSize {value} needs to be an int.")
         if value < 0:
-            raise ValueError(f"iHeaderSize {value} needs to be positive or zero!")
+            raise ValueError(f"iHeaderSize {value} needs to be positive or zero.")
         if value > np.iinfo(np.int32).max:
             raise ValueError(
-                f"iHeaderSize too large {value}, needs to map to np.int32!"
+                f"iHeaderSize too large {value}, needs to map to np.int32."
             )
         self.meta["i_header_size"] = np.int32(value)
 
     def set_i_header_version(self, value: int):
         """Check and size i_header_version."""
-        if isinstance(value, int) is False:
-            raise ValueError(f"iHeaderVersion {value} needs to be an int!")
+        if not isinstance(value, int):
+            raise ValueError(f"iHeaderVersion {value} needs to be an int.")
         if value < 0:
-            raise ValueError(f"iHeaderVersion {value} needs to be positive or zero!")
+            raise ValueError(f"iHeaderVersion {value} needs to be positive or zero.")
         if value > np.iinfo(np.int32).max:
             raise ValueError(
-                f"iHeaderVersion too large {value}, needs to map to np.int32!"
+                f"iHeaderVersion too large {value}, needs to map to np.int32."
             )
         self.meta["i_header_version"] = np.int32(value)
 
     def set_wc_section_type(self, value: str):
         """Check and set wc_section_type."""
-        if isinstance(value, str) is False:
-            raise ValueError(f"wcSectionType {value} needs to be a string!")
+        if not isinstance(value, str):
+            raise ValueError(f"wcSectionType {value} needs to be a string.")
         if value == "":
-            raise ValueError(f"wcSectionType {value} must not be an empty string!")
+            raise ValueError(f"wcSectionType {value} must not be an empty string.")
         if len(value) > APT_SECTION_TYPE_MAX_LENGTH:
             raise ValueError(
-                f"wcSectionType string {value} must not contain more than 32 characters!"
+                f"wcSectionType string {value} must not contain more than 32 characters."
             )
         # if value[-1] != "\0":
-        #     raise ValueError(f"wcSectionType needs to include the null-terminator!")
+        #     raise ValueError(f"wcSectionType needs to include the null-terminator.")
         self.meta["wc_section_type"] = string_to_typed_nparray(value, 32, np.uint16)
 
     def set_i_section_version(self, value: int):
         """Check and set i_section_version."""
-        if isinstance(value, int) is False:
-            raise ValueError(f"iSectionVersion {value} needs to be an int!")
+        if not isinstance(value, int):
+            raise ValueError(f"iSectionVersion {value} needs to be an int.")
         if value < 0:
-            raise ValueError(f"iSectionVersion {value} needs to be positive or zero!")
+            raise ValueError(f"iSectionVersion {value} needs to be positive or zero.")
         if value > np.iinfo(np.int32).max:
             raise ValueError(
-                f"iSectionVersion too large {value}, needs to map to np.int32!"
+                f"iSectionVersion too large {value}, needs to map to np.int32."
             )
         self.meta["i_section_version"] = np.int32(value)
 
     def set_e_relationship_type(self, value: int):
         """Check and set e_relationship_type."""
-        if isinstance(value, int) is False:
-            raise ValueError(f"eRelationShipType {value} needs to be an int!")
+        if not isinstance(value, int):
+            raise ValueError(f"eRelationShipType {value} needs to be an int.")
         if value not in [0, 1, 2, 3, 4]:
             raise ValueError(
-                f"eRelationShipType {value} needs to be from [0, 1, 2, 3, 4]!"
+                f"eRelationShipType {value} needs to be from [0, 1, 2, 3, 4]."
             )
         if value != 1:
             raise ValueError(
                 f"eRelationShipType {value}, this reader cannot process "
-                f"2, 3, 4 because of lacking examples!"
+                f"2, 3, 4 because of lacking examples."
             )
         self.meta["e_relationship_type"] = np.uint32(value)
 
     def set_e_record_type(self, value: int):
         """Check and set e_record_type."""
-        if isinstance(value, int) is False:
-            raise ValueError(f"eRecordType {value} needs to be an int!")
+        if not isinstance(value, int):
+            raise ValueError(f"eRecordType {value} needs to be an int.")
         if value not in [0, 1, 2]:
-            raise ValueError(f"eRecordType {value} needs to be from [0, 1, 2]!")
+            raise ValueError(f"eRecordType {value} needs to be from [0, 1, 2].")
         if value != 1:
             raise ValueError(
                 f"eRecordType is {value}, is reader cannot "
-                f"process 2, 3, 4 because of lacking examples!"
+                f"process 2, 3, 4 because of lacking examples."
             )
         self.meta["e_record_type"] = np.uint32(value)
 
     def set_e_record_data_type(self, value: int):
         """Check and set e_record_data_type."""
-        if isinstance(value, int) is False:
-            raise ValueError(f"e_record_data_type {value} needs to be an int!")
+        if not isinstance(value, int):
+            raise ValueError(f"e_record_data_type {value} needs to be an int.")
         if value not in [0, 1, 2, 3, 4, 5]:
             raise ValueError(
-                f"eRecordDataType {value} needs to be from [0, 1, 2, 3, 4, 5]!"
+                f"eRecordDataType {value} needs to be from [0, 1, 2, 3, 4, 5]."
             )
         if value == 5:
             raise ValueError(
                 f"eRecordDataType is {value}, this reader cannot "
-                f"process 5 because of lacking examples!"
+                f"process 5 because of lacking examples."
             )
         self.meta["e_record_data_type"] = np.uint32(value)
 
     def set_i_data_type_size(self, value: int):
         """Check and set i_data_type_size."""
-        if isinstance(value, int) is False:
-            raise ValueError(f"iDataTypeSize {value} needs to be an int!")
+        if not isinstance(value, int):
+            raise ValueError(f"iDataTypeSize {value} needs to be an int.")
         if value <= 0:
             raise ValueError(
-                f"iDataTypeSize {value} needs to be positive and not zero!"
+                f"iDataTypeSize {value} needs to be positive and not zero."
             )
         if value > np.iinfo(np.int32).max:
             raise ValueError(
-                f"iDataTypeSize too large {value}, needs to map to np.int32!"
+                f"iDataTypeSize too large {value}, needs to map to np.int32."
             )
         self.meta["i_data_type_size"] = np.int32(value)
 
     def set_i_record_size(self, value: int):
         """Check and set i_record_size."""
-        if isinstance(value, int) is False:
-            raise ValueError(f"iRecordSize {value} needs to be an int!")
+        if not isinstance(value, int):
+            raise ValueError(f"iRecordSize {value} needs to be an int.")
         if value <= 0:
-            raise ValueError(f"iRecordSize {value} needs to be positive and not zero!")
+            raise ValueError(f"iRecordSize {value} needs to be positive and not zero.")
         if value > np.iinfo(np.int32).max:
             raise ValueError(
-                f"iRecordSize too large {value}, needs to map to np.int32!"
+                f"iRecordSize too large {value}, needs to map to np.int32."
             )
         self.meta["i_record_size"] = np.int32(value)
 
     def set_wc_data_unit(self, value: str):
         """Check and set wc_data_unit."""
-        if isinstance(value, str) is False:
-            raise ValueError(f"wcDataUnit {value} to be a string!")
+        if not isinstance(value, str):
+            raise ValueError(f"wcDataUnit {value} to be a string.")
         # can be the empty string is NX_UNITLESS or NX_DIMENSIONLESS
         if len(value) > 16:
             raise ValueError(
-                f"wcDataUnit {value} must not contain more than 16 characters!"
+                f"wcDataUnit {value} must not contain more than 16 characters."
             )
         # assert value[-1] == "\0", \
-        #     "wcDataUnit needs to include the null-terminator!"
+        #     "wcDataUnit needs to include the null-terminator."
         # so far all example file indicated AMETEK implemented "SEC\0" hard
         self.meta["wc_data_unit"] = string_to_typed_nparray(value, 16, np.uint16)
 
@@ -288,40 +279,29 @@ class AptFileSectionMetadata:
         if self.meta["e_record_data_type"] not in [1, 2, 3]:
             raise ValueError(
                 f"Section {np_uint16_to_string(self.meta['wc_section_type'])}"
-                f" get_ametek_type() unsupported e_record_data_type!"
+                f" get_ametek_type() unsupported e_record_data_type."
             )
         if self.meta["e_record_data_type"] == 1:
             integer_dtypes = {2: "<i2", 4: "<i4", 8: "<i8"}
             if byte_length not in integer_dtypes:
                 raise ValueError(
                     f"Section {np_uint16_to_string(self.meta['wc_section_type'])}"
-                    f" get_ametek_type() detected unsupported integer type!"
+                    f" get_ametek_type() detected unsupported integer type."
                 )
             return integer_dtypes[byte_length]
         if self.meta["e_record_data_type"] == 2:
-            # uinteger_dtypes = {2: '<u2', 4: '<u4', 8: '<u8'}
-            # assert byte_length in uinteger_dtypes.keys(), \
-            #    'Section ' + np_uint16_to_string(self.meta['wc_section_type']) \
-            #     + ' get_ametek_type() detected \
-            #             unsupported unsigned integer type!'
             if byte_length != 2:
                 raise ValueError(
                     f"Section {np_uint16_to_string(self.meta['wc_section_type'])}"
-                    f" get_ametek_type() detected unsupported uint type!"
+                    f" get_ametek_type() detected unsupported uint type."
                 )
-            # return uinteger_dtypes[byte_length]
             return "<u2"
         if self.meta["e_record_data_type"] == 3:
-            # real_dtypes = {4: '<f4', 8: '<f8'}
-            # assert byte_length in real_dtypes.keys(), \
-            #    'Section ' + np_uint16_to_string(self.meta['wc_section_type']) \
-            #    + ' get_ametek_type() detected unsupported real type!'
             if byte_length != 4:
                 raise ValueError(
                     f"Section {np_uint16_to_string(self.meta['wc_section_type'])}"
-                    f" get_ametek_type() detected unsupported real type!"
+                    f" get_ametek_type() detected unsupported real type."
                 )
-            # return real_dtypes[byte_length]
             return "<f4"
         return ""
 
@@ -351,53 +331,50 @@ class AptFileSectionMetadata:
         """Compare a read section against expected versioning."""
         # check if the parsed section's metadata are matching
         # AMETEK expectations, i.e. meeting manufacturers definitions?
-        if (
-            np.array_equal(
-                self.meta["c_signature"], found_section["cSignature"][0], equal_nan=True
-            )
-            is False
+        if not np.array_equal(
+            self.meta["c_signature"], found_section["cSignature"][0], equal_nan=True
         ):
-            print(
+            logger.warning(
                 f"Section cSignature differs, is {np_uint16_to_string(found_section['cSignature'][0])}"
                 f" but should be {np_uint16_to_string(self.meta['c_signature'])}"
             )
         if found_section["iHeaderSize"][0] != self.meta["i_header_size"]:
-            print(
+            logger.warning(
                 f"Section iHeaderSize differs, is {found_section['iHeaderSize'][0]}"
                 f" but should be {self.meta['i_header_size']}"
             )
         if found_section["iHeaderVersion"][0] != self.meta["i_header_version"]:
-            print(
+            logger.warning(
                 f"Section iHeaderVersion differs, is {found_section['iHeaderVersion'][0]}"
                 f" but should be {self.meta['i_header_version']}"
             )
         if found_section["iSectionVersion"][0] != self.meta["i_section_version"]:
-            print(
+            logger.warning(
                 f"Section iSectionVersion differs, is {found_section['iSectionVersion'][0]}"
                 f" but should be {self.meta['i_section_version']}"
             )
         if found_section["eRelationshipType"][0] != self.meta["e_relationship_type"]:
-            print(
+            logger.warning(
                 f"Section eRelationshipType differs, is {found_section['eRelationshipType'][0]}"
                 f" but should be {self.meta['e_relationship_type']}"
             )
         if found_section["eRecordType"][0] != self.meta["e_record_type"]:
-            print(
+            logger.warning(
                 f"Section eRecordType differs, is {found_section['eRecordType'][0]}"
                 f" but should be {self.meta['e_record_type']}"
             )
         if found_section["eRecordDataType"][0] != self.meta["e_record_data_type"]:
-            print(
+            logger.warning(
                 f"Section eRecordDataType differs, is {found_section['eRecordDataType'][0]}"
                 f" but should be {self.meta['e_record_data_type']}"
             )
         if found_section["iDataTypeSize"][0] != self.meta["i_data_type_size"]:
-            print(
+            logger.warning(
                 f"Section iDataTypeSize differs, is {found_section['iDataTypeSize'][0]}"
                 f" but should be {self.meta['i_data_type_size']}"
             )
         if found_section["iRecordSize"][0] != self.meta["i_record_size"]:
-            print(
+            logger.warning(
                 f"Section iRecordSize differs, is {found_section['iRecordSize'][0]}"
                 f" but should be {self.meta['i_record_size']}"
             )
@@ -407,7 +384,7 @@ class AptFileSectionMetadata:
             np_uint16_to_string(found_section["wcDataUnit"][0])
             not in self.accepted_units
         ):
-            print(
+            logger.warning(
                 f"Section wcDataUnit differs, is {np_uint16_to_string(found_section['wcDataUnit'][0])}"
                 f" but should be from accepted_units: {', '.join(self.accepted_units)}"
             )
@@ -415,7 +392,7 @@ class AptFileSectionMetadata:
         # use pint for checking compatible base unit
 
         if found_section["llByteCount"][0] <= 0:
-            raise ValueError("Section llByteCount indicates llByteCount is not > 0 !")
+            raise ValueError("Section llByteCount indicates llByteCount is not > 0")
         # modify dynamic quanities that can only be inferred from the file
         self.meta["ll_record_count"] = found_section["llRecordCount"][0]
         self.meta["ll_byte_count"] = found_section["llByteCount"][0]

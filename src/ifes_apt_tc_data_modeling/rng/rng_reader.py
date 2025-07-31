@@ -30,6 +30,7 @@ from ifes_apt_tc_data_modeling.utils.utils import (
 )
 from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
 from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 
 
 # there are specific examples for unusual range files here:
@@ -52,25 +53,25 @@ def evaluate_rng_range_line(
 
     tmp = re.split(r"\s+", line)
     if len(tmp) != n_columns:
-        raise ValueError(f"Line {line} inconsistent number columns {len(tmp)}!")
+        raise ValueError(f"Line {line} inconsistent number columns {len(tmp)}.")
     if tmp[0] != ".":
-        raise ValueError(f"Line {line} has inconsistent line prefix!")
-    if is_range_significant(np.float64(tmp[1]), np.float64(tmp[2])) is False:
-        # raise ValueError(f"Line {line} insignificant range!")
+        raise ValueError(f"Line {line} has inconsistent line prefix.")
+    if not is_range_significant(np.float64(tmp[1]), np.float64(tmp[2])):
+        # raise ValueError(f"Line {line} insignificant range.")
         return info
     info["range"] = np.asarray([tmp[1], tmp[2]], np.float64)
 
     # line encodes multiplicity of element via array of multiplicity counts
     element_multiplicity = np.asarray(tmp[3 : len(tmp)], np.uint32)
     if np.sum(element_multiplicity) < 0:
-        # raise ValueError(f"Line {line} no element counts!")
+        # raise ValueError(f"Line {line} no element counts.")
         return info
     if np.sum(element_multiplicity) > 0:
         for jdx in np.arange(0, len(element_multiplicity)):
             if element_multiplicity[jdx] < 0:
-                # raise ValueError(f"Line {line} no negative element counts!")
+                # raise ValueError(f"Line {line} no negative element counts.")
                 raise ValueError(
-                    f"element_multiplicity[jdx] {element_multiplicity[jdx]} needs to be positive!"
+                    f"element_multiplicity[jdx] {element_multiplicity[jdx]} needs to be positive."
                 )
             if element_multiplicity[jdx] > 0:
                 symbol = column_id_to_label[jdx + 1]
@@ -99,7 +100,7 @@ def evaluate_rng_ion_type_header(line: str) -> dict:
     info: dict = {"column_id_to_label": {}}
     tmp = re.split(r"\s+", line)
     if len(tmp) == 0:
-        raise ValueError(f"Line {line} does not contain iontype labels {len(tmp)}!")
+        raise ValueError(f"Line {line} does not contain iontype labels {len(tmp)}.")
     for idx in np.arange(1, len(tmp)):
         info["column_id_to_label"][idx] = tmp[idx]
     return info
@@ -109,9 +110,9 @@ class ReadRngFileFormat:
     """Read *.rng file format."""
 
     def __init__(self, file_path: str):
-        if (len(file_path) <= 4) or (file_path.lower().endswith(".rng") is False):
+        if (len(file_path) <= 4) or not file_path.lower().endswith(".rng"):
             raise ImportError(
-                "WARNING::RNG file incorrect file_path ending or file type!"
+                "WARNING::RNG file incorrect file_path ending or file type."
             )
         self.file_path = file_path
         self.rng: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
@@ -147,21 +148,21 @@ class ReadRngFileFormat:
             else:
                 break
         if tmp is None:
-            raise ValueError("RNG file does not contain key header line!")
+            raise ValueError("RNG file does not contain key header line.")
 
         header = evaluate_rng_ion_type_header(txt_stripped[current_line_id])
 
         tmp = re.split(r"\s+", txt_stripped[0])
-        if tmp[0].isnumeric() is False:
-            raise ValueError(f"Line {txt_stripped[0]} number of species corrupted!")
+        if not tmp[0].isnumeric():
+            raise ValueError(f"Line {txt_stripped[0]} number of species corrupted.")
         n_element_symbols = int(tmp[0])
         if n_element_symbols < 0:
-            raise ValueError(f"Line {txt_stripped[0]} no species defined!")
-        if tmp[1].isnumeric() is False:
-            raise ValueError(f"Line {txt_stripped[0]} number of ranges corrupted!")
+            raise ValueError(f"Line {txt_stripped[0]} no species defined.")
+        if not tmp[1].isnumeric():
+            raise ValueError(f"Line {txt_stripped[0]} number of ranges corrupted.")
         n_ranges = int(tmp[1])
         if n_ranges < 0:
-            raise ValueError(f"Line {txt_stripped[0]} no ranges defined!")
+            raise ValueError(f"Line {txt_stripped[0]} no ranges defined.")
 
         for idx in np.arange(current_line_id + 1, current_line_id + 1 + n_ranges):
             dct = evaluate_rng_range_line(
@@ -171,7 +172,7 @@ class ReadRngFileFormat:
                 n_element_symbols + 3,
             )
             if dct is None:
-                print(f"WARNING::RNG line {txt_stripped[idx]} is corrupted!")
+                logger.warning(f"RNG line {txt_stripped[idx]} is corrupted.")
                 continue
 
             m_ion = NxIon(
@@ -183,4 +184,4 @@ class ReadRngFileFormat:
             # m_ion.report()
 
             self.rng["molecular_ions"].append(m_ion)
-        print(f"{self.file_path} parsed successfully")
+        logger.info(f"{self.file_path} parsed successfully.")

@@ -37,15 +37,16 @@ from ifes_apt_tc_data_modeling.utils.molecular_ions import (
     get_chemical_symbols,
     isotope_to_hash,
 )
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 
 
 class ReadImagoAnalysisFileFormat:
     """Read *.analysis file (format), extract ranging definitions as an example."""
 
     def __init__(self, file_path: str):
-        if (len(file_path) <= 9) or (file_path.lower().endswith(".analysis") is False):
+        if (len(file_path) <= 9) or not file_path.lower().endswith(".analysis"):
             raise ImportError(
-                "WARNING::ANALYSIS file incorrect file_path ending or file type!"
+                "WARNING::ANALYSIS file incorrect file_path ending or file type."
             )
         self.file_path = file_path
         self.imago: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
@@ -85,9 +86,9 @@ class ReadImagoAnalysisFileFormat:
                             or (member["@method"] != "add")
                         ):
                             continue
-                        # print(">>>>>>>>>>>At the level of a molecular ion that can be so simple that it is just an element ion")
+                        # logger.debug(">>>>>>>>>>>At the level of a molecular ion that can be so simple that it is just an element ion")
                         cand_dct = fd.FlatDict(member, "/")
-                        # print(f">>>>> {cand_dct}")
+                        # logger.debug(f">>>>> {cand_dct}")
                         all_reqs_exist = True
                         reqs = [
                             "@method",
@@ -151,7 +152,7 @@ class ReadImagoAnalysisFileFormat:
                                                                 block["string"]
                                                             )
                             if (len(element_symbol) >= 1) and (len(mq) == 2):
-                                # print(f"------------>{element_symbol}, {mq}")
+                                # logger.debug(f"------------>{element_symbol}, {mq}")
                                 ivec = []
                                 for isotope in element_symbol:
                                     if isotope != "":
@@ -197,4 +198,4 @@ class ReadImagoAnalysisFileFormat:
                                 m_ion.report()
 
                                 self.imago["molecular_ions"].append(m_ion)
-        print(f"{self.file_path} parsed successfully")
+        logger.info(f"{self.file_path} parsed successfully.")

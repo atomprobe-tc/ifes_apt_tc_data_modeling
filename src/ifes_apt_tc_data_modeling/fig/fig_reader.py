@@ -33,15 +33,16 @@ from ifes_apt_tc_data_modeling.utils.molecular_ions import (
     get_chemical_symbols,
     isotope_to_hash,
 )
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 
 
 class ReadFigTxtFileFormat:
     """Read *.fig.txt file format."""
 
     def __init__(self, file_path: str):
-        if (len(file_path) <= 8) or (file_path.lower().endswith(".fig.txt") is False):
+        if (len(file_path) <= 8) or not file_path.lower().endswith(".fig.txt"):
             raise ImportError(
-                "WARNING::FIG.TXT file incorrect file_path ending or file type!"
+                "WARNING::FIG.TXT file incorrect file_path ending or file type."
             )
         self.file_path = file_path
         self.fig: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
@@ -64,7 +65,7 @@ class ReadFigTxtFileFormat:
             mqmin = np.float64(tmp[len(tmp) - 2 : -1][0])
             mqmax = np.float64(tmp[len(tmp) - 1 :][0])
             ionname = " ".join(tmp[:-2])
-            # print(f"{ionname} [{mqmin}, {mqmax}]")
+            # logger.debug(f"{ionname} [{mqmin}, {mqmax}]")
             # ionname = '16O 1H2 + + +  + '
 
             positive = ionname.count("+")
@@ -114,5 +115,4 @@ class ReadFigTxtFileFormat:
             # m_ion.report()
 
             self.fig["molecular_ions"].append(m_ion)
-
-        print(f"{self.file_path} parsed successfully")
+        logger.info(f"{self.file_path} parsed successfully.")
