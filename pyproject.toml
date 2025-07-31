@@ -42,6 +42,14 @@ dev = [
     "uv",
     "pre-commit"
 ]
+docs = [
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocs-material-extensions",
+    "mkdocs-macros-plugin",
+    "mkdocs-click",
+    "pymdown-extensions",
+]
 ipynb = [
     "jupyter",
     "jupyterlab",
