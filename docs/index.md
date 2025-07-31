@@ -4,7 +4,7 @@ hide: toc
 
 # Documentation for ifes_apt_tc_data_modeling
 
-ADD documentation.
+A Python software module for reading file formats that are used in the research field of atom probe tomography and field ion microscopy.
 
 <div markdown="block" class="home-grid">
 <div markdown="block"> 
@@ -15,6 +15,7 @@ Installation guides exist for users and developers.
 
 - [Install for users](tutorial/install_user.md)
 - [Install for developers](tutorial/install_devs.md)
+- [Compile the documentation](tutorial/compile_docs.md)
 
 </div>
 <div markdown="block">
