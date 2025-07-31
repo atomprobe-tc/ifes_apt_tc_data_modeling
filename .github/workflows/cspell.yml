@@ -1,0 +1,35 @@
+name: cspell
+
+on: [push]
+  # push:
+  #   branches:
+  #     - main
+  
+env:
+  python-version: 3.12
+
+# permissions:
+#    contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      # - name: Configure Git Credentials
+      #   run: |
+      #     git config user.name github-actions[bot]
+      #     git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+
+      - name: Check spelling
+        uses: streetsidesoftware/cspell-action@v7
+        with:
+          files: "docs/**/*.md README.md"
+          strict: true
+          incremental_files_only: false
