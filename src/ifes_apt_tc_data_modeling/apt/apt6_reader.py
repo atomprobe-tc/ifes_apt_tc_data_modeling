@@ -28,19 +28,20 @@ from ifes_apt_tc_data_modeling.apt.apt6_sections import AptFileSectionMetadata
 from ifes_apt_tc_data_modeling.apt.apt6_sections_branches import EXPECTED_SECTIONS
 from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
 from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 
 
 class ReadAptFileFormat:
     """Read AMETEK's open exchange *.apt file format."""
 
     def __init__(self, file_path: str):
-        if (len(file_path) <= 4) or (file_path.lower().endswith(".apt") is False):
+        if (len(file_path) <= 4) or not file_path.lower().endswith(".apt"):
             raise ImportError(
                 "WARNING::APT file incorrect file_path ending or file type!"
             )
         self.file_path = file_path
         self.file_size = os.path.getsize(self.file_path)
-        print(f"Reading {self.file_path} which is {self.file_size} B")
+        logger.debug(f"Reading {self.file_path} which is {self.file_size} B")
 
         self.header_section = None
         self.byte_offsets: dict = {}
@@ -81,11 +82,11 @@ class ReadAptFileFormat:
             assert self.dummy_header.matches(found_header), (
                 "Found an unexpectedly formatted header. Create an issue to help us fix this!"
             )
-            print(f"File describes {found_header['llIonCount'][0]} ions")
+            logger.info(f"File describes {found_header['llIonCount'][0]} ions")
 
             self.header_section = found_header
             self.byte_offsets["header"] = np.uint64(fp.tell())
-            print(f"Currently at byte_offset {self.byte_offsets['header']} B")
+            logger.debug(f"Currently at byte_offset {self.byte_offsets['header']} B")
 
             end_of_file_not_reached = b"yes"
             while end_of_file_not_reached != b"":
@@ -94,7 +95,7 @@ class ReadAptFileFormat:
                 if end_of_file_not_reached != b"":
                     fp.seek(-1, os.SEEK_CUR)
                 else:
-                    print(f"End of file at {fp.tell()} B")
+                    logger.debug(f"End of file at {fp.tell()} B")
                     break
 
                 dummy_section = AptFileSectionMetadata()
@@ -103,7 +104,7 @@ class ReadAptFileFormat:
                 )
                 keyword = np_uint16_to_string(found_section["wcSectionType"][0])
 
-                print(f"keyword: {keyword}, found_section: {found_section}")
+                logger.debug(f"keyword: {keyword}, found_section: {found_section}")
                 if keyword in self.available_sections:
                     raise ValueError(
                         "Found a duplicate of an already parsed section! "
@@ -117,10 +118,10 @@ class ReadAptFileFormat:
                             "branch! Create an issue to help us fix this!"
                         )
                     metadata_section = EXPECTED_SECTIONS[keyword]
-                    if metadata_section.matches(found_section) is True:
+                    if metadata_section.matches(found_section):
                         self.available_sections[keyword] = metadata_section
                 else:
-                    print(
+                    logger.warning(
                         f"Found an uninterpretable non-registered section."
                         f"Create an issue to help us fix this!, Parsing continues"
                         f"llByteCount {found_section['llByteCount'][0]} B"
@@ -131,7 +132,7 @@ class ReadAptFileFormat:
                     # special case six IEEE 32-bit floats preceeding raw data
                     self.byte_offsets[keyword] += np.uint64(6 * 4)
                 self.byte_offsets[keyword] += np.uint64(found_section["llByteCount"][0])
-                print(
+                logger.debug(
                     f"Byte offset for reading data for section: {keyword}"
                     f" {self.byte_offsets[keyword]} B"
                 )
@@ -154,14 +155,14 @@ class ReadAptFileFormat:
         # 9714475f1b3bc224ea063af81566d873 repo
         # for converting Windows/MSDN time to Python time
         for key, value in iter(metadata_dict.items()):
-            print(f"{key}: {value}")
+            logger.debug(f"{key}: {value}")
 
     def get_metadata(self, keyword: str):
         """Report available metadata for quantity if it exists."""
         if (keyword in self.available_sections) and (keyword in self.byte_offsets):
             metadata_dict = self.available_sections[keyword].get_metadata()
             for key, value in iter(metadata_dict.items()):
-                print(f"{key}: {value}")
+                logger.debug(f"{key}: {value}")
 
     def get_metadata_table(self):
         """Create table from all metadata for each section."""
@@ -177,7 +178,7 @@ class ReadAptFileFormat:
         for keyword, value in self.available_sections.items():
             row_dct = {"section": keyword}
             row_dct = {**row_dct, **value.get_metadata()}
-            # print(value.get_metadata())
+            # logger.debug(value.get_metadata())
             row_df = pd.DataFrame(row_dct, index=[0])
             data_frame = pd.concat([data_frame, row_df], ignore_index=True)
 
@@ -193,7 +194,7 @@ class ReadAptFileFormat:
                 self.byte_offsets[keyword]
                 - self.available_sections[keyword].get_ametek_size()
             )
-            print(f"Reading section {keyword} at {byte_position_start}")
+            logger.info(f"Reading section {keyword} at {byte_position_start}")
 
             dtype = self.available_sections[keyword].get_ametek_type()
             offset = byte_position_start

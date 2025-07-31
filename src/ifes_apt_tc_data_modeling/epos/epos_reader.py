@@ -31,7 +31,7 @@ class ReadEposFileFormat:
     """Read *.epos file format."""
 
     def __init__(self, file_path: str):
-        if (len(file_path) <= 5) or (file_path.lower().endswith(".epos") is False):
+        if (len(file_path) <= 5) or not file_path.lower().endswith(".epos"):
             raise ImportError(
                 "WARNING::ePOS file incorrect file_path ending or file type!"
             )

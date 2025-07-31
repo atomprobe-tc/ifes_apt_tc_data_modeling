@@ -35,7 +35,7 @@ def np_uint16_to_string(uint16_array: np.ndarray) -> str:
 
 def string_to_typed_nparray(string: str, length: int, dtyp: type) -> np.ndarray:
     """Create length long specifically typed numpy array from string."""
-    if (isinstance(dtyp, type) is True) and (len(string) <= length):
+    if isinstance(dtyp, type) and (len(string) <= length):
         nparr = np.zeros(length, dtype=dtyp)  # type: ignore
         for value in np.arange(0, len(string)):
             nparr[value] = ord(string[value])

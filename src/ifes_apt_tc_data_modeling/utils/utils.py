@@ -29,6 +29,7 @@ from ifes_apt_tc_data_modeling.utils.definitions import (
     MQ_EPSILON,
     NEUTRON_NUMBER_FOR_ELEMENT,
 )
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 
 
 def get_smart_chemical_symbols():
@@ -100,8 +101,8 @@ def create_nuclide_hash(building_blocks: list) -> np.ndarray:
                         or (symb_mass[0] not in symbol_to_proton_number)
                         or (symb_mass[0] == "X")
                     ):
-                        print(
-                            f"WARNING:: {block} is not properly formatted <symbol>-<mass_number>!"
+                        logger.warning(
+                            f"{block} is not properly formatted <symbol>-<mass_number>"
                         )
                         return ivec
                     proton_number = symbol_to_proton_number[symb_mass[0]]
@@ -132,8 +133,8 @@ def nuclide_hash_to_nuclide_list(ivec: np.ndarray) -> np.ndarray:
                     nuclide_list[idx, 0] = n_protons + n_neutrons
                 nuclide_list[idx, 1] = n_protons
         return nuclide_list
-    print(
-        f"WARNING:: Argument nuclide_hash needs to be shaped ({MAX_NUMBER_OF_ATOMS_PER_ION},) !"
+    logger.warning(
+        f"Argument nuclide_hash needs to be shaped ({MAX_NUMBER_OF_ATOMS_PER_ION},)"
     )
     return nuclide_list
 

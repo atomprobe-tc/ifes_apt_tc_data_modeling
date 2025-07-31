@@ -39,6 +39,7 @@ from ifes_apt_tc_data_modeling.utils.molecular_ions import (
     SACRIFICE_ISOTOPIC_UNIQUENESS,
 )
 from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 
 
 def try_to_reduce_to_unique_definitions(inp: list) -> list:
@@ -95,11 +96,11 @@ def try_to_reduce_to_unique_definitions(inp: list) -> list:
                             # processing of the range for these ions
                         """
                         else:
-                            print(f"Overlapping or exactly numerically aligned ranges for different ion types {idx}, {jdx}!")
+                            logger.debug(f"Overlapping or exactly numerically aligned ranges for different ion types {idx}, {jdx}!")
                             inp[idx].report()
                             inp[jdx].report()
                         """
-            # print(f"isect {isect}")
+            # logger.debug(f"isect {isect}")
             # if there are none accept this candidate for sure
             visited[idx] = True
             if len(isect) == 0:
@@ -137,11 +138,11 @@ class NxIon:
         self.ion_type = NxField("", "")
         self.charge_state_model = {}
         if len(args) >= 1:
-            if isinstance(args[0], list) is False:
+            if not isinstance(args[0], list):
                 raise ValueError("args[0] needs to be a list!")
             self.nuclide_hash = NxField(create_nuclide_hash(args[0]), "")
         elif "nuclide_hash" in kwargs:
-            if isinstance(kwargs["nuclide_hash"], np.ndarray) is False:
+            if not isinstance(kwargs["nuclide_hash"], np.ndarray):
                 raise ValueError("kwargs nuclide_hash needs to be an np.ndarray!")
             if np.shape(kwargs["nuclide_hash"]) != (MAX_NUMBER_OF_ATOMS_PER_ION,):
                 raise ValueError(
@@ -175,7 +176,7 @@ class NxIon:
 
     def add_range(self, mqmin: np.float64, mqmax: np.float64):
         """Adding mass-to-charge-state ratio interval."""
-        if is_range_significant(mqmin, mqmax) is False:
+        if not is_range_significant(mqmin, mqmax):
             raise ValueError(f"Refusing to add epsilon range [{mqmin}, {mqmax}] !")
         # the following example shows that is_range_overlapping should not be checked for
         # like it was in the past
@@ -196,7 +197,7 @@ class NxIon:
 
     def report(self):
         """Report values."""
-        print(
+        logger.info(
             f"ion_type: {self.ion_type.values}\n"
             f"nuclide_hash: {self.nuclide_hash.values}\n"
             f"nuclide_list: {self.nuclide_list.values}\n"
@@ -220,7 +221,7 @@ class NxIon:
         recovered_charge_state, m_ion_candidates = crawler.combinatorics(
             self.nuclide_hash.values, self.ranges.values[0, 0], self.ranges.values[0, 1]
         )
-        # print(f"{recovered_charge_state}")
+        # logger.debug(f"{recovered_charge_state}")
         self.charge_state = NxField(np.int8(recovered_charge_state), "")
         self.update_human_readable_name()
         self.add_charge_state_model(

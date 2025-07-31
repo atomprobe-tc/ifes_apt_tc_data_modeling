@@ -30,6 +30,7 @@ from ifes_apt_tc_data_modeling.utils.utils import (
 )
 from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
 from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 
 
 # there are specific examples for unusual range files here:
@@ -55,7 +56,7 @@ def evaluate_rng_range_line(
         raise ValueError(f"Line {line} inconsistent number columns {len(tmp)}!")
     if tmp[0] != ".":
         raise ValueError(f"Line {line} has inconsistent line prefix!")
-    if is_range_significant(np.float64(tmp[1]), np.float64(tmp[2])) is False:
+    if not is_range_significant(np.float64(tmp[1]), np.float64(tmp[2])):
         # raise ValueError(f"Line {line} insignificant range!")
         return info
     info["range"] = np.asarray([tmp[1], tmp[2]], np.float64)
@@ -109,7 +110,7 @@ class ReadRngFileFormat:
     """Read *.rng file format."""
 
     def __init__(self, file_path: str):
-        if (len(file_path) <= 4) or (file_path.lower().endswith(".rng") is False):
+        if (len(file_path) <= 4) or not file_path.lower().endswith(".rng"):
             raise ImportError(
                 "WARNING::RNG file incorrect file_path ending or file type!"
             )
@@ -152,12 +153,12 @@ class ReadRngFileFormat:
         header = evaluate_rng_ion_type_header(txt_stripped[current_line_id])
 
         tmp = re.split(r"\s+", txt_stripped[0])
-        if tmp[0].isnumeric() is False:
+        if not tmp[0].isnumeric():
             raise ValueError(f"Line {txt_stripped[0]} number of species corrupted!")
         n_element_symbols = int(tmp[0])
         if n_element_symbols < 0:
             raise ValueError(f"Line {txt_stripped[0]} no species defined!")
-        if tmp[1].isnumeric() is False:
+        if not tmp[1].isnumeric():
             raise ValueError(f"Line {txt_stripped[0]} number of ranges corrupted!")
         n_ranges = int(tmp[1])
         if n_ranges < 0:
@@ -171,7 +172,7 @@ class ReadRngFileFormat:
                 n_element_symbols + 3,
             )
             if dct is None:
-                print(f"WARNING::RNG line {txt_stripped[idx]} is corrupted!")
+                logger.warning(f"RNG line {txt_stripped[idx]} is corrupted.")
                 continue
 
             m_ion = NxIon(
@@ -183,4 +184,4 @@ class ReadRngFileFormat:
             # m_ion.report()
 
             self.rng["molecular_ions"].append(m_ion)
-        print(f"{self.file_path} parsed successfully")
+        logger.info(f"{self.file_path} parsed successfully.")

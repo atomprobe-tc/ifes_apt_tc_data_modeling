@@ -35,7 +35,9 @@ from ifes_apt_tc_data_modeling.utils.utils import (
     MAX_NUMBER_OF_ATOMS_PER_ION,
 )
 from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
+
 # from ifes_apt_tc_data_modeling.utils.combinatorics import apply_combinatorics
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 
 # this implementation focuses on the following state of the pyccapt repository
 # https://github.com/mmonajem/pyccapt/commit/e955beb4f2627befb8b4d26f2e74e4c52e00394e
@@ -87,9 +89,7 @@ class ReadPyccaptControlFileFormat:
     """Read FAU/Erlangen pyccapt (controle module) HDF5 file format."""
 
     def __init__(self, file_path: str):
-        if (file_path.lower().endswith(".h5") is False) and (
-            file_path.lower().endswith(".hdf5") is False
-        ):
+        if not file_path.lower().endswith((".h5", ".hdf5")):
             raise ImportError(
                 "WARNING::HDF5 file incorrect file_path ending or file type!"
             )
@@ -106,9 +106,13 @@ class ReadPyccaptControlFileFormat:
                 if req_grpnm in h5r.keys():
                     self.supported += 1
             if self.supported == 3:
-                print(f"{self.file_path} is a supported pyccapt/control HDF5 file!")
+                logger.debug(
+                    f"{self.file_path} is a supported pyccapt/control HDF5 file!"
+                )
             else:
-                print(f"{self.file_path} is not a supported pyccapt/control HDF5 file!")
+                logger.warning(
+                    f"{self.file_path} is not a supported pyccapt/control HDF5 file!"
+                )
                 return
         # parse out relevant pieces of information
 
@@ -117,9 +121,7 @@ class ReadPyccaptCalibrationFileFormat:
     """Read FAU/Erlangen pyccapt (calibration module) HDF5 file format."""
 
     def __init__(self, file_path: str):
-        if (file_path.lower().endswith(".h5") is False) and (
-            file_path.lower().endswith(".hdf5") is False
-        ):
+        if not file_path.lower().endswith((".h5", ".hdf5")):
             raise ImportError(
                 "WARNING::HDF5 file incorrect file_path ending or file type!"
             )
@@ -143,9 +145,11 @@ class ReadPyccaptCalibrationFileFormat:
                 if entry in h5r.keys():
                     self.supported += 1
             if self.supported == 7:
-                print(f"{self.file_path} is a supported pyccapt/calibration HDF5 file!")
+                logger.debug(
+                    f"{self.file_path} is a supported pyccapt/calibration HDF5 file!"
+                )
             else:
-                print(
+                logger.warning(
                     f"{self.file_path} is not a supported pyccapt/calibration HDF5 file!"
                 )
                 return
@@ -190,9 +194,7 @@ class ReadPyccaptRangingFileFormat:
     """Read FAU/Erlangen pyccapt (ranging module) HDF5 file format."""
 
     def __init__(self, file_path: str):
-        if (file_path.lower().endswith(".h5") is False) and (
-            file_path.lower().endswith(".hdf5") is False
-        ):
+        if not file_path.lower().endswith((".h5", ".hdf5")):
             raise ImportError(
                 "WARNING::HDF5 file incorrect file_path ending or file type!"
             )
@@ -219,17 +221,21 @@ class ReadPyccaptRangingFileFormat:
                 if entry in h5r.keys():
                     self.supported += 1
             if self.supported == 9:
-                print(f"{self.file_path} is a supported pyccapt/ranging HDF5 file!")
+                logger.debug(
+                    f"{self.file_path} is a supported pyccapt/ranging HDF5 file!"
+                )
             else:
-                print(f"{self.file_path} is not a supported pyccapt/ranging HDF5 file!")
+                logger.warning(
+                    f"{self.file_path} is not a supported pyccapt/ranging HDF5 file!"
+                )
                 return
 
         self.df = pd.read_hdf(self.file_path)
         self.rng: dict[str, Any] = {}
         self.rng["molecular_ions"] = []
-        print(np.shape(self.df)[0])
+        logger.debug(np.shape(self.df)[0])
         for idx in np.arange(0, np.shape(self.df)[0]):
-            if isinstance(self.df.iat[idx, 6], str) is True:
+            if isinstance(self.df.iat[idx, 6], str):
                 if self.df.iat[idx, 6] == "unranged":
                     continue
 
@@ -246,4 +252,4 @@ class ReadPyccaptRangingFileFormat:
             m_ion.apply_combinatorics()
             # m_ion.report()
             self.rng["molecular_ions"].append(m_ion)
-        print(f"{self.file_path} parsed successfully")
+        logger.info(f"{self.file_path} parsed successfully.")

@@ -26,6 +26,7 @@ from ifes_apt_tc_data_modeling.apt.apt6_utils import (
     APT_SECTION_NAME_MAX_LENGTH,
     APT_SECTION_TYPE_MAX_LENGTH,
 )
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 
 
 class AptFileSectionMetadata:
@@ -92,7 +93,7 @@ class AptFileSectionMetadata:
 
     def set_section_name(self, value: str):
         """Check and set section name."""
-        if isinstance(value, str) is False:
+        if not isinstance(value, str):
             raise ValueError(f"SectionName {value} must be a string!")
         if value == "":
             raise ValueError(f"SectionName {value} must not be an empty string!")
@@ -121,7 +122,7 @@ class AptFileSectionMetadata:
 
     def set_i_header_size(self, value: int):
         """Check and set i_header_size."""
-        if isinstance(value, int) is False:
+        if not isinstance(value, int):
             raise ValueError(f"iHeaderSize {value} needs to be an int!")
         if value < 0:
             raise ValueError(f"iHeaderSize {value} needs to be positive or zero!")
@@ -133,7 +134,7 @@ class AptFileSectionMetadata:
 
     def set_i_header_version(self, value: int):
         """Check and size i_header_version."""
-        if isinstance(value, int) is False:
+        if not isinstance(value, int):
             raise ValueError(f"iHeaderVersion {value} needs to be an int!")
         if value < 0:
             raise ValueError(f"iHeaderVersion {value} needs to be positive or zero!")
@@ -145,7 +146,7 @@ class AptFileSectionMetadata:
 
     def set_wc_section_type(self, value: str):
         """Check and set wc_section_type."""
-        if isinstance(value, str) is False:
+        if not isinstance(value, str):
             raise ValueError(f"wcSectionType {value} needs to be a string!")
         if value == "":
             raise ValueError(f"wcSectionType {value} must not be an empty string!")
@@ -159,7 +160,7 @@ class AptFileSectionMetadata:
 
     def set_i_section_version(self, value: int):
         """Check and set i_section_version."""
-        if isinstance(value, int) is False:
+        if not isinstance(value, int):
             raise ValueError(f"iSectionVersion {value} needs to be an int!")
         if value < 0:
             raise ValueError(f"iSectionVersion {value} needs to be positive or zero!")
@@ -171,7 +172,7 @@ class AptFileSectionMetadata:
 
     def set_e_relationship_type(self, value: int):
         """Check and set e_relationship_type."""
-        if isinstance(value, int) is False:
+        if not isinstance(value, int):
             raise ValueError(f"eRelationShipType {value} needs to be an int!")
         if value not in [0, 1, 2, 3, 4]:
             raise ValueError(
@@ -186,7 +187,7 @@ class AptFileSectionMetadata:
 
     def set_e_record_type(self, value: int):
         """Check and set e_record_type."""
-        if isinstance(value, int) is False:
+        if not isinstance(value, int):
             raise ValueError(f"eRecordType {value} needs to be an int!")
         if value not in [0, 1, 2]:
             raise ValueError(f"eRecordType {value} needs to be from [0, 1, 2]!")
@@ -199,7 +200,7 @@ class AptFileSectionMetadata:
 
     def set_e_record_data_type(self, value: int):
         """Check and set e_record_data_type."""
-        if isinstance(value, int) is False:
+        if not isinstance(value, int):
             raise ValueError(f"e_record_data_type {value} needs to be an int!")
         if value not in [0, 1, 2, 3, 4, 5]:
             raise ValueError(
@@ -214,7 +215,7 @@ class AptFileSectionMetadata:
 
     def set_i_data_type_size(self, value: int):
         """Check and set i_data_type_size."""
-        if isinstance(value, int) is False:
+        if not isinstance(value, int):
             raise ValueError(f"iDataTypeSize {value} needs to be an int!")
         if value <= 0:
             raise ValueError(
@@ -228,7 +229,7 @@ class AptFileSectionMetadata:
 
     def set_i_record_size(self, value: int):
         """Check and set i_record_size."""
-        if isinstance(value, int) is False:
+        if not isinstance(value, int):
             raise ValueError(f"iRecordSize {value} needs to be an int!")
         if value <= 0:
             raise ValueError(f"iRecordSize {value} needs to be positive and not zero!")
@@ -240,7 +241,7 @@ class AptFileSectionMetadata:
 
     def set_wc_data_unit(self, value: str):
         """Check and set wc_data_unit."""
-        if isinstance(value, str) is False:
+        if not isinstance(value, str):
             raise ValueError(f"wcDataUnit {value} to be a string!")
         # can be the empty string is NX_UNITLESS or NX_DIMENSIONLESS
         if len(value) > 16:
@@ -351,53 +352,50 @@ class AptFileSectionMetadata:
         """Compare a read section against expected versioning."""
         # check if the parsed section's metadata are matching
         # AMETEK expectations, i.e. meeting manufacturers definitions?
-        if (
-            np.array_equal(
-                self.meta["c_signature"], found_section["cSignature"][0], equal_nan=True
-            )
-            is False
+        if not np.array_equal(
+            self.meta["c_signature"], found_section["cSignature"][0], equal_nan=True
         ):
-            print(
+            logger.warning(
                 f"Section cSignature differs, is {np_uint16_to_string(found_section['cSignature'][0])}"
                 f" but should be {np_uint16_to_string(self.meta['c_signature'])}"
             )
         if found_section["iHeaderSize"][0] != self.meta["i_header_size"]:
-            print(
+            logger.warning(
                 f"Section iHeaderSize differs, is {found_section['iHeaderSize'][0]}"
                 f" but should be {self.meta['i_header_size']}"
             )
         if found_section["iHeaderVersion"][0] != self.meta["i_header_version"]:
-            print(
+            logger.warning(
                 f"Section iHeaderVersion differs, is {found_section['iHeaderVersion'][0]}"
                 f" but should be {self.meta['i_header_version']}"
             )
         if found_section["iSectionVersion"][0] != self.meta["i_section_version"]:
-            print(
+            logger.warning(
                 f"Section iSectionVersion differs, is {found_section['iSectionVersion'][0]}"
                 f" but should be {self.meta['i_section_version']}"
             )
         if found_section["eRelationshipType"][0] != self.meta["e_relationship_type"]:
-            print(
+            logger.warning(
                 f"Section eRelationshipType differs, is {found_section['eRelationshipType'][0]}"
                 f" but should be {self.meta['e_relationship_type']}"
             )
         if found_section["eRecordType"][0] != self.meta["e_record_type"]:
-            print(
+            logger.warning(
                 f"Section eRecordType differs, is {found_section['eRecordType'][0]}"
                 f" but should be {self.meta['e_record_type']}"
             )
         if found_section["eRecordDataType"][0] != self.meta["e_record_data_type"]:
-            print(
+            logger.warning(
                 f"Section eRecordDataType differs, is {found_section['eRecordDataType'][0]}"
                 f" but should be {self.meta['e_record_data_type']}"
             )
         if found_section["iDataTypeSize"][0] != self.meta["i_data_type_size"]:
-            print(
+            logger.warning(
                 f"Section iDataTypeSize differs, is {found_section['iDataTypeSize'][0]}"
                 f" but should be {self.meta['i_data_type_size']}"
             )
         if found_section["iRecordSize"][0] != self.meta["i_record_size"]:
-            print(
+            logger.warning(
                 f"Section iRecordSize differs, is {found_section['iRecordSize'][0]}"
                 f" but should be {self.meta['i_record_size']}"
             )
@@ -407,7 +405,7 @@ class AptFileSectionMetadata:
             np_uint16_to_string(found_section["wcDataUnit"][0])
             not in self.accepted_units
         ):
-            print(
+            logger.warning(
                 f"Section wcDataUnit differs, is {np_uint16_to_string(found_section['wcDataUnit'][0])}"
                 f" but should be from accepted_units: {', '.join(self.accepted_units)}"
             )

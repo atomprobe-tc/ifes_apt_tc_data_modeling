@@ -62,7 +62,7 @@ class AptFileHeaderMetadata:
 
     def set_ll_ion_count(self, value: np.uint64):
         """Check and set total ion count."""
-        if isinstance(value, np.uint64) is False:
+        if not isinstance(value, np.uint64):
             raise ValueError(f"llIonCount {value} needs to be an uint64!")
         if value <= 0:
             raise ValueError(f"llIonCount {value} needs to be positive and not zero!")
@@ -74,11 +74,8 @@ class AptFileHeaderMetadata:
 
     def matches(self, found_header: np.ndarray) -> bool:
         """Compare a read header against expectation."""
-        if (
-            np.array_equal(
-                self.c_signature, found_header["cSignature"][0], equal_nan=True
-            )
-            is False
+        if not np.array_equal(
+            self.c_signature, found_header["cSignature"][0], equal_nan=True
         ):
             raise ValueError("Header cSignature differs!")
         if self.i_header_size != found_header["iHeaderSize"][0]:

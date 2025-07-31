@@ -29,6 +29,7 @@ from ifes_apt_tc_data_modeling.utils.utils import (
     get_smart_chemical_symbols,
 )
 from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 
 
 def evaluate_env_range_line(line: str):
@@ -48,12 +49,12 @@ def evaluate_env_range_line(line: str):
     # interpret first token as inclusive left of m/q interval
     # interpret second token as inclusive right bound of m/q interval
     if len(tmp) < 3:
-        print(
-            f"WARNING::ENV file ranging definition {line} has insufficient information!"
+        logger.warning(
+            f"ENV file ranging definition {line} has insufficient information."
         )
         return None
-    if is_range_significant(np.float64(tmp[1]), np.float64(tmp[2])) is False:
-        print(f"WARNING::ENV file ranging definition {line} has insignificant range!")
+    if not is_range_significant(np.float64(tmp[1]), np.float64(tmp[2])):
+        logger.warning(f"ENV file ranging definition {line} has insignificant range.")
         return None
 
     info["range"] = np.asarray([tmp[1], tmp[2]], np.float64)
@@ -67,12 +68,10 @@ def evaluate_env_range_line(line: str):
         for jdx in np.arange(0, len(tokens)):
             kdx = 0
             for sym in get_smart_chemical_symbols():
-                if tokens[jdx][kdx:].startswith(sym) is True:
+                if tokens[jdx][kdx:].startswith(sym):
                     mult = 1
                     if jdx < len(tokens) - 1:
-                        if (tokens[jdx][kdx:] == sym) and (
-                            tokens[jdx + 1].isdigit() is True
-                        ):
+                        if (tokens[jdx][kdx:] == sym) and tokens[jdx + 1].isdigit():
                             mult = int(tokens[jdx + 1])
                             kdx += len(tokens[jdx + 1])
                     lst.extend([sym] * mult)
@@ -85,7 +84,7 @@ class ReadEnvFileFormat:
     """Read GPM/Rouen *.env file format."""
 
     def __init__(self, file_path: str):
-        if (len(file_path) <= 4) or (file_path.lower().endswith(".env") is False):
+        if (len(file_path) <= 4) or not file_path.lower().endswith(".env"):
             raise ImportError(
                 "WARNING::ENV file incorrect file_path ending or file type!"
             )
@@ -105,17 +104,17 @@ class ReadEnvFileFormat:
             rng_s = None
             rng_e = None
             for idx in np.arange(0, len(txt_stripped)):
-                if txt_stripped[idx].startswith("# Definition of") is False:
+                if not txt_stripped[idx].startswith("# Definition of"):
                     continue
                 rng_s = idx
                 break
             for idx in np.arange(rng_s + 1, len(txt_stripped)):
-                if txt_stripped[idx].startswith("# Atom probe definition") is False:
+                if not txt_stripped[idx].startswith("# Atom probe definition"):
                     continue
                 rng_e = idx
                 break
             if rng_s is None or rng_e is None:
-                print("WARNING:: No ranging definitions were found!")
+                logger.warning("No ranging definitions were found.")
                 return
 
             for idx in np.arange(rng_s + 1, rng_e):
@@ -132,4 +131,4 @@ class ReadEnvFileFormat:
                 # m_ion.report()
 
                 self.env["molecular_ions"].append(m_ion)
-            print(f"{self.file_path} parsed successfully")
+            logger.info(f"{self.file_path} parsed successfully.")

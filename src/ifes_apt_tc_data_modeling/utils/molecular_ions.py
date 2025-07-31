@@ -36,6 +36,7 @@ from ifes_apt_tc_data_modeling.utils.definitions import (
     PRACTICAL_MIN_HALF_LIFE,
     SACRIFICE_ISOTOPIC_UNIQUENESS,
 )
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 
 VERBOSE = False
 
@@ -149,8 +150,10 @@ class MolecularIonBuilder:
                     np.asarray(element_isotopes, np.uint16), kind="stable"
                 )[::-1]
         self.nuclides = np.sort(self.nuclides, kind="stable")[::-1]
-        if self.parms["verbose"] is True:
-            print(f"MolecularIonBuilder initialized with {len(self.nuclides)} nuclides")
+        if self.parms["verbose"]:
+            logger.debug(
+                f"MolecularIonBuilder initialized with {len(self.nuclides)} nuclides"
+            )
 
     def get_element_isotopes(self, hashvalue):
         """List of hashvalues all isotopes of element specified by hashvalue."""
@@ -209,11 +212,11 @@ class MolecularIonBuilder:
         for hashvalue in hash_arr:
             if hashvalue != 0:
                 max_depth += 1
-        if self.parms["verbose"] is True:
-            print(f"Maximum recursion depth {max_depth}")
+        if self.parms["verbose"]:
+            logger.debug(f"Maximum recursion depth {max_depth}")
         self.candidates = []
-        if self.parms["verbose"] is True:
-            print(hash_arr)
+        if self.parms["verbose"]:
+            logger.debug(hash_arr)
 
         if max_depth > 0:
             depth = 0
@@ -222,10 +225,10 @@ class MolecularIonBuilder:
             self.iterate_molecular_ion(
                 hash_arr, ith_nuclides, cand_arr_curr, depth, max_depth, low, high
             )
-            if self.parms["verbose"] is True:
-                print(f"Found {len(self.candidates)} candidates!")
+            if self.parms["verbose"]:
+                logger.debug(f"Found {len(self.candidates)} candidates!")
                 for obj in self.candidates:
-                    print(
+                    logger.debug(
                         f"{obj.nuclide_hash}, {obj.charge_state}, {obj.shortest_half_life}"
                     )
             return self.try_to_reduce_to_unique_solution()
@@ -297,10 +300,12 @@ class MolecularIonBuilder:
                         if keyword not in relevant:
                             relevant[keyword] = cand
 
-        if self.parms["verbose"] is True:
-            print(f"Reduced set to {len(relevant.keys())} relevant candidates...")
+        if self.parms["verbose"]:
+            logger.debug(
+                f"Reduced set to {len(relevant.keys())} relevant candidates..."
+            )
             for key in relevant:
-                print(key)
+                logger.debug(key)
         relevant_candidates = []
         for key, obj in relevant.items():
             relevant_candidates.append(obj)
@@ -308,48 +313,53 @@ class MolecularIonBuilder:
 
     def try_to_reduce_to_unique_solution(self):
         """Heuristics to identify if current candidates are unique."""
-        if self.parms["verbose"] is True:
-            print(f"Reduce set of {len(self.candidates)} candidates to a unique...")
+        if self.parms["verbose"]:
+            logger.debug(
+                f"Reduce set of {len(self.candidates)} candidates to a unique..."
+            )
         relevant, relevant_candidates = self.get_relevant()
         if len(relevant) == 0:
-            if self.parms["verbose"] is True:
-                print("WARNING::No relevant candidate meets all criteria!")
-                print("WARNING::No solution possible for given criteria!")
+            if self.parms["verbose"]:
+                logger.warning("No relevant candidate meets all criteria.")
+                logger.warning("No solution possible for given criteria.")
             return (0, relevant_candidates)
         if len(relevant) == 1:
-            if self.parms["verbose"] is True:
-                print("One relevant candidate which meets all criteria")
+            if self.parms["verbose"]:
+                logger.debug("One relevant candidate which meets all criteria.")
             keywords = []
             for key in relevant:
                 if isinstance(key, str):
                     keywords.append(key)
-            assert len(keywords) >= 1, "List of relevant keywords is empty!"
+            if len(keywords) < 1:
+                logger.warning("List of relevant keywords is empty.")
             return (relevant[keywords[0]].charge_state, relevant_candidates)
 
-        if self.parms["verbose"] is True:
-            print("Multiple relevant candidates meet all selection criteria")
+        if self.parms["verbose"]:
+            logger.info("Multiple relevant candidates meet all selection criteria.")
         keywords = []
         for key in relevant:
             if isinstance(key, str):
                 keywords.append(key)
-        assert len(keywords) >= 1, "List of relevant keywords is empty!"
+        if len(keywords) < 1:
+            logger.warning("List of relevant keywords is empty.")
         charge_state = relevant[keywords[0]].charge_state
         for key, val in relevant.items():
             if val.charge_state == charge_state:
                 continue
-            if self.parms["verbose"] is True:
-                print("WARNING::Multiple relevant candidates differ in charge_state!")
-                print("WARNING::No unique solution possible for given criteria!")
+            if self.parms["verbose"]:
+                logger.warning(
+                    f"Multiple relevant candidates differ in charge_state. No unique solution possible for given criteria."
+                )
             return (0, relevant_candidates)
         # not returned yet, so all relevant candidates have the same charge_state
-        if self.parms["verbose"] is True:
-            print(
+        if self.parms["verbose"]:
+            logger.debug(
                 f"Multiple relevant candidates have all the same charge_state {charge_state}"
             )
-        if self.parms["sacrifice_isotopic_uniqueness"] is True:
+        if self.parms["sacrifice_isotopic_uniqueness"]:
             return (charge_state, relevant_candidates)
-        if self.parms["verbose"] is True:
-            print("WARNING::Multiple relevant candidates differ in isotopes!")
-            print("WARNING::But these have the same charge_state!")
-            print("WARNING::No unique solution possible for given criteria!")
+        if self.parms["verbose"]:
+            logger.warning(
+                "Multiple relevant candidates differ in isotopes but these have the same charge_state. No unique solution possible for given criteria."
+            )
         return (0, relevant_candidates)
