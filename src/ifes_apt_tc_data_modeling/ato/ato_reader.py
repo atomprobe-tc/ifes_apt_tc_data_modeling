@@ -32,7 +32,7 @@ class ReadAtoFileFormat:
     def __init__(self, file_path: str):
         if (len(file_path) <= 4) or not file_path.lower().endswith(".ato"):
             raise ImportError(
-                "WARNING::ATO file incorrect file_path ending or file type!"
+                "WARNING::ATO file incorrect file_path ending or file type."
             )
         self.file_path = file_path
 
@@ -46,17 +46,17 @@ class ReadAtoFileFormat:
             logger.info(f"ATO file is in a supported version {self.version}")
             if self.version == 3:
                 if (self.file_size - 2 * 4) % (14 * 4) != 0:
-                    raise ValueError("ATO v3 file_size not integer multiple of 14*4B!")
+                    raise ValueError("ATO v3 file_size not integer multiple of 14*4B.")
 
                 self.number_of_events = np.uint32((self.file_size - 2 * 4) / (14 * 4))
                 logger.info(f"ATO file contains {self.number_of_events} entries.")
             if self.version == 5:
                 if (self.file_size - 5000) % 40 != 0:
-                    raise ValueError("ATO v5 file_size not integer multiple of 40B!")
+                    raise ValueError("ATO v5 file_size not integer multiple of 40B.")
                 self.number_of_events = np.uint32((self.file_size - 5000) / 40)
                 logger.info(f"ATO file contains {self.number_of_events} entries.")
         else:
-            raise ImportError("ATO file unsupported version!")
+            raise ImportError("ATO file unsupported version.")
         # https://zenodo.org/records/8382828
         # details three versions of the Rouen/GPM ato format v3, v4, v5
         # Cameca/AMETEK's runrootl/FileConvert utility know two ATO flavours:

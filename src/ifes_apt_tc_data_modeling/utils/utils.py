@@ -208,31 +208,31 @@ def is_convertible_to_isotope_hash(symbol: str):
     case = re.search("^([A-Z])([a-z])?(-)([0-9]+)$", symbol)
     if case is None:  # eventually element case e.g. "K"
         if not isinstance(symbol, str):
-            raise ValueError("Argument symbol needs to be a string !")
+            raise ValueError("Argument symbol needs to be a string.")
         if symbol not in get_smart_chemical_symbols():
-            raise ValueError(f"Symbol needs to be in {get_smart_chemical_symbols()}!")
+            raise ValueError(f"Symbol needs to be in {get_smart_chemical_symbols()}.")
         return 1
     # alternative case eventually specific nuclide e.g. "K-40"
     symb_mass = symbol.split("-")
     if len(symb_mass) != 2:
         raise TypeError(
-            "Argument symbol is not properly formatted <symbol>-<mass_number>!"
+            "Argument symbol is not properly formatted <symbol>-<mass_number>."
         )
     if len(symb_mass[0]) != 1 and len(symb_mass[0]) != 2:
         raise ValueError(
-            "Argument symbol is not properly formatted <symbol>-<mass_number>!"
+            "Argument symbol is not properly formatted <symbol>-<mass_number>."
         )
     if len(symb_mass[1]) <= 0:
         raise ValueError(
-            f"Argument symbol {symb_mass[1]} needs to be a physical mass number!"
+            f"Argument symbol {symb_mass[1]} needs to be a physical mass number."
         )
     if symb_mass[0] not in get_smart_chemical_symbols():
         raise ValueError(
-            f"{symb_mass[0]} is not a symbol in {get_smart_chemical_symbols()}!"
+            f"{symb_mass[0]} is not a symbol in {get_smart_chemical_symbols()}."
         )
     if int(symb_mass[1]) not in isotopes[atomic_numbers[symb_mass[0]]].keys():
         raise ValueError(
-            f"No value for isotopes[atomic_numbers[{symb_mass[0]}][{int(symb_mass[1])}] exists!"
+            f"No value for isotopes[atomic_numbers[{symb_mass[0]}][{int(symb_mass[1])}] exists."
         )
     return 2
 
@@ -271,38 +271,38 @@ def symbol_lst_to_matrix_of_nuclide_vector(
 
     supported = ("resolve_element", "resolve_ion", "resolve_isotope")
     if method not in supported:
-        raise ValueError(f"Argument method needs to be in {supported} !")
+        raise ValueError(f"Argument method needs to be in {supported}.")
     if not isinstance(symbol_lst, list) and all(
         isinstance(lst, list) for lst in symbol_lst
     ):
-        raise TypeError("Argument symbol_lst must be a list of lists!")
+        raise TypeError("Argument symbol_lst must be a list of lists.")
     if not all(len(np.shape(lst)) == 1 for lst in symbol_lst):
         raise ValueError(
-            "One list in argument symbol_lst is not a 1d list or an empty list!"
+            "One list in argument symbol_lst is not a 1d list or an empty list."
         )
     if not all(np.shape(lst)[0] >= 1 for lst in symbol_lst):
         raise ValueError(
-            "One list in argument symbol_lst is not a 1d list or an empty list!"
+            "One list in argument symbol_lst is not a 1d list or an empty list."
         )
     matrix = np.zeros([len(symbol_lst), MAX_NUMBER_OF_ATOMS_PER_ION])
     charge = []
     if (method == "resolve_ion") and ("charge_lst" in kwargs):
         if not isinstance(kwargs["charge_lst"], list):
-            raise TypeError("Keyword argument charge_lst must be a list of lists!")
+            raise TypeError("Keyword argument charge_lst must be a list of lists.")
         if not all(isinstance(val, int) for val in kwargs["charge_lst"]):
-            raise ValueError("Keyword argument charge_lst needs to be a list of int !")
+            raise ValueError("Keyword argument charge_lst needs to be a list of int .")
         if np.shape(symbol_lst)[0] != np.shape(kwargs["charge_lst"])[0]:
             raise ValueError(
-                "Argument symbol_lst and keyword argument charge_lst need to have the same length !"
+                "Argument symbol_lst and keyword argument charge_lst need to have the same length."
             )
     for idx, lst in enumerate(symbol_lst):
         ivec = np.zeros([1, MAX_NUMBER_OF_ATOMS_PER_ION])
         if lst == []:
-            raise ValueError("Argument molecular ion must not be an empty list!")
+            raise ValueError("Argument molecular ion must not be an empty list.")
         if len(lst) > MAX_NUMBER_OF_ATOMS_PER_ION:
             raise ValueError(
                 f"Argument molecular ion must not contain more than "
-                f"{MAX_NUMBER_OF_ATOMS_PER_ION} entries!"
+                f"{MAX_NUMBER_OF_ATOMS_PER_ION} entries."
             )
         jdx = 0
         for symbol in lst:
@@ -317,7 +317,7 @@ def symbol_lst_to_matrix_of_nuclide_vector(
                     candidate = symbol.split("-", 1)[0]
                     if candidate not in atomic_numbers:
                         raise KeyError(
-                            f"symbol_lst[{idx}] candidate does not specify an element!"
+                            f"symbol_lst[{idx}] candidate does not specify an element."
                         )
                     ivec[0, jdx] = isotope_to_hash(
                         atomic_numbers[candidate], NEUTRON_NUMBER_FOR_ELEMENT

@@ -36,9 +36,7 @@ class ReadAptFileFormat:
 
     def __init__(self, file_path: str):
         if (len(file_path) <= 4) or not file_path.lower().endswith(".apt"):
-            raise ImportError(
-                "WARNING::APT file incorrect file_path ending or file type!"
-            )
+            raise ImportError("APT file incorrect file_path ending or file type.")
         self.file_path = file_path
         self.file_size = os.path.getsize(self.file_path)
         logger.debug(f"Reading {self.file_path} which is {self.file_size} B")
@@ -81,7 +79,7 @@ class ReadAptFileFormat:
 
             if not self.dummy_header.matches(found_header):
                 raise TypeError(
-                    "Found an unexpectedly formatted header. Create an issue to help us fix this!"
+                    "Found an unexpectedly formatted header. Create an issue to help us fix this."
                 )
 
             logger.info(f"File describes {found_header['llIonCount'][0]} ions")
@@ -108,16 +106,11 @@ class ReadAptFileFormat:
 
                 logger.debug(f"keyword: {keyword}, found_section: {found_section}")
                 if keyword in self.available_sections:
-                    raise ValueError(
-                        "Found a duplicate of an already parsed section! "
-                        "Create an issue to help us fix this!"
-                    )
-
+                    raise ValueError("Found a duplicate of an already parsed section.")
                 if keyword not in ["Delta Pulse", "Epos ToF"]:
                     if keyword not in EXPECTED_SECTIONS:
                         raise ValueError(
-                            "Found an unknown section, seems like an unknown/new "
-                            "branch! Create an issue to help us fix this!"
+                            "Found an unknown section, seems like an unknown/new branch."
                         )
                     metadata_section = EXPECTED_SECTIONS[keyword]
                     if metadata_section.matches(found_section):
@@ -171,7 +164,7 @@ class ReadAptFileFormat:
         column_names = ["section"]  # header
         if "Mass" not in self.available_sections:
             raise ValueError(
-                "Mass section not available to guide  creation of the table header!"
+                "Mass section not available to guide creation of the table header."
             )
         for key in self.available_sections["Mass"].get_metadata().keys():
             column_names.append(key)

@@ -33,7 +33,7 @@ class ReadCsvFileFormat:
     def __init__(self, file_path: str):
         if (len(file_path) <= 4) or not file_path.lower().endswith(".csv"):
             raise ImportError(
-                "WARNING::CSV file incorrect file_path ending or file type!"
+                "WARNING::CSV file incorrect file_path ending or file type."
             )
         self.file_path = file_path
 
@@ -46,7 +46,7 @@ class ReadCsvFileFormat:
             self.number_of_events = shp[0]
         else:
             raise ImportError(
-                "CSV file unsupported version because not formatted like POS!"
+                "CSV file unsupported version because not formatted like POS."
             )
 
     def get_reconstructed_positions(self):

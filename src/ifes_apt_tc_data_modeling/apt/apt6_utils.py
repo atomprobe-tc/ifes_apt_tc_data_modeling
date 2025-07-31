@@ -40,4 +40,4 @@ def string_to_typed_nparray(string: str, length: int, dtyp: type) -> np.ndarray:
         for value in np.arange(0, len(string)):
             nparr[value] = ord(string[value])
         return nparr
-    raise ValueError(f"{dtyp} is either not a type or {string} is not <= {length}!")
+    raise ValueError(f"{dtyp} is either not a type or {string} is not <= {length}.")

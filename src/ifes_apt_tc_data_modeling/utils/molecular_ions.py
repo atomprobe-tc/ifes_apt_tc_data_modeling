@@ -226,7 +226,7 @@ class MolecularIonBuilder:
                 hash_arr, ith_nuclides, cand_arr_curr, depth, max_depth, low, high
             )
             if self.parms["verbose"]:
-                logger.debug(f"Found {len(self.candidates)} candidates!")
+                logger.debug(f"Found {len(self.candidates)} candidates.")
                 for obj in self.candidates:
                     logger.debug(
                         f"{obj.nuclide_hash}, {obj.charge_state}, {obj.shortest_half_life}"

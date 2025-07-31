@@ -197,7 +197,7 @@ def test_is_range_overlapping(
     # is equivalent to ion.add_range(10.0, 13.3)
     # assert is_range_overlapping(np.asarray([mqmin, mqmax]),
     #                            self.ranges.values) is False, \
-    #                            "Refusing overlapping range!"
+    #                            "Refusing overlapping range."
     assert expected == is_range_overlapping(interval, interval_set)
 
 

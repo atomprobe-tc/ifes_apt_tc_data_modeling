@@ -49,7 +49,7 @@ def try_to_reduce_to_unique_definitions(inp: list) -> list:
             continue
         else:
             raise ValueError(
-                "Argument inp to try_to_reduce_to_unique_definitions needs to list of NxIon!"
+                "Argument inp to try_to_reduce_to_unique_definitions needs to list of NxIon."
             )
     unique = []
     # unique if mqival does not overlap (but can touch) either side
@@ -96,7 +96,7 @@ def try_to_reduce_to_unique_definitions(inp: list) -> list:
                             # processing of the range for these ions
                         """
                         else:
-                            logger.debug(f"Overlapping or exactly numerically aligned ranges for different ion types {idx}, {jdx}!")
+                            logger.debug(f"Overlapping or exactly numerically aligned ranges for different ion types {idx}, {jdx}.")
                             inp[idx].report()
                             inp[jdx].report()
                         """
@@ -139,14 +139,14 @@ class NxIon:
         self.charge_state_model = {}
         if len(args) >= 1:
             if not isinstance(args[0], list):
-                raise ValueError("args[0] needs to be a list!")
+                raise ValueError("args[0] needs to be a list.")
             self.nuclide_hash = NxField(create_nuclide_hash(args[0]), "")
         elif "nuclide_hash" in kwargs:
             if not isinstance(kwargs["nuclide_hash"], np.ndarray):
-                raise ValueError("kwargs nuclide_hash needs to be an np.ndarray!")
+                raise ValueError("kwargs nuclide_hash needs to be an np.ndarray.")
             if np.shape(kwargs["nuclide_hash"]) != (MAX_NUMBER_OF_ATOMS_PER_ION,):
                 raise ValueError(
-                    f"kwargs nuclide_hash needs be a ({MAX_NUMBER_OF_ATOMS_PER_ION},) array!"
+                    f"kwargs nuclide_hash needs be a ({MAX_NUMBER_OF_ATOMS_PER_ION},) array."
                 )
             self.nuclide_hash = NxField(
                 np.asarray(kwargs["nuclide_hash"], np.uint16), ""
@@ -177,7 +177,7 @@ class NxIon:
     def add_range(self, mqmin: np.float64, mqmax: np.float64):
         """Adding mass-to-charge-state ratio interval."""
         if not is_range_significant(mqmin, mqmax):
-            raise ValueError(f"Refusing to add epsilon range [{mqmin}, {mqmax}] !")
+            raise ValueError(f"Refusing to add epsilon range [{mqmin}, {mqmax}] .")
         self.ranges.values = np.vstack((self.ranges.values, np.array([mqmin, mqmax])))
 
     def update_human_readable_name(self):
@@ -239,7 +239,7 @@ class NxIon:
         for req in req_parms:
             if req in parameters:
                 continue
-            raise ValueError(f"Parameter {req} not defined in parameters dict!")
+            raise ValueError(f"Parameter {req} not defined in parameters dict.")
         self.charge_state_model = {"n_cand": 0}
         for key, val in parameters.items():
             if key not in self.charge_state_model:

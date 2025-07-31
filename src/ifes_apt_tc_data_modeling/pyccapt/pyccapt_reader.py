@@ -91,7 +91,7 @@ class ReadPyccaptControlFileFormat:
     def __init__(self, file_path: str):
         if not file_path.lower().endswith((".h5", ".hdf5")):
             raise ImportError(
-                "WARNING::HDF5 file incorrect file_path ending or file type!"
+                "WARNING::HDF5 file incorrect file_path ending or file type."
             )
         self.file_path = file_path
         self.file_size = os.path.getsize(self.file_path)
@@ -107,11 +107,11 @@ class ReadPyccaptControlFileFormat:
                     self.supported += 1
             if self.supported == 3:
                 logger.debug(
-                    f"{self.file_path} is a supported pyccapt/control HDF5 file!"
+                    f"{self.file_path} is a supported pyccapt/control HDF5 file."
                 )
             else:
                 logger.warning(
-                    f"{self.file_path} is not a supported pyccapt/control HDF5 file!"
+                    f"{self.file_path} is not a supported pyccapt/control HDF5 file."
                 )
                 return
         # parse out relevant pieces of information
@@ -123,7 +123,7 @@ class ReadPyccaptCalibrationFileFormat:
     def __init__(self, file_path: str):
         if not file_path.lower().endswith((".h5", ".hdf5")):
             raise ImportError(
-                "WARNING::HDF5 file incorrect file_path ending or file type!"
+                "WARNING::HDF5 file incorrect file_path ending or file type."
             )
         self.file_path = file_path
         self.file_size = os.path.getsize(self.file_path)
@@ -146,11 +146,11 @@ class ReadPyccaptCalibrationFileFormat:
                     self.supported += 1
             if self.supported == 7:
                 logger.debug(
-                    f"{self.file_path} is a supported pyccapt/calibration HDF5 file!"
+                    f"{self.file_path} is a supported pyccapt/calibration HDF5 file."
                 )
             else:
                 logger.warning(
-                    f"{self.file_path} is not a supported pyccapt/calibration HDF5 file!"
+                    f"{self.file_path} is not a supported pyccapt/calibration HDF5 file."
                 )
                 return
 
@@ -196,7 +196,7 @@ class ReadPyccaptRangingFileFormat:
     def __init__(self, file_path: str):
         if not file_path.lower().endswith((".h5", ".hdf5")):
             raise ImportError(
-                "WARNING::HDF5 file incorrect file_path ending or file type!"
+                "WARNING::HDF5 file incorrect file_path ending or file type."
             )
         self.file_path = file_path
         self.file_size = os.path.getsize(self.file_path)
@@ -222,11 +222,11 @@ class ReadPyccaptRangingFileFormat:
                     self.supported += 1
             if self.supported == 9:
                 logger.debug(
-                    f"{self.file_path} is a supported pyccapt/ranging HDF5 file!"
+                    f"{self.file_path} is a supported pyccapt/ranging HDF5 file."
                 )
             else:
                 logger.warning(
-                    f"{self.file_path} is not a supported pyccapt/ranging HDF5 file!"
+                    f"{self.file_path} is not a supported pyccapt/ranging HDF5 file."
                 )
                 return
 

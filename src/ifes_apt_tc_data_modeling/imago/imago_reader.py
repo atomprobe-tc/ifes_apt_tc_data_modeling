@@ -46,7 +46,7 @@ class ReadImagoAnalysisFileFormat:
     def __init__(self, file_path: str):
         if (len(file_path) <= 9) or not file_path.lower().endswith(".analysis"):
             raise ImportError(
-                "WARNING::ANALYSIS file incorrect file_path ending or file type!"
+                "WARNING::ANALYSIS file incorrect file_path ending or file type."
             )
         self.file_path = file_path
         self.imago: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}

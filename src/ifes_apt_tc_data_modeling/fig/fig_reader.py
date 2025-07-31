@@ -42,7 +42,7 @@ class ReadFigTxtFileFormat:
     def __init__(self, file_path: str):
         if (len(file_path) <= 8) or not file_path.lower().endswith(".fig.txt"):
             raise ImportError(
-                "WARNING::FIG.TXT file incorrect file_path ending or file type!"
+                "WARNING::FIG.TXT file incorrect file_path ending or file type."
             )
         self.file_path = file_path
         self.fig: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
