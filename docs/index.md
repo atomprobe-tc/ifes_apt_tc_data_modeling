@@ -13,17 +13,15 @@ ADD documentation.
 
 Installation guides exist for users and developers.
 
-<!-- - [Install for users](tutorial/install_user.md)
-- [Install for developers](tutorial/install_devs.md)-->
+- [Install for users](tutorial/install_user.md)
+- [Install for developers](tutorial/install_devs.md)
 
 </div>
 <div markdown="block">
 
 ### How-to guides
 
-How-to guides provide step-by-step instructions for a wide range of tasks, with the overarching topics:
-
-<!--- [How to use the readers](how-tos/howto.md)-->
+<!-- How-to guides provide step-by-step instructions for a wide range of tasks, with the overarching topics:-->
 
 </div>
 
@@ -31,18 +29,19 @@ How-to guides provide step-by-step instructions for a wide range of tasks, with 
 
 ### Learn
 
-The explanation section provides background knowledge to specific topics.
+Background knowledge to specific topics.
 
-<!-- - [Some learning](explanation/learn.md)-->
+- [Exchange](explanation/learn.md)
+- [Provenance](explanation/provenance.md)
+- [Specifications](explanation/suggestions.md)
+- [NeXus NXapm](explanation/nxapm.md)
 
 </div>
 <div markdown="block">
 
 ### Reference
 
-The reference provides ADD ME.
-
-<!-- - .ibw: [Igor Binary Wave Format](https://www.wavemetrics.com/) files, exported from [Scienta Omicron](https://scientaomicron.com/en)-->
+<!-- ONE PURPOSE SENTENCE -->
 
 </div>
 </div>
@@ -51,7 +50,7 @@ The reference provides ADD ME.
 
 Any questions or suggestions? Get in touch!
 
-[The work is supported by the International Field Emission Society (IFES) Atom Probe Tomography Technical Committee (APT-TC)](https://fieldemission.org/article.php?id=technical_committee)
+[The work is supported by the International Field Emission Society (IFES) Atom Probe Tomography Technical Committee (APT TC)](https://fieldemission.org/article.php?id=technical_committee)
 
 [The work is funded by the Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) - 460197019 (FAIRmat).](https://gepris.dfg.de/gepris/projekt/460197019?language=en)
 

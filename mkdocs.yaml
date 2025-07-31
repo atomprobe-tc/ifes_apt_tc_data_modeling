@@ -1,7 +1,7 @@
 site_name: Documentation
 site_description: |
   The documentation for the ifes_apt_tc_data_modeling Python library.
-site_author: The IFES APT-TC, the atom probe community, and the NOMAD Authors
+site_author: The IFES APT TC, the atom probe community, and the NOMAD Authors
 repo_url: https://github.com/atomprobe-tc/ifes_apt_tc_data_modeling
 edit_uri: ""
 
@@ -10,12 +10,11 @@ nav:
   - Tutorials:
       - tutorial/install_user.md
       - tutorial/install_devs.md
-  - How-To Guides:
-      - how-tos/howto.md
   - Explanation:
       - explanation/learn.md
-  - Reference:
-      - reference/refs.md
+      - explanation/provenance.md
+      - explanation/suggestions.md
+      - explanation/nxapm.md
 
 plugins:
   - search
