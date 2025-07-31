@@ -178,13 +178,6 @@ class NxIon:
         """Adding mass-to-charge-state ratio interval."""
         if not is_range_significant(mqmin, mqmax):
             raise ValueError(f"Refusing to add epsilon range [{mqmin}, {mqmax}] !")
-        # the following example shows that is_range_overlapping should not be checked for
-        # like it was in the past
-        # ion.add_range(10.0, 12.0), ion.add_range(12.0, 13.3)
-        # is equivalent to ion.add_range(10.0, 13.3)
-        # assert is_range_overlapping(np.asarray([mqmin, mqmax]),
-        #                            self.ranges.values) is False, \
-        #                            "Refusing overlapping range!"
         self.ranges.values = np.vstack((self.ranges.values, np.array([mqmin, mqmax])))
 
     def update_human_readable_name(self):

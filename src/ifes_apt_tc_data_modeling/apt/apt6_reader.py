@@ -79,9 +79,11 @@ class ReadAptFileFormat:
                 fp, self.dummy_header.get_numpy_struct(), count=1
             )
 
-            assert self.dummy_header.matches(found_header), (
-                "Found an unexpectedly formatted header. Create an issue to help us fix this!"
-            )
+            if not self.dummy_header.matches(found_header):
+                raise TypeError(
+                    "Found an unexpectedly formatted header. Create an issue to help us fix this!"
+                )
+
             logger.info(f"File describes {found_header['llIonCount'][0]} ions")
 
             self.header_section = found_header

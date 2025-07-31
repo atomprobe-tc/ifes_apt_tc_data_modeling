@@ -40,12 +40,10 @@ class ReadPosFileFormat:
         self.file_path = file_path
 
         self.file_size = os.path.getsize(self.file_path)
-        assert self.file_size % 4 * 4 == 0, (
-            "POS file_size not integer multiple of 4*4B!"
-        )
-        assert np.uint32(self.file_size / (4 * 4)) < np.iinfo(np.uint32).max, (
-            "POS file is too large, currently only 2*32 supported!"
-        )
+        if self.file_size % (4 * 4) != 0:
+            raise ValueError("POS file_size not integer multiple of 4*4B!")
+        if np.uint32(self.file_size / (4 * 4)) >= np.iinfo(np.uint32).max:
+            raise ValueError("POS file is too large, currently only 2*32 supported!")
         self.number_of_events = np.uint32(self.file_size / (4 * 4))
         logger.debug(f"Parsing {self.number_of_events} events from {self.file_path}")
 

@@ -37,12 +37,10 @@ class ReadEposFileFormat:
             )
         self.file_path = file_path
         self.file_size = os.path.getsize(self.file_path)
-        assert self.file_size % 11 * 4 == 0, (
-            "ePOS file_size not integer multiple of 11*4B!"
-        )
-        assert np.uint32(self.file_size / (11 * 4)) < np.iinfo(np.uint32).max, (
-            "ePOS file is too large, currently only 2*32 supported!"
-        )
+        if self.file_size % (11 * 4) != 0:
+            raise ValueError("ePOS file_size not integer multiple of 11*4B!")
+        if np.uint32(self.file_size / (11 * 4)) >= np.iinfo(np.uint32).max:
+            raise ValueError("ePOS file is too large, currently only 2*32 supported!")
         self.number_of_events = np.uint32(self.file_size / (11 * 4))
 
         # https://doi.org/10.1007/978-1-4614-3436-8 for file format details
