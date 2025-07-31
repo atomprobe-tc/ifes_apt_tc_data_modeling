@@ -30,6 +30,6 @@ jobs:
       - name: Check spelling
         uses: streetsidesoftware/cspell-action@v7
         with:
-          files: "docs/**/*.md README.md"
+          files: "*.md"
           strict: true
           incremental_files_only: false
