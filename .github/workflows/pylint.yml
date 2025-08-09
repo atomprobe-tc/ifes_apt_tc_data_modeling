@@ -5,12 +5,19 @@ on: [push]
 jobs:
   linting:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python_version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
-      - name: Install uv and set the python version to 3.12
+        with:
+          fetch-depth: 0
+          submodules: recursive
+      - name: Install uv and set the python version to ${{ matrix.python_version }}
         uses: astral-sh/setup-uv@v5
         with:
-          python-version: 3.12
+          python-version: ${{ matrix.python_version }}
       - name: Install package and dev dependencies
         run: |
           uv pip install ".[dev]"

@@ -1,6 +1,6 @@
 # Specifications
 
-## Suggestions on how to improve building and communicating file format specifications
+## Improve on building and communicating file format specifications
 
 File formats, data models, in (almost every) research field may not be fully documented.
 A checklist of the necessary pieces of information and documentation required to call a

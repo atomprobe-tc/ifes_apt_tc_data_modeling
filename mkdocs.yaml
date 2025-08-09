@@ -10,6 +10,7 @@ nav:
   - Tutorials:
       - tutorial/install_user.md
       - tutorial/install_devs.md
+      - tutorial/compile_docs.md
   - Explanation:
       - explanation/learn.md
       - explanation/provenance.md
@@ -28,8 +29,8 @@ theme:
     accent: '#008A67'
   font:
     text: 'Titillium Web'
-  logo: assets/favicon_ifes.png
-  favicon: assets/favicon_ifes.png
+  # logo: assets/favicon_nomad.png
+  # favicon: assets/favicon_nomad.png
   features:
     - navigation.instant
     - navigation.footer
