@@ -55,7 +55,7 @@ class MolecularIonCandidate:
         charge_state=0,
         mass_sum=0.0,
         nat_abun_prod=0.0,
-        min_half_life=np.inf,
+        min_half_life=0.0,
     ):
         self.nuclide_hash = np.asarray(ivec, np.uint16)
         self.charge_state = np.int8(charge_state)
