@@ -62,31 +62,28 @@ class AptFileHeaderMetadata:
 
     def set_ll_ion_count(self, value: np.uint64):
         """Check and set total ion count."""
-        if isinstance(value, np.uint64) is False:
-            raise ValueError(f"llIonCount {value} needs to be an uint64!")
+        if not isinstance(value, np.uint64):
+            raise ValueError(f"llIonCount {value} needs to be an uint64.")
         if value <= 0:
-            raise ValueError(f"llIonCount {value} needs to be positive and not zero!")
+            raise ValueError(f"llIonCount {value} needs to be positive and not zero.")
         if value > np.iinfo(np.uint64).max:
             raise ValueError(
-                f"llIonCount is too large {value}, needs to map to np.uint64!"
+                f"llIonCount is too large {value}, needs to map to np.uint64."
             )
         self.ll_ion_count = np.uint64(value)
 
     def matches(self, found_header: np.ndarray) -> bool:
         """Compare a read header against expectation."""
-        if (
-            np.array_equal(
-                self.c_signature, found_header["cSignature"][0], equal_nan=True
-            )
-            is False
+        if not np.array_equal(
+            self.c_signature, found_header["cSignature"][0], equal_nan=True
         ):
-            raise ValueError("Header cSignature differs!")
+            raise ValueError("Header cSignature differs.")
         if self.i_header_size != found_header["iHeaderSize"][0]:
-            raise ValueError("Header iHeaderSize differs!")
+            raise ValueError("Header iHeaderSize differs.")
         if self.i_header_version != found_header["iHeaderVersion"][0]:
-            raise ValueError("Header iHeaderVersion differs!")
+            raise ValueError("Header iHeaderVersion differs.")
         if found_header["llIonCount"][0] <= 0:
-            raise ValueError("Header indicates there are no ions in the file!")
+            raise ValueError("Header indicates there are no ions in the file.")
         self.set_ll_ion_count(found_header["llIonCount"][0])
         return True
 

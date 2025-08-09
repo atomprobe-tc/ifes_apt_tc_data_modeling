@@ -1,3 +1,6 @@
+site
+examples/data
+examples/logging.log
 .ipynb_checkpoints
 .py37
 .py38

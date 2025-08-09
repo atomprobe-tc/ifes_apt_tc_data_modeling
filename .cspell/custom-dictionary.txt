@@ -1,0 +1,28 @@
+# Custom Dictionary Words
+
+## NeXus related words
+
+## Words related to experimental techniques
+
+## Software
+ipynb
+
+## Names
+AMETEK
+AMETEK/Cameca
+Breen
+Cameca
+Felfer
+Gault
+IFES
+Kühbach
+Markus
+Mehrpad
+Monajem
+Reinhard
+ifes
+
+# en-us
+
+# misc
+

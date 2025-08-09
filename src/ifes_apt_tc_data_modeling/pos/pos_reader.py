@@ -25,6 +25,7 @@ import numpy as np
 
 from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
 from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 
 
 class ReadPosFileFormat:
@@ -32,21 +33,19 @@ class ReadPosFileFormat:
 
     def __init__(self, file_path: str):
         """Initialize the reader."""
-        if (len(file_path) <= 4) or (file_path.lower().endswith(".pos") is False):
+        if (len(file_path) <= 4) or (not file_path.lower().endswith(".pos")):
             raise ImportError(
-                "WARNING::POS file incorrect file_path ending or file type!"
+                "WARNING::POS file incorrect file_path ending or file type."
             )
         self.file_path = file_path
 
         self.file_size = os.path.getsize(self.file_path)
-        assert self.file_size % 4 * 4 == 0, (
-            "POS file_size not integer multiple of 4*4B!"
-        )
-        assert np.uint32(self.file_size / (4 * 4)) < np.iinfo(np.uint32).max, (
-            "POS file is too large, currently only 2*32 supported!"
-        )
+        if self.file_size % (4 * 4) != 0:
+            raise ValueError("POS file_size not integer multiple of 4*4B.")
+        if np.uint32(self.file_size / (4 * 4)) >= np.iinfo(np.uint32).max:
+            raise ValueError("POS file is too large, currently only 2*32 supported.")
         self.number_of_events = np.uint32(self.file_size / (4 * 4))
-        # print("Initialized access to " + self.file_path + " successfully")
+        logger.debug(f"Parsing {self.number_of_events} events from {self.file_path}")
 
         # https://doi.org/10.1007/978-1-4614-3436-8 for file format details
         # dtyp_names = ["Reconstructed position along the x-axis (nm)",
