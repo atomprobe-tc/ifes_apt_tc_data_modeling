@@ -11,14 +11,14 @@ python3 -m venv .py3.12
 source .py3.12/bin/activate
 ```
 
-If you already have such environment or just created one, proceed with installing `ifes_apt_tc_data_modeling`:
+If you already have such environment or just created one, proceed with installing the library:
 
 ```shell
 pip install ifes_apt_tc_data_modeling[ipynb]
 ```
 
 This will install the module and [jupyterlab](https://jupyterlab.readthedocs.io/en/latest/) whereby the notebook
-with examples become executable. The jupyterlab server is started with
+with examples become executable. The jupyterlab server is started with.
 
 ```shell
 jupyter-lab
