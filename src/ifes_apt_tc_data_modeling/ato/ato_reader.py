@@ -23,15 +23,16 @@ import numpy as np
 
 from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
 from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 
 
 class ReadAtoFileFormat:
     """Read Rouen group *.ato file format."""
 
     def __init__(self, file_path: str):
-        if (len(file_path) <= 4) or (file_path.lower().endswith(".ato") is False):
+        if (len(file_path) <= 4) or not file_path.lower().endswith(".ato"):
             raise ImportError(
-                "WARNING::ATO file incorrect file_path ending or file type!"
+                "WARNING::ATO file incorrect file_path ending or file type."
             )
         self.file_path = file_path
 
@@ -42,21 +43,20 @@ class ReadAtoFileFormat:
         if retval in [3, 5]:
             # there also seems to exist a version 4 but I have never seen an example for it
             self.version = retval
-            print(f"ATO file is in a supported version {self.version}")
+            logger.info(f"ATO file is in a supported version {self.version}")
             if self.version == 3:
-                assert (self.file_size - 2 * 4) % 14 * 4 == 0, (
-                    "ATO v3 file_size not integer multiple of 14*4B!"
-                )
+                if (self.file_size - 2 * 4) % (14 * 4) != 0:
+                    raise ValueError("ATO v3 file_size not integer multiple of 14*4B.")
+
                 self.number_of_events = np.uint32((self.file_size - 2 * 4) / (14 * 4))
-                print(f"ATO file contains {self.number_of_events} entries")
+                logger.info(f"ATO file contains {self.number_of_events} entries.")
             if self.version == 5:
-                assert (self.file_size - 5000) % 40 == 0, (
-                    "ATO v5 file_size not integer multiple of 40B!"
-                )
+                if (self.file_size - 5000) % 40 != 0:
+                    raise ValueError("ATO v5 file_size not integer multiple of 40B.")
                 self.number_of_events = np.uint32((self.file_size - 5000) / 40)
-                print(f"ATO file contains {self.number_of_events} entries")
+                logger.info(f"ATO file contains {self.number_of_events} entries.")
         else:
-            raise ImportError("ATO file unsupported version!")
+            raise ImportError("ATO file unsupported version.")
         # https://zenodo.org/records/8382828
         # details three versions of the Rouen/GPM ato format v3, v4, v5
         # Cameca/AMETEK's runrootl/FileConvert utility know two ATO flavours:
