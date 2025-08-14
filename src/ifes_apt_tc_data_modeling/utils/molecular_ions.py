@@ -178,10 +178,7 @@ class MolecularIonBuilder:
 
     def get_shortest_half_life(self, nuclide_arr):
         """Get shortest half life for set of nuclides."""
-        cases = {"isinf": 0,
-                 "isnan": 0,
-                 "other": 0,
-                 "all": 0}
+        cases = {"isinf": 0, "isnan": 0, "other": 0, "all": 0}
         for hashvalue in nuclide_arr:
             if hashvalue != 0:
                 cases["all"] += 1
@@ -195,7 +192,9 @@ class MolecularIonBuilder:
             min_half_life = np.inf  # try to find a shorter one
             for hashvalue in nuclide_arr:
                 if hashvalue != 0:
-                    if not np.isinf(self.nuclide_halflife[hashvalue]) and not np.isnan(self.nuclide_halflife[hashvalue]):
+                    if not np.isinf(self.nuclide_halflife[hashvalue]) and not np.isnan(
+                        self.nuclide_halflife[hashvalue]
+                    ):
                         min_half_life = np.min(
                             (min_half_life, self.nuclide_halflife[hashvalue])
                         )
