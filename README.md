@@ -37,7 +37,7 @@ The notebook to run is the following `examples/ExamplesForUsersOrDevelopers.ipyn
 
 [Further documentation of the software is available here.]()
 
-##Acknowledgements:
+## Acknowledgements:
 Contributions of individuals made the consolidation of open-source software for parsing atom probe data possible. Here, [Daniel Haley](https://orcid.org/0000-0001-9308-2620), [Andrew London](https://orcid.org/0000-0001-6959-9849), [Baptiste Gault](https://orcid.org/0000-0002-4934-0458), David Reinhard, Jim Payne, [Andrew Breen](https://orcid.org/0000-0002-3600-5108), and [Benjamin Caplins](https://orcid.org/0000-0002-4925-9537), [Peter Felfer](https://orcid.org/0000-0002-2338-1016), and [Mehrpad Monajem](https://orcid.org/0009-0002-6746-2835) are mentioned.
 
 The work on the ifes_apt_tc_data_modeling library is supported by the International Field Emission Society (IFES).
