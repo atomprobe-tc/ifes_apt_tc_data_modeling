@@ -35,7 +35,7 @@ MQ_EPSILON = np.float64(1.0 / 2000.0)
 
 
 # do not consider isotopes with a very low natural abundance
-PRACTICAL_ABUNDANCE = 1.0e-6  # 0.  # 1.0e-6
+PRACTICAL_ABUNDANCE = 0.0  # 1.0e-6
 # do not consider candidate isotopically different molecular ions
 # if their natural abundance product is too low
 PRACTICAL_ABUNDANCE_PRODUCT = 0.0  # 1.0e-6  # 0.  # 1.0e-12

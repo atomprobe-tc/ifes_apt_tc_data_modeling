@@ -28,19 +28,23 @@ from ifes_apt_tc_data_modeling.utils.utils import create_nuclide_hash
         # (create_nuclide_hash(["H"]), 0.0, 10.0),
         # (create_nuclide_hash(["Be"]), 5.0, 17.0),
         (create_nuclide_hash(["Tc"]), 84.0, 120.0),
-        # (create_nuclide_hash(["Yb"]), 165.0, 206.0),
+        (create_nuclide_hash(["Yb"]), 165.0, 206.0),
+        (create_nuclide_hash(["Fr"]), 222.0, 224.0),
+        (create_nuclide_hash(["Cr", "Cr", "O"]), 57.819, 61.159),
     ],
     ids=[
         # "hydrogen_landscape",
         # "beryllium_landscape",
         "technetium_landscape",
-        # "ytterbium_landscape",
+        "ytterbium_landscape",
+        "francium_landscape",
+        "molecular_ion_cr_cr_o",
     ],
 )
-@pytest.mark.skip(
-    reason=f"TODO needs reporting and comparison against common cases!"
-    f"Failing on Tc expected cuz constrained to non-radioactive only!"
-)
+# @pytest.mark.skip(
+#     reason=f"TODO needs reporting and comparison against common cases!"
+#     f"Failing on Tc expected cuz constrained to non-radioactive only!"
+# )
 def test_combinatorial_analysis(
     nuclide_hash: np.uint16, left: np.float64, right: np.float64
 ):  # expected):
@@ -50,6 +54,7 @@ def test_combinatorial_analysis(
     m_ion.apply_combinatorics()
     m_ion.report()
     print(m_ion.charge_state_model["nuclide_hash"])
+    print(m_ion.name.values)
     # print(m_ion.charge_state_model["shortest_half_life"])
     assert True
 
