@@ -42,8 +42,13 @@ PRACTICAL_ABUNDANCE = 0.0
 # do not consider molecular ions whose product of natural abundance low
 PRACTICAL_ABUNDANCE_PRODUCT = 0.0
 # do consider too shortliving isotopes
-PRACTICAL_MIN_HALF_LIFE = 0.0
-# with first principles theory possible...
+# PRACTICAL_MIN_HALF_LIFE = 0.0  # this setting would give access to the most exhaustive search
+# but in reality even a specimen with radioactive nuclides needs to be measureable which takes some
+# time during which the fast decaying nuclides might have already experienced that many iterations that
+# no such atom of the nuclid remains, let's assume that this practical half life is one minute, then
+# even if one rushes setting up the experiment several dozen iterations will pass until
+# that isotope is measured
+PRACTICAL_MIN_HALF_LIFE = np.inf  # 60.0
 # if false, accept only solutions whose charge state and combination of isotopes is unique
 # if true, relax this constraint
 SACRIFICE_ISOTOPIC_UNIQUENESS = True

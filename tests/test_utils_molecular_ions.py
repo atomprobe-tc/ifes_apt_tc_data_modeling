@@ -21,15 +21,15 @@ import numpy as np
 from ifes_apt_tc_data_modeling.nexus.nx_ion import NxIon, NxField
 from ifes_apt_tc_data_modeling.utils.utils import create_nuclide_hash
 
-
+# commented out expected test results are those returned when PRACTICAL_MINIMUM_HALF_LIFE = 0.0
 @pytest.mark.parametrize(
     "nuclide_hash, left, right, expected",
     [
         (create_nuclide_hash(["H"]), 0.0, 10.0, "H"),
-        (create_nuclide_hash(["Be"]), 5.0, 17.0, "Be"),
-        (create_nuclide_hash(["Tc"]), 84.0, 120.0, "Tc +"),
+        (create_nuclide_hash(["Be"]), 5.0, 17.0, "Be +"),  # Be
+        (create_nuclide_hash(["Tc"]), 84.0, 120.0, "Tc"), # Tc +
         (create_nuclide_hash(["Yb"]), 165.0, 206.0, "Yb +"),
-        (create_nuclide_hash(["Fr"]), 222.0, 224.0, "Fr +"),
+        (create_nuclide_hash(["Fr"]), 222.0, 224.0, "Fr"),  # "Fr +"
         (create_nuclide_hash(["Cr", "Cr", "O"]), 57.819, 61.159, "Cr Cr O ++"),
     ],
     ids=[
@@ -49,7 +49,7 @@ def test_combinatorial_analysis(
     m_ion.apply_combinatorics()
     m_ion.report()
     # print(m_ion.charge_state_model["nuclide_hash"])
-    assert m_ion.name.values == expected
+    assert expected == m_ion.name.values
 
 
 """
