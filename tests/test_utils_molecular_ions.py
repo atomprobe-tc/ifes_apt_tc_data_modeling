@@ -28,6 +28,9 @@ from ifes_apt_tc_data_modeling.utils.utils import create_nuclide_hash
         (create_nuclide_hash(["H"]), 0.0, 10.0, "H"),
         (create_nuclide_hash(["Be"]), 5.0, 17.0, "Be +"),  # Be
         (create_nuclide_hash(["Tc"]), 84.0, 120.0, "Tc"), # Tc +
+        (create_nuclide_hash(["Ra"]), 216.0, 236.0, "Ra"),
+        (create_nuclide_hash(["U"]), 228.0, 249.0, "U"),
+        (create_nuclide_hash(["Th"]), 222.0, 242.0, "Th"),
         (create_nuclide_hash(["Yb"]), 165.0, 206.0, "Yb +"),
         (create_nuclide_hash(["Fr"]), 222.0, 224.0, "Fr"),  # "Fr +"
         (create_nuclide_hash(["Cr", "Cr", "O"]), 57.819, 61.159, "Cr Cr O ++"),
@@ -36,6 +39,9 @@ from ifes_apt_tc_data_modeling.utils.utils import create_nuclide_hash
         "hydrogen_landscape",
         "beryllium_landscape",
         "technetium_landscape",
+        "radon_landscape",
+        "uranium_landscape",
+        "thorium_landscape",
         "ytterbium_landscape",
         "francium_landscape",
         "molecular_ion_cr_cr_o",
