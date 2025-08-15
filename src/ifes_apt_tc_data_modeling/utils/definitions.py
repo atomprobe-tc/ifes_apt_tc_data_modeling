@@ -20,12 +20,11 @@
 
 import numpy as np
 
-# default value for isotope_to_hash when the element is meant irrespective of its isotopes
+# default value for isotope_to_hash when the element should is encoded irrespective of its isotopes
 # see also comment in ifes_apt_tc_data_modeling.utils.utils isotope_to_hash on a breaking
 # change coming with the NIAC standardized NXapm uses 255 for marking the element while
 # before the default value was 0
 NEUTRON_NUMBER_FOR_ELEMENT = 255
-# was 0 before breaking change, now required 255 as per NIAC standard, see NXatom nuclid_hash docstring
 # restrict the number distinguished ion types
 MAX_NUMBER_OF_ION_SPECIES = 256
 # restrict number of atoms for molecular ion fragments
@@ -33,21 +32,18 @@ MAX_NUMBER_OF_ATOMS_PER_ION = 32
 # practical and required minimum mass-resolution Da or atomic mass unit (amu)
 MQ_EPSILON = np.float64(1.0 / 2000.0)
 
+# three types of nuclids are distinguished based on their half life:
+# i) half life infinite modeled as np.inf, stable never practically observed decaying,
+# ii) half life finite, known half life, in many cases irrelevant except for geo
+# iii) half life unclear, exotic nuclids modeled as np.nan, typically irrelevant for atom probe
 
-# do not consider isotopes with a very low natural abundance
-PRACTICAL_ABUNDANCE = 0.0  # 1.0e-6
-# do not consider candidate isotopically different molecular ions
-# if their natural abundance product is too low
-PRACTICAL_ABUNDANCE_PRODUCT = 0.0  # 1.0e-6  # 0.  # 1.0e-12
+# do not consider isotopes with a low natural abundance
+PRACTICAL_ABUNDANCE = 0.0
+# do not consider molecular ions whose product of natural abundance low
+PRACTICAL_ABUNDANCE_PRODUCT = 0.0
 # do consider too shortliving isotopes
-PRACTICAL_MIN_HALF_LIFE = 0.0  # np.inf
-# many examples of ranges are not constrained strongly enough so that
-# there are many isotopes (many of which admittedly hypothetical) ones
-# which are within the range, this option lifts the constraint that
-# there should be only one set of isotopically different molecular ions
-# and if these have all these same charge it is assumed this is the
-# charge of the molecular ion
-# strictly speaking however one would have to rule out every possible
-# molecular ion candidate (which is non-trivial and maybe not even
+PRACTICAL_MIN_HALF_LIFE = 0.0
 # with first principles theory possible...
+# if false, accept only solutions whose charge state and combination of isotopes is unique
+# if true, relax this constraint
 SACRIFICE_ISOTOPIC_UNIQUENESS = True

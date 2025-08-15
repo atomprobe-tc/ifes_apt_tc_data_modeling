@@ -85,7 +85,6 @@ class MolecularIonBuilder:
         self.nuclide_mass = {}
         self.nuclide_abundance = {}
         self.nuclide_stable = {}  # observationally stable
-        # self.nuclide_unclear = {}  # unclear halflife
         self.nuclide_halflife = {}
         self.candidates = []
         self.parms = {
@@ -98,38 +97,27 @@ class MolecularIonBuilder:
 
         for symbol, atomic_number in atomic_numbers.items():
             if symbol != "X":
-                # assume that data from ase take preference
-                # if half-life data are available in radioactive decay library
-                # take these instead, if all fails mark an unclear_half_life == True
+                # let data from ase take preference, half life from radioactive decay lib
                 element_isotopes = []
                 for mass_number in isotopes[atomic_number]:
-                    half_life = np.inf
+                    half_life = np.inf  # assume a stable nuclid
                     observationally_stable = False
-                    # unclear_half_life = False
-
-                    # test if half-life data available
                     trial_nuclide_name = f"{symbol}-{mass_number}"
                     try:
                         tmp = rd.Nuclide(trial_nuclide_name)
                         half_life = tmp.half_life()
                         if np.isinf(half_life):
                             observationally_stable = True
-                            # these ions are always taken as they
-                            # are most relevant for practical
-                            # atom probe experiments
+
                         elif not np.isnan(half_life):
                             if half_life < self.parms["min_half_life"]:
                                 # ignore practically short living ions
                                 continue
                         else:
+                            # ignore exotic
                             continue
                     except ValueError:
                         continue
-                        # do not consider exotic isotopes with unclear
-                        # half-life as they are likely anyway irrelevant
-                        # for practical atom probe experiments
-                        # half_life = np.nan
-                        # unclear_half_life = True
 
                     # not continued, then get ase abundance data
                     n_protons = atomic_number
@@ -142,7 +130,6 @@ class MolecularIonBuilder:
                         self.nuclide_mass[hashvalue] = np.float64(mass)
                         self.nuclide_abundance[hashvalue] = np.float64(abundance)
                         self.nuclide_stable[hashvalue] = observationally_stable
-                        # self.nuclide_unclear[hashvalue] = unclear_half_life
                         self.nuclide_halflife[hashvalue] = half_life
                         element_isotopes = np.append(element_isotopes, hashvalue)
                 self.element_isotopes[atomic_number] = np.sort(
