@@ -26,7 +26,8 @@ from ifes_apt_tc_data_modeling.utils.utils import create_nuclide_hash
 @pytest.mark.parametrize(
     "nuclide_hash, left, right, expected",
     [
-        (create_nuclide_hash(["H"]), 0.0, 10.0, "H"),
+        (create_nuclide_hash(["H"]), 0.0, 10.0, "H +"),
+        (create_nuclide_hash(["H", "H"]), 0.0, 10.0, "H H"),
         (create_nuclide_hash(["Be"]), 5.0, 17.0, "Be +"),  # Be
         (create_nuclide_hash(["Tc"]), 84.0, 120.0, "Tc"),  # Tc +
         (create_nuclide_hash(["Ra"]), 216.0, 236.0, "Ra"),
@@ -38,6 +39,7 @@ from ifes_apt_tc_data_modeling.utils.utils import create_nuclide_hash
     ],
     ids=[
         "hydrogen_landscape",
+        "hydrogen_pair_landscape",
         "beryllium_landscape",
         "technetium_landscape",
         "radon_landscape",
@@ -57,6 +59,7 @@ def test_combinatorial_analysis(
     m_ion.apply_combinatorics()
     m_ion.report()
     # print(m_ion.charge_state_model["nuclide_hash"])
+    # print(m_ion.charge_state_model["charge_state"])
     assert expected == m_ion.name.values
 
 

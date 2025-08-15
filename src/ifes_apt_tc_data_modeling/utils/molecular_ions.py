@@ -145,6 +145,15 @@ class MolecularIonBuilder:
         """List of hashvalues all isotopes of element specified by hashvalue."""
         return self.element_isotopes[hash_to_isotope(hashvalue)[0]]
 
+    def get_number_of_electrons(self, nuclide_arr):
+        """Evaluate cumulated number of electrons of isotopes in ivec."""
+        n_electrons = 0
+        for hashvalue in nuclide_arr:
+            if hashvalue != 0:
+                p, n = hash_to_isotope(hashvalue)
+                n_electrons += p
+        return n_electrons
+
     def get_isotope_mass_sum(self, nuclide_arr):
         """Evaluate cumulated atomic_mass of isotopes in ivec."""
         # assuming no relativistic effects or other quantum effects
@@ -250,8 +259,8 @@ class MolecularIonBuilder:
                 new_mass = self.get_isotope_mass_sum(cand_arr_curr)
                 new_abun_prod = self.get_natural_abundance_product(cand_arr_curr)
                 new_halflife = self.get_shortest_half_life(cand_arr_curr)
-
-                for new_chrg in np.arange(1, 8):
+                n_electrons = self.get_number_of_electrons(cand_arr_curr)
+                for new_chrg in np.arange(1, min(n_electrons + 1, 8)):
                     mass_to_charge = new_mass / new_chrg
                     if mass_to_charge < low:
                         break
