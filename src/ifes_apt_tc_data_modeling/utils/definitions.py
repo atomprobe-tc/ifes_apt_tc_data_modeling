@@ -20,7 +20,7 @@
 
 import numpy as np
 
-# default value for isotope_to_hash when the element should is encoded irrespective of its isotopes
+# default value for isotope_to_hash when the element is encoded irrespective of its isotopes
 # see also comment in ifes_apt_tc_data_modeling.utils.utils isotope_to_hash on a breaking
 # change coming with the NIAC standardized NXapm uses 255 for marking the element while
 # before the default value was 0
