@@ -10,7 +10,15 @@
             "request": "launch",
             "cwd": "${workspaceFolder}",
             //"program": "../../.py3.12.3/bin/dataconverter",
-            "args": ["examples/apm.oasis.specific.yaml"]
+            //"args": ["examples/apm.oasis.specific.yaml"],
+            "justMyCode": false,
+            //"env": {"PYTEST_ADDOPTS": "--no-cov"}
+        },
+        {
+            "name": "Debug Unit Test",
+            "type": "python",
+            "request": "test",
+            "justMyCode": false,
         }
     ]
 }
