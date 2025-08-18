@@ -21,6 +21,7 @@
 # pylint: disable=duplicate-code
 
 import os
+
 import numpy as np
 import pandas as pd
 
@@ -62,7 +63,7 @@ class ReadCsvFileFormat:
         # no magic number, de facto this works only because users know what
         # to expect in advance but how should a machine know this?
         for dim in [0, 1, 2]:
-            xyz.values[:, dim] = pd.read_csv(self.file_path).iat[:, dim]
+            xyz.values[:, dim] = pd.read_csv(self.file_path).iloc[:, dim]
         return xyz
 
     def get_mass_to_charge_state_ratio(self):
@@ -75,5 +76,5 @@ class ReadCsvFileFormat:
         # why reported in Da?
         # why in the third column
         # why at all a mass-to-charge-state-ratio value array?
-        m_n.values[:, 0] = pd.read_csv(self.file_path).iat[:, 3]
+        m_n.values[:, 0] = pd.read_csv(self.file_path).iloc[:, 3]
         return m_n
