@@ -163,19 +163,19 @@ def test_nuclide_hash_to_human_readable_name(
 @pytest.mark.parametrize(
     "interval, interval_set, expected",
     [
-        (np.array([12.0, 12.0]), np.array([12.0, 12.0]), False),
-        (np.array([12.0, 24.0]), np.array([13.0, 14.0]), True),
-        (np.array([12.0, 24.0]), np.array([11.0, 25.0]), True),
+        (np.array([12.0, 12.0]), np.array([[12.0, 12.0]]), True),
+        (np.array([12.0, 24.0]), np.array([[13.0, 14.0]]), True),
+        (np.array([12.0, 24.0]), np.array([[11.0, 25.0]]), True),
         (
             np.array([12.0, 24.0]),
-            np.array([24.0 + MQ_EPSILON, 24.0 + MQ_EPSILON + 1.0]),
+            np.array([[24.0 + 2 * MQ_EPSILON, 24.0 + 2 * MQ_EPSILON + 1.0]]),
             False,
         ),
-        (np.array([12.0, 24.0]), np.array([24.0, 25.0]), True),
-        (np.array([12.0, 24.0]), np.array([11.0, 12.0]), True),
+        (np.array([12.0, 24.0]), np.array([[24.0, 25.0]]), True),
+        (np.array([12.0, 24.0]), np.array([[11.0, 12.0]]), True),
         (
             np.array([12.0, 24.0]),
-            np.array([12.0 - MQ_EPSILON - 1.0, 12.0 - MQ_EPSILON]),
+            np.array([[12.0 - 2 * MQ_EPSILON - 1.0, 12.0 - 2 * MQ_EPSILON]]),
             False,
         ),
     ],
@@ -189,15 +189,9 @@ def test_nuclide_hash_to_human_readable_name(
         "is_range_overlapping_larger_than_set",
     ],
 )
-@pytest.mark.skip(reason="should not be checked for")
 def test_is_range_overlapping(
     interval: np.ndarray, interval_set: np.ndarray, expected: bool
 ):
-    # ion.add_range(10.0, 12.0), ion.add_range(12.0, 13.3)
-    # is equivalent to ion.add_range(10.0, 13.3)
-    # assert is_range_overlapping(np.asarray([mqmin, mqmax]),
-    #                            self.ranges.values) is False, \
-    #                            "Refusing overlapping range."
     assert expected == is_range_overlapping(interval, interval_set)
 
 
