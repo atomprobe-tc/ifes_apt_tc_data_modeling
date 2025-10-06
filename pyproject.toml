@@ -8,7 +8,7 @@ dynamic = ["version"]
 authors = [
     { name = "The NOMAD Authors" },
 ]
-description = "Foster exchange about data models and work towards clear specifications of file formats and data models in the research fields of atom probe tomography and related field-ion microscopy (atom probe microscopy)."
+description = "Working with file formats and data models in atom probe tomography and related field-ion microscopy (atom probe microscopy)."
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
