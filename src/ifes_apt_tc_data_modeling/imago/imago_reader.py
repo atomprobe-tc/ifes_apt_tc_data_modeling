@@ -28,7 +28,7 @@ import flatdict as fd
 import numpy as np
 
 from ase.data import atomic_numbers, chemical_symbols
-from ifes_apt_tc_data_modeling.nexus.nx_ion import NxIon
+from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
 from ifes_apt_tc_data_modeling.utils.definitions import (
     MAX_NUMBER_OF_ATOMS_PER_ION,
     NEUTRON_NUMBER_FOR_ELEMENT,

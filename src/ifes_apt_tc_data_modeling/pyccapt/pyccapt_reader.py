@@ -27,7 +27,7 @@ import numpy as np
 import pandas as pd
 
 from ase.data import atomic_numbers
-from ifes_apt_tc_data_modeling.nexus.nx_ion import NxIon
+from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
 from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 from ifes_apt_tc_data_modeling.utils.utils import (
     isotope_to_hash,

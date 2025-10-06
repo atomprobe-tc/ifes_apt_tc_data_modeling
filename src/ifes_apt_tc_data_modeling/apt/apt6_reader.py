@@ -201,7 +201,7 @@ class ReadAptFileFormat:
             shape = tuple(self.available_sections[keyword].get_ametek_shape())
             unit = self.available_sections[keyword].meta["wc_data_unit"]
             return ureg.Quantity(
-                np.reshape(data, newshape=shape), np_uint16_to_string(unit)
+                np.reshape(data, newshape=shape), f"{np_uint16_to_string(unit)}"
             )
         else:
             logger.error(f"Unable to get_named_quantity {keyword}")

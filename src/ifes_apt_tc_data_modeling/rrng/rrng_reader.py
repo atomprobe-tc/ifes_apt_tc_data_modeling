@@ -24,7 +24,7 @@ import re
 
 import numpy as np
 
-from ifes_apt_tc_data_modeling.nexus.nx_ion import (
+from ifes_apt_tc_data_modeling.utils.nx_ion import (
     NxIon,
     try_to_reduce_to_unique_definitions,
 )
