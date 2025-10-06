@@ -124,11 +124,11 @@ class ReadEposFileFormat:
         # number of pulses since last event detected
         # 0 after the first ion per pulse
         # also known as $\Delta Pulse$
-        values = ureg.Quantity(np.zeros((self.number_of_events,), np.uint32))
+        values = np.zeros((self.number_of_events,), np.uint32)
         values[:] = get_memory_mapped_data(
             self.file_path, ">u4", 9 * 4, 11 * 4, self.number_of_events
         )
-        return values
+        return ureg.Quantity(values)
 
     def get_ions_per_pulse(self):
         """Read ions per pulse."""
