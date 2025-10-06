@@ -8,12 +8,11 @@ dynamic = ["version"]
 authors = [
     { name = "The NOMAD Authors" },
 ]
-description = "Foster exchange about data models and work towards clear specifications of file formats and data models in the research fields of atom probe tomography and related field-ion microscopy (atom probe microscopy)."
+description = "Working with file formats and data models in atom probe tomography and related field-ion microscopy (atom probe microscopy)."
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -23,10 +22,10 @@ classifiers = [
 ]
 dependencies = [
     "h5py>=3.6.0",
-    "numpy>=1.22.4,<2",
     "radioactivedecay>=0.4.16",
     "ase>=3.19.0",
     "pandas>=2",
+    "numpy",
     "tables",
     "flatdict",
     "xmltodict",
@@ -78,7 +77,7 @@ select = [
     "E", # pycodestyle
     "W", # pycodestyle
     "PL", # pylint
-    # "NPY201", # reactivate when using numpy > 2.0
+    "NPY201", # upgrade to numpy > 2.0
 ]
 ignore = [
     "E501", # Line too long ({width} > {limit} characters)
