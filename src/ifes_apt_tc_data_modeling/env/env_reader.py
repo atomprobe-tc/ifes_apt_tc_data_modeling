@@ -22,7 +22,7 @@
 
 import re
 import numpy as np
-from ifes_apt_tc_data_modeling.nexus.nx_ion import NxField, NxIon
+from ifes_apt_tc_data_modeling.nexus.nx_ion import NxIon
 from ifes_apt_tc_data_modeling.utils.utils import (
     create_nuclide_hash,
     is_range_significant,
@@ -126,7 +126,7 @@ class ReadEnvFileFormat:
                     nuclide_hash=create_nuclide_hash(dct["atoms"]), charge_state=0
                 )
                 m_ion.add_range(dct["range"][0], dct["range"][1])
-                m_ion.comment = NxField(dct["name"], "")
+                m_ion.comment = dct["name"]
                 m_ion.apply_combinatorics()
                 # m_ion.report()
 

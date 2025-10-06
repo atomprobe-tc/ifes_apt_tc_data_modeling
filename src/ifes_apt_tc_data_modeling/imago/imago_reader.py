@@ -28,7 +28,7 @@ import flatdict as fd
 import numpy as np
 
 from ase.data import atomic_numbers, chemical_symbols
-from ifes_apt_tc_data_modeling.nexus.nx_ion import NxField, NxIon
+from ifes_apt_tc_data_modeling.nexus.nx_ion import NxIon
 from ifes_apt_tc_data_modeling.utils.definitions import (
     MAX_NUMBER_OF_ATOMS_PER_ION,
     NEUTRON_NUMBER_FOR_ELEMENT,
@@ -193,7 +193,7 @@ class ReadImagoAnalysisFileFormat:
 
                                 m_ion = NxIon(nuclide_hash=ivector, charge_state=0)
                                 m_ion.add_range(float(mq[0]), float(mq[1]))
-                                m_ion.comment = NxField(" ".join(element_symbol), "")
+                                m_ion.comment = " ".join(element_symbol)
                                 m_ion.apply_combinatorics()
                                 m_ion.report()
 

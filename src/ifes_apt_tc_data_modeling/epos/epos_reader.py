@@ -23,7 +23,7 @@
 import os
 import numpy as np
 
-from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
+from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
 
 
@@ -60,91 +60,63 @@ class ReadEposFileFormat:
 
     def get_reconstructed_positions(self):
         """Read xyz columns."""
-
-        xyz = NxField()
-        xyz.values = np.zeros([self.number_of_events, 3], np.float32)
-        xyz.unit = "nm"
-
-        xyz.values[:, 0] = get_memory_mapped_data(
-            self.file_path, ">f4", 0 * 4, 11 * 4, self.number_of_events
-        )  # x
-        xyz.values[:, 1] = get_memory_mapped_data(
-            self.file_path, ">f4", 1 * 4, 11 * 4, self.number_of_events
-        )  # y
-        xyz.values[:, 2] = get_memory_mapped_data(
-            self.file_path, ">f4", 2 * 4, 11 * 4, self.number_of_events
-        )  # z
-        return xyz
+        values = np.zeros((self.number_of_events, 3), np.float32)
+        for dim in [0, 1, 2]:  # x, y, z
+            values[:, dim] = get_memory_mapped_data(
+                self.file_path, ">f4", dim * 4, 11 * 4, self.number_of_events
+            )
+        return ureg.Quantity(values, ureg.nanometer)
 
     def get_mass_to_charge_state_ratio(self):
         """Read mass-to-charge-state-ratio column."""
-        m_n = NxField()
-        m_n.values = np.zeros([self.number_of_events, 1], np.float32)
-        m_n.unit = "Da"
-
-        m_n.values[:, 0] = get_memory_mapped_data(
+        values = np.asarray((self.number_of_events,), np.float32)
+        values[:] = get_memory_mapped_data(
             self.file_path, ">f4", 3 * 4, 11 * 4, self.number_of_events
         )
-        return m_n
+        return ureg.Quantity(values, ureg.dalton)
 
     def get_raw_time_of_flight(self):
         """Read raw (uncorrected) time-of-flight."""
-        raw_tof = NxField()
-        raw_tof.values = np.zeros([self.number_of_events, 1], np.float32)
-        raw_tof.unit = "ns"
-
+        values = np.zeros((self.number_of_events,), np.float32)
         # according to DOI: 10.1007/978-1-4899-7430-3 raw time-of-flight
         # i.e. this is an uncorrected time-of-flight
         # for which effects uncorrect?
         # Only the proprietary IVAS/APSuite source code knows for sure
-        raw_tof.values[:, 0] = get_memory_mapped_data(
+        values[:] = get_memory_mapped_data(
             self.file_path, ">f4", 4 * 4, 11 * 4, self.number_of_events
         )
-        return raw_tof
+        return ureg.Quantity(values, ureg.nanosecond)
 
     def get_standing_voltage(self):
         """Read standing voltage."""
         # according to DOI: 10.1007/978-1-4899-7430-3
         # standing voltage on the specimen
         # according to DOI: 10.1007/978-1-4614-8721-0 also-known as DC voltage
-        dc_voltage = NxField()
-        dc_voltage.values = np.zeros([self.number_of_events, 1], np.float32)
-        dc_voltage.unit = "kV"
-        # different to the above-mentioned references Gault et al. state
-        # that standing and pulse_voltage are in V instead of kV
-
-        dc_voltage.values[:, 0] = get_memory_mapped_data(
+        values = np.zeros((self.number_of_events,), np.float32)
+        values[:] = get_memory_mapped_data(
             self.file_path, ">f4", 5 * 4, 11 * 4, self.number_of_events
         )
-        return dc_voltage
+        return ureg.Quantity(values, ureg.kilovolt)
 
     def get_pulse_voltage(self):
         """Read pulse voltage."""
         # according to DOI: 10.1007/978-1-4899-7430-3
         # additional voltage to trigger field evaporation in case
         # of high-voltage pulsing, 0 for laser pulsing
-        pu_voltage = NxField()
-        pu_voltage.values = np.zeros([self.number_of_events, 1], np.float32)
-        pu_voltage.unit = "kV"
-
-        pu_voltage.values[:, 0] = get_memory_mapped_data(
+        values = np.zeros((self.number_of_events,), np.float32)
+        values[:] = get_memory_mapped_data(
             self.file_path, ">f4", 6 * 4, 11 * 4, self.number_of_events
         )
-        return pu_voltage
+        return ureg.Quantity(values, ureg.kilovolt)
 
     def get_hit_positions(self):
         """Read ion impact positions on detector."""
-        hit_positions = NxField()
-        hit_positions.values = np.zeros([self.number_of_events, 2], np.float32)
-        hit_positions.unit = "mm"
-
-        hit_positions.values[:, 0] = get_memory_mapped_data(
-            self.file_path, ">f4", 7 * 4, 11 * 4, self.number_of_events
-        )  # x
-        hit_positions.values[:, 1] = get_memory_mapped_data(
-            self.file_path, ">f4", 8 * 4, 11 * 4, self.number_of_events
-        )  # y
-        return hit_positions
+        values = np.zeros((self.number_of_events, 2), np.float32)
+        for dim in [0, 1]:  # x, y
+            values[:, dim] = get_memory_mapped_data(
+                self.file_path, ">f4", (7 + dim) * 4, 11 * 4, self.number_of_events
+            )
+        return ureg.Quantity(values, ureg.millimeter)
 
     def get_number_of_pulses(self):
         """Read number of pulses."""
@@ -152,24 +124,18 @@ class ReadEposFileFormat:
         # number of pulses since last event detected
         # 0 after the first ion per pulse
         # also known as $\Delta Pulse$
-        npulses = NxField()
-        npulses.values = np.zeros([self.number_of_events, 1], np.uint32)
-        npulses.unit = ""
-
-        npulses.values[:, 0] = get_memory_mapped_data(
+        values = ureg.Quantity(np.zeros((self.number_of_events,), np.uint32))
+        values[:] = get_memory_mapped_data(
             self.file_path, ">u4", 9 * 4, 11 * 4, self.number_of_events
         )
-        return npulses
+        return values
 
     def get_ions_per_pulse(self):
         """Read ions per pulse."""
         # according to DOI: 10.1007/978-1-4899-7430-3
         # ions per pulse, 0 after the first ion
-        ions_per_pulse = NxField()
-        ions_per_pulse.values = np.zeros([self.number_of_events, 1], np.uint32)
-        ions_per_pulse.unit = ""
-
-        ions_per_pulse.values[:, 0] = get_memory_mapped_data(
+        values = np.zeros((self.number_of_events,), np.uint32)
+        values[:] = get_memory_mapped_data(
             self.file_path, ">u4", 10 * 4, 11 * 4, self.number_of_events
         )
-        return ions_per_pulse
+        return ureg.Quantity(values)

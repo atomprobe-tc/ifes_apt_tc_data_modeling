@@ -28,7 +28,7 @@ import pandas as pd
 
 from ase.data import atomic_numbers
 from ifes_apt_tc_data_modeling.nexus.nx_ion import NxIon
-from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
+from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 from ifes_apt_tc_data_modeling.utils.utils import (
     isotope_to_hash,
     nuclide_hash_to_nuclide_list,
@@ -165,29 +165,18 @@ class ReadPyccaptCalibrationFileFormat:
 
     def get_reconstructed_positions(self):
         """Read xyz columns."""
-        xyz = NxField()
-        xyz.values = np.zeros([self.number_of_events, 3], np.float32)
-        xyz.unit = "nm"
-
+        values = np.zeros((self.number_of_events, 3), np.float32)
         dim = 0
         for quant in ["x (nm)", "y (nm)", "z (nm)"]:
-            xyz.values[:, dim] = np.asarray(
-                self.get_named_quantities(quant), np.float32
-            )
+            values[:, dim] = np.asarray(self.get_named_quantities(quant), np.float32)
             dim += 1
-        return xyz
+        return ureg.Quantity(values, ureg.nanometer)
 
     def get_mass_to_charge_state_ratio(self):
         """Read (calibrated) mass-to-charge-state-ratio column."""
-
-        m_n = NxField()
-        m_n.values = np.zeros([self.number_of_events, 1], np.float32)
-        m_n.unit = "Da"
-
-        m_n.values[:, 0] = np.asarray(
-            self.get_named_quantities("mc_c (Da)"), np.float32
-        )
-        return m_n
+        values = np.zeros((self.number_of_events,), np.float32)
+        values[:] = np.asarray(self.get_named_quantities("mc_c (Da)"), np.float32)
+        return ureg.Quantity(values, ureg.dalton)
 
 
 class ReadPyccaptRangingFileFormat:
@@ -245,9 +234,9 @@ class ReadPyccaptRangingFileFormat:
                 isotopes=self.df.iat[idx, 8],
             )
             m_ion = NxIon()
-            m_ion.nuclide_hash.values = ivec
-            m_ion.nuclide_list.values = nuclide_hash_to_nuclide_list(ivec)
-            m_ion.charge_state.values = np.int8(self.df.iat[idx, 9])
+            m_ion.nuclide_hash = ivec
+            m_ion.nuclide_list = nuclide_hash_to_nuclide_list(ivec)
+            m_ion.charge_state = np.int8(self.df.iat[idx, 9])
             m_ion.add_range(self.df.iat[idx, 3], self.df.iat[idx, 4])
             m_ion.apply_combinatorics()
             # m_ion.report()

@@ -26,7 +26,7 @@ from ifes_apt_tc_data_modeling.apt.apt6_utils import np_uint16_to_string
 from ifes_apt_tc_data_modeling.apt.apt6_headers import AptFileHeaderMetadata
 from ifes_apt_tc_data_modeling.apt.apt6_sections import AptFileSectionMetadata
 from ifes_apt_tc_data_modeling.apt.apt6_sections_branches import EXPECTED_SECTIONS
-from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
+from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
 from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 
@@ -200,9 +200,11 @@ class ReadAptFileFormat:
             data = get_memory_mapped_data(self.file_path, dtype, offset, stride, count)
             shape = tuple(self.available_sections[keyword].get_ametek_shape())
             unit = self.available_sections[keyword].meta["wc_data_unit"]
-            return NxField(np.reshape(data, newshape=shape), np_uint16_to_string(unit))
-
-        return NxField()
+            return ureg.Quantity(
+                np.reshape(data, newshape=shape), np_uint16_to_string(unit)
+            )
+        else:
+            logger.error(f"Unable to get_named_quantity {keyword}")
 
     def get_mass_to_charge_state_ratio(self):
         """Read mass-to-charge."""

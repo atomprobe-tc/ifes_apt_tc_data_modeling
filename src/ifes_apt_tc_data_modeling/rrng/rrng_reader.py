@@ -25,7 +25,6 @@ import re
 import numpy as np
 
 from ifes_apt_tc_data_modeling.nexus.nx_ion import (
-    NxField,
     NxIon,
     try_to_reduce_to_unique_definitions,
 )
@@ -235,7 +234,7 @@ class ReadRrngFileFormat:
                 nuclide_hash=create_nuclide_hash(dct["atoms"]), charge_state=0
             )
             m_ion.add_range(dct["range"][0], dct["range"][1])
-            m_ion.comment = NxField(dct["name"], "")
+            m_ion.comment = dct["name"]
             m_ions.append(m_ion)
             # this set may contain duplicates or overlapping ranges if ranging definitions are ambiguous like here https://doi.org/10.5281/zenodo.7788883
 

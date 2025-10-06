@@ -25,6 +25,7 @@ dependencies = [
     "radioactivedecay>=0.4.16",
     "ase>=3.19.0",
     "pandas>=2",
+    "pint",
     "numpy",
     "tables",
     "flatdict",
