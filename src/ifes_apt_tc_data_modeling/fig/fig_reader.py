@@ -24,7 +24,7 @@ import re
 import numpy as np
 
 from ase.data import atomic_numbers
-from ifes_apt_tc_data_modeling.nexus.nx_ion import NxField, NxIon
+from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
 from ifes_apt_tc_data_modeling.utils.definitions import (
     MAX_NUMBER_OF_ATOMS_PER_ION,
     NEUTRON_NUMBER_FOR_ELEMENT,
@@ -110,7 +110,7 @@ class ReadFigTxtFileFormat:
 
             m_ion = NxIon(nuclide_hash=ivector, charge_state=charge_state)
             m_ion.add_range(mqmin, mqmax)
-            m_ion.comment = NxField(ionname, "")
+            m_ion.comment = ionname
             m_ion.apply_combinatorics()
             # m_ion.report()
 

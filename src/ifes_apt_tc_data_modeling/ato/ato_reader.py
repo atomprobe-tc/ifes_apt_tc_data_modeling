@@ -21,7 +21,7 @@
 import os
 import numpy as np
 
-from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
+from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
 from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 
@@ -79,17 +79,14 @@ class ReadAtoFileFormat:
     def get_reconstructed_positions(self):
         """Read xyz columns."""
 
-        xyz = NxField()
-        xyz.values = np.zeros([self.number_of_events, 3], np.float32)
-        xyz.unit = "nm"
+        values = np.zeros((self.number_of_events, 3), np.float32)
         dtype_v3 = "<f4"  # we assume little-endian here, yes it is in contradiction
         # to the statement made in https://link.springer.com/content/pdf/bbm:978-1-4614-8721-0/1?pdf=chapter%20toc
         # analyzed examples are all consistent with all reported evidence that ATO v3 files
         # have a two times four byte header followed by records with 14 * 4 B each
-
         if self.version == 3:
             for dim in [0, 1, 2]:
-                xyz.values[:, dim] = np.float32(
+                values[:, dim] = np.float32(
                     get_memory_mapped_data(
                         self.file_path,
                         dtype_v3,
@@ -100,48 +97,43 @@ class ReadAtoFileFormat:
                     * 0.1
                 )
                 # wpx -> x, wpy -> y, fpz -> z
-        if self.version == 5:
+        elif self.version == 5:
             # publicly available sources are inconclusive whether coordinates are in angstroem or nm
             # based on the evidence of usa_denton_smith Si.epos converted to v5 ATO via CamecaRoot
             # the resulting x, y coordinates suggests that v5 ATO stores in angstroem, while fpz is stored in nm?
             # however https://zenodo.org/records/8382828 reports the reconstructed positions to be named
             # not at all wpx, wpy and fpz but x, y, z instead and here claims the nm
-            xyz.values[:, 0] = (
-                np.float32(
-                    get_memory_mapped_data(
-                        self.file_path, "<i2", 5000 + 0, 40, self.number_of_events
+            for dim in [0, 1]:  # wpx -> x, wpy -> y
+                values[:, dim] = (
+                    np.float32(
+                        get_memory_mapped_data(
+                            self.file_path,
+                            "<i2",
+                            5000 + (dim * 2),
+                            40,
+                            self.number_of_events,
+                        )
                     )
+                    * 0.01
                 )
-                * 0.01
-            )  # wpx -> x
-            xyz.values[:, 1] = (
-                np.float32(
-                    get_memory_mapped_data(
-                        self.file_path, "<i2", 5000 + 2, 40, self.number_of_events
-                    )
-                )
-                * 0.01
-            )  # wpy -> y
             # angstroem to nm conversion for wpx and wpy was dropped to make results consistent with
             # APSuite based file format conversion tool, again a signature that the ATO format
             # demands better documentation by those who use it especially if claiming to perform
             # FAIR research, nothing about the documentation of this format is currently ticking the
             # FAIR principles but rather software development is prohibited because of contradictory/insufficient
             # documentation
-            xyz.values[:, 2] = np.float32(
+            values[:, 2] = np.float32(
                 get_memory_mapped_data(
                     self.file_path, "<f4", 5000 + 4, 40, self.number_of_events
                 )
                 * 0.1
             )  # fpz -> z
-        return xyz
+        return ureg.Quantity(values, ureg.nanometer)
 
     def get_mass_to_charge_state_ratio(self):
         """Read mass-to-charge-state-ratio column."""
 
-        m_n = NxField()
-        m_n.values = np.zeros([self.number_of_events, 1], np.float32)
-        m_n.unit = "Da"
+        values = np.zeros((self.number_of_events,), np.float32)
         dtype_v3 = "<f4"  # see comment under respective function for xyz,
         # problem is m/q values typically are in the lower part of the byte
         # because of which some examples yield even physical reasonable
@@ -149,13 +141,12 @@ class ReadAtoFileFormat:
         # what if the individual machines were different types of endianness?
         # this is another significant problem with just sharing files without
         # any self-documentation or context around it
-
         if self.version == 3:
-            m_n.values[:, 0] = get_memory_mapped_data(
+            values[:] = get_memory_mapped_data(
                 self.file_path, dtype_v3, 2 * 4 + 3 * 4, 14 * 4, self.number_of_events
             )
-        if self.version == 5:
-            m_n.values[:, 0] = get_memory_mapped_data(
+        elif self.version == 5:
+            values[:] = get_memory_mapped_data(
                 self.file_path, "<f4", 5000 + 8, 40, self.number_of_events
             )
-        return m_n
+        return ureg.Quantity(values, ureg.dalton)

@@ -18,7 +18,7 @@
 
 import pytest
 import numpy as np
-from ifes_apt_tc_data_modeling.nexus.nx_ion import NxIon, NxField
+from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
 from ifes_apt_tc_data_modeling.utils.utils import create_nuclide_hash
 
 
@@ -55,12 +55,12 @@ def test_combinatorial_analysis(
 ):
     m_ion = NxIon(nuclide_hash=nuclide_hash, charge_state=1)
     m_ion.add_range(left, right)
-    m_ion.comment = NxField("", "")
+    m_ion.comment = ""
     m_ion.apply_combinatorics()
     m_ion.report()
     # print(m_ion.charge_state_model["nuclide_hash"])
     # print(m_ion.charge_state_model["charge_state"])
-    assert expected == m_ion.name.values
+    assert expected == m_ion.name
 
 
 """
