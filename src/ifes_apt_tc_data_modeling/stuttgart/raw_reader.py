@@ -41,7 +41,9 @@ class ReadStuttgartRawFileFormat:
         if self.file_size % (8 * 4) != 0:
             raise ValueError("Stuttgart raw file_size not integer multiple of 8*4B.")
         if np.uint32(self.file_size / (8 * 4)) >= np.iinfo(np.uint32).max:
-            raise ValueError("Stuttgart raw file is too large, currently only 2*32 supported.")
+            raise ValueError(
+                "Stuttgart raw file is too large, currently only 2*32 supported."
+            )
         self.number_of_events = np.uint32(self.file_size / (8 * 4))
 
         # https://github.com/sebi-85/apyt/blob/424b33ea5fee2d7e8b3fc0a9af68f382b8da341f/apyt/io/conv.py#L26-33 for file format details
@@ -63,24 +65,24 @@ class ReadStuttgartRawFileFormat:
         """Read (uncorrected) base voltage column."""
         values = np.zeros((self.number_of_events,), np.float32)
         values[:] = get_memory_mapped_data(
-                self.file_path, "<f4", 0 * 4, 8 * 4, self.number_of_events
-            )
+            self.file_path, "<f4", 0 * 4, 8 * 4, self.number_of_events
+        )
         return ureg.Quantity(values, ureg.volt)
 
     def get_pulse_voltage(self):
         """Read (uncorrected) pulse voltage column."""
         values = np.zeros((self.number_of_events,), np.float32)
         values[:] = get_memory_mapped_data(
-                self.file_path, "<f4", 1 * 4, 8 * 4, self.number_of_events
-            )
+            self.file_path, "<f4", 1 * 4, 8 * 4, self.number_of_events
+        )
         return ureg.Quantity(values, ureg.volt)
 
     def get_reflectron_voltage(self):
         """Read (uncorrected) reflectron voltage column."""
         values = np.zeros((self.number_of_events,), np.float32)
         values[:] = get_memory_mapped_data(
-                self.file_path, "<f4", 2 * 4, 8 * 4, self.number_of_events
-            )
+            self.file_path, "<f4", 2 * 4, 8 * 4, self.number_of_events
+        )
         return ureg.Quantity(values, ureg.volt)
 
     def get_raw_detector_position(self):
@@ -96,22 +98,22 @@ class ReadStuttgartRawFileFormat:
         """Read (uncorrected) time-of-flight column."""
         values = np.zeros((self.number_of_events,), np.float32)
         values[:] = get_memory_mapped_data(
-                self.file_path, "<f4", 5 * 4, 8 * 4, self.number_of_events
-            )
+            self.file_path, "<f4", 5 * 4, 8 * 4, self.number_of_events
+        )
         return ureg.Quantity(values, ureg.nanosecond)
 
     def get_epoch_evaporation_event(self):
         """Read epoch of evaporation event column."""
         values = np.zeros((self.number_of_events,), np.int32)
         values[:] = get_memory_mapped_data(
-                self.file_path, "<i4", 6 * 4, 8 * 4, self.number_of_events
-            )
+            self.file_path, "<i4", 6 * 4, 8 * 4, self.number_of_events
+        )
         return ureg.Quantity(values)
 
     def get_pulse_number_evaporation_event(self):
         """Read epoch of evaporation event column."""
         values = np.zeros((self.number_of_events,), np.uint32)
         values[:] = get_memory_mapped_data(
-                self.file_path, "<u4", 7 * 4, 8 * 4, self.number_of_events
-            )
+            self.file_path, "<u4", 7 * 4, 8 * 4, self.number_of_events
+        )
         return ureg.Quantity(values)
