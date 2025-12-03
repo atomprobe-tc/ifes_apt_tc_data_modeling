@@ -30,7 +30,7 @@ def get_all_elements_with_given_number_of_characters(
     return selection
 
 
-def parse_elements(element: str, verbose: bool = False) -> list[str]:
+def parse_elements(element: str) -> list[str]:
     parsed = []
     elements_with_one_character_symbol = (
         get_all_elements_with_given_number_of_characters(1)
@@ -40,34 +40,18 @@ def parse_elements(element: str, verbose: bool = False) -> list[str]:
     )
     idx = 0
     while idx < len(element):
-        if verbose:
-            print(f"......{idx}")
         if f"{element[idx : idx + 2]}" in elements_with_two_character_symbol:
-            if verbose:
-                print(f">>>>, 2 {element[idx : idx + 2]}")
             match = re.search(r"^[0-9]+", element[idx + 2 : :])
             if match:
-                if verbose:
-                    print(f"two_symbol {match}")
                 parsed += [element[idx : idx + 2]] * int(match.group(0))
-                if verbose:
-                    print(f"parsed, 2, ye match {parsed}, {match.group(0)}")
                 idx += 1 + len(f"{match.group(0)}")
             else:
                 parsed.append(f"{element[idx : idx + 2]}")
-                if verbose:
-                    print(f"parsed, 2, no match{parsed}")
                 idx += 2
         elif f"{element[idx]}" in elements_with_one_character_symbol:
-            if verbose:
-                print(f">>>>, 1 {element[idx]}")
             match = re.search(r"^[0-9]+", element[idx + 1 : :])
             if match:
-                if verbose:
-                    print(f"one_symbol {match}")
                 parsed += [f"{element[idx]}"] * int(match.group(0))
-                if verbose:
-                    print(f"parsed {parsed}, {match.group(0)}")
                 idx += 1 + len(f"{match.group(0)}")
             else:
                 if idx + 2 < len(element):
@@ -75,33 +59,19 @@ def parse_elements(element: str, verbose: bool = False) -> list[str]:
                         f"{element[idx : idx + 2]}"
                         in elements_with_two_character_symbol
                     ):
-                        if verbose:
-                            print(f">>>> {element[idx]}")
                         match = re.search(r"^[0-9]+", element[idx + 2 : :])
                         if match:
-                            if verbose:
-                                print(f"two_symbol {match}")
                             parsed += [f"{element[idx]}"] * int(match.group(0))
-                            if verbose:
-                                print(f"parsed {parsed}, {match.group(0)}")
                             idx += 2 + len(f"{match.group(0)}")
                         else:
                             parsed.append(f"{element[idx : idx + 2]}")
-                            if verbose:
-                                print(f"parsed {parsed}")
                             idx += 2
                     else:
                         parsed.append(f"{element[idx]}")
-                        if verbose:
-                            print(f"parsed {parsed}")
                         idx += 1
                 else:
                     parsed.append(f"{element[idx]}")
-                    if verbose:
-                        print(f"parsed {parsed}")
                     idx += 1
         else:
-            if verbose:
-                print(f">>>>>>>>>>>{element[idx]}")
             idx += 1
     return parsed
