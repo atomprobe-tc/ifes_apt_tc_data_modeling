@@ -23,7 +23,7 @@
 import os
 import numpy as np
 
-from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
+from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
 from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 
@@ -55,30 +55,17 @@ class ReadPosFileFormat:
 
     def get_reconstructed_positions(self):
         """Read xyz columns."""
-
-        xyz = NxField()
-        xyz.values = np.zeros([self.number_of_events, 3], np.float32)
-        xyz.unit = "nm"
-
-        xyz.values[:, 0] = get_memory_mapped_data(
-            self.file_path, ">f4", 0 * 4, 4 * 4, self.number_of_events
-        )  # x
-        xyz.values[:, 1] = get_memory_mapped_data(
-            self.file_path, ">f4", 1 * 4, 4 * 4, self.number_of_events
-        )  # y
-        xyz.values[:, 2] = get_memory_mapped_data(
-            self.file_path, ">f4", 2 * 4, 4 * 4, self.number_of_events
-        )  # z
-        return xyz
+        values = np.zeros((self.number_of_events, 3), np.float32)
+        for dim in [0, 1, 2]:  # x, y, z
+            values[:, dim] = get_memory_mapped_data(
+                self.file_path, ">f4", dim * 4, 4 * 4, self.number_of_events
+            )
+        return ureg.Quantity(values, ureg.nanometer)
 
     def get_mass_to_charge_state_ratio(self):
         """Read mass-to-charge-state-ratio column."""
-
-        m_n = NxField()
-        m_n.values = np.zeros([self.number_of_events, 1], np.float32)
-        m_n.unit = "Da"
-
-        m_n.values[:, 0] = get_memory_mapped_data(
+        values = np.zeros((self.number_of_events,), np.float32)
+        values[:] = get_memory_mapped_data(
             self.file_path, ">f4", 3 * 4, 4 * 4, self.number_of_events
         )
-        return m_n
+        return ureg.Quantity(values, ureg.dalton)

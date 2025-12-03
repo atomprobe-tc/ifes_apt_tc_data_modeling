@@ -21,20 +21,20 @@
 # pylint: disable=too-many-branches,too-many-statements,duplicate-code
 
 import re
+
 import numpy as np
 
-from ifes_apt_tc_data_modeling.nexus.nx_ion import (
-    NxField,
+from ifes_apt_tc_data_modeling.utils.nx_ion import (
     NxIon,
     try_to_reduce_to_unique_definitions,
 )
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
+from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
+from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
 from ifes_apt_tc_data_modeling.utils.utils import (
     create_nuclide_hash,
     is_range_significant,
 )
-from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
-from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
-from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 
 
 def evaluate_rrng_range_line(i: int, line: str) -> dict:
@@ -234,7 +234,7 @@ class ReadRrngFileFormat:
                 nuclide_hash=create_nuclide_hash(dct["atoms"]), charge_state=0
             )
             m_ion.add_range(dct["range"][0], dct["range"][1])
-            m_ion.comment = NxField(dct["name"], "")
+            m_ion.comment = dct["name"]
             m_ions.append(m_ion)
             # this set may contain duplicates or overlapping ranges if ranging definitions are ambiguous like here https://doi.org/10.5281/zenodo.7788883
 

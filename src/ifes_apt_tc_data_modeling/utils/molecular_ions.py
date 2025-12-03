@@ -85,7 +85,6 @@ class MolecularIonBuilder:
         self.nuclide_mass = {}
         self.nuclide_abundance = {}
         self.nuclide_stable = {}  # observationally stable
-        self.nuclide_unclear = {}  # unclear halflife
         self.nuclide_halflife = {}
         self.candidates = []
         self.parms = {
@@ -98,41 +97,29 @@ class MolecularIonBuilder:
 
         for symbol, atomic_number in atomic_numbers.items():
             if symbol != "X":
-                # assume that data from ase take preference
-                # if half-life data are available in radioactive decay library
-                # take these instead, if all fails mark an unclear_half_life == True
+                # let data from ase take preference, half life from radioactive decay lib
                 element_isotopes = []
                 for mass_number in isotopes[atomic_number]:
-                    half_life = np.inf
+                    half_life = np.inf  # assume a stable nuclid
                     observationally_stable = False
-                    unclear_half_life = False
-
-                    # test if half-life data available
                     trial_nuclide_name = f"{symbol}-{mass_number}"
                     try:
                         tmp = rd.Nuclide(trial_nuclide_name)
-                    except ValueError:
-                        tmp = None
-                    if tmp is not None:
                         half_life = tmp.half_life()
                         if np.isinf(half_life):
                             observationally_stable = True
-                            # these ions are always taken as they
-                            # are most relevant for practical
-                            # atom probe experiments
-                        else:
+
+                        elif not np.isnan(half_life):
                             if half_life < self.parms["min_half_life"]:
                                 # ignore practically short living ions
                                 continue
-                    else:
+                        else:
+                            # ignore exotic
+                            continue
+                    except ValueError:
                         continue
-                        # do not consider exotic isotopes with unclear
-                        # half-life as they are likely anyway irrelevant
-                        # for practical atom probe experiments
-                        # half_life = np.nan
-                        # unclear_half_life = True
 
-                    # get ase abundance data
+                    # not continued, then get ase abundance data
                     n_protons = atomic_number
                     n_neutrons = mass_number - n_protons
                     mass = isotopes[n_protons][mass_number]["mass"]
@@ -143,7 +130,6 @@ class MolecularIonBuilder:
                         self.nuclide_mass[hashvalue] = np.float64(mass)
                         self.nuclide_abundance[hashvalue] = np.float64(abundance)
                         self.nuclide_stable[hashvalue] = observationally_stable
-                        self.nuclide_unclear[hashvalue] = unclear_half_life
                         self.nuclide_halflife[hashvalue] = half_life
                         element_isotopes = np.append(element_isotopes, hashvalue)
                 self.element_isotopes[atomic_number] = np.sort(
@@ -158,6 +144,15 @@ class MolecularIonBuilder:
     def get_element_isotopes(self, hashvalue):
         """List of hashvalues all isotopes of element specified by hashvalue."""
         return self.element_isotopes[hash_to_isotope(hashvalue)[0]]
+
+    def get_number_of_electrons(self, nuclide_arr):
+        """Evaluate cumulated number of electrons of isotopes in ivec."""
+        n_electrons = 0
+        for hashvalue in nuclide_arr:
+            if hashvalue != 0:
+                p, n = hash_to_isotope(hashvalue)
+                n_electrons += p
+        return n_electrons
 
     def get_isotope_mass_sum(self, nuclide_arr):
         """Evaluate cumulated atomic_mass of isotopes in ivec."""
@@ -179,24 +174,34 @@ class MolecularIonBuilder:
 
     def get_shortest_half_life(self, nuclide_arr):
         """Get shortest half life for set of nuclides."""
-        min_half_life = self.parms["min_half_life"]
+        cases = {"isinf": 0, "isnan": 0, "other": 0, "all": 0}
         for hashvalue in nuclide_arr:
             if hashvalue != 0:
-                if np.isnan(self.nuclide_halflife[hashvalue]):
-                    min_half_life = np.min(
-                        (min_half_life, self.nuclide_halflife[hashvalue])
-                    )
-                    # if the min_half_life is np.inf than we know that every nuclide in the
-                    # molecular ion is observationally stable
-                    # if not we know that considering this molecular ion might not be a good
-                    # idea or only necessary in very few cases because even if we were
-                    # to find such a combination of nuclides at least one would decay in observable
-                    # time and this might possibly hint that studying this molecular is tricky
+                cases["all"] += 1
+                if np.isinf(self.nuclide_halflife[hashvalue]):
+                    cases["isinf"] += 1
+                elif np.isnan(self.nuclide_halflife[hashvalue]):
+                    cases["isnan"] += 1
                 else:
+                    cases["other"] += 1
+        if cases["all"] != cases["isinf"] and cases["all"] != cases["isnan"]:
+            min_half_life = np.inf  # try to find a shorter one
+            for hashvalue in nuclide_arr:
+                if hashvalue != 0:
+                    if not np.isinf(self.nuclide_halflife[hashvalue]) and not np.isnan(
+                        self.nuclide_halflife[hashvalue]
+                    ):
+                        min_half_life = np.min(
+                            (min_half_life, self.nuclide_halflife[hashvalue])
+                        )
                     # if we do not information about the half-life it is very likely that
                     # this is an exotic nuclide likely never found in the wild
-                    return np.nan
-        return min_half_life
+            return min_half_life
+        elif cases["all"] == cases["isinf"]:
+            return np.inf
+        elif cases["all"] == cases["isnan"]:
+            return np.nan
+        return np.nan
 
     def combinatorics(self, hash_arr, low, high):
         """Combinatorial analysis which (molecular) elements match within [low, high]."""
@@ -254,8 +259,8 @@ class MolecularIonBuilder:
                 new_mass = self.get_isotope_mass_sum(cand_arr_curr)
                 new_abun_prod = self.get_natural_abundance_product(cand_arr_curr)
                 new_halflife = self.get_shortest_half_life(cand_arr_curr)
-
-                for new_chrg in np.arange(1, 8):
+                n_electrons = self.get_number_of_electrons(cand_arr_curr)
+                for new_chrg in np.arange(1, min(n_electrons + 1, 8)):
                     mass_to_charge = new_mass / new_chrg
                     if mass_to_charge < low:
                         break

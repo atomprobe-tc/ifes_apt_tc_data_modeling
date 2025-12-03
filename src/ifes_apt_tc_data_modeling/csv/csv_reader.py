@@ -21,10 +21,11 @@
 # pylint: disable=duplicate-code
 
 import os
+
 import numpy as np
 import pandas as pd
 
-from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
+from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 
 
 class ReadCsvFileFormat:
@@ -51,10 +52,7 @@ class ReadCsvFileFormat:
 
     def get_reconstructed_positions(self):
         """Read xyz columns."""
-
-        xyz = NxField()
-        xyz.values = np.zeros([self.number_of_events, 3], np.float32)
-        xyz.unit = "nm"
+        values = np.zeros((self.number_of_events, 3), np.float32)
         # there are too many assumption made here as to the content
         # in the csv file sure one could pass some configuration hints but
         # frankly there are nowadays much! better strategies to report
@@ -62,18 +60,16 @@ class ReadCsvFileFormat:
         # no magic number, de facto this works only because users know what
         # to expect in advance but how should a machine know this?
         for dim in [0, 1, 2]:
-            xyz.values[:, dim] = pd.read_csv(self.file_path).iat[:, dim]
-        return xyz
+            values[:, dim] = pd.read_csv(self.file_path).iloc[:, dim]
+        return ureg.Quantity(values, ureg.nanometer)
 
     def get_mass_to_charge_state_ratio(self):
         """Read mass-to-charge-state-ratio column."""
 
-        m_n = NxField()
-        m_n.values = np.zeros([self.number_of_events, 1], np.float32)
-        m_n.unit = "Da"
+        values = np.zeros((self.number_of_events,), np.float32)
         # again such a strong assumption!
         # why reported in Da?
         # why in the third column
         # why at all a mass-to-charge-state-ratio value array?
-        m_n.values[:, 0] = pd.read_csv(self.file_path).iat[:, 3]
-        return m_n
+        values[:] = pd.read_csv(self.file_path).iloc[:, 3]
+        return ureg.Quantity(values, ureg.dalton)

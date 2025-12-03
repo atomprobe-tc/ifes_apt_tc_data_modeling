@@ -38,7 +38,7 @@ from ifes_apt_tc_data_modeling.utils.molecular_ions import (
     VERBOSE,
     SACRIFICE_ISOTOPIC_UNIQUENESS,
 )
-from ifes_apt_tc_data_modeling.nexus.nx_field import NxField
+from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 
 
@@ -76,18 +76,17 @@ def try_to_reduce_to_unique_definitions(inp: list) -> list:
             ):
                 if not visited[jdx]:
                     if (
-                        inp[idx].ranges.values[0, 1] < inp[jdx].ranges.values[0, 0]
-                        or inp[idx].ranges.values[0, 0] > inp[jdx].ranges.values[0, 1]
+                        inp[idx].ranges.magnitude[0, 1]
+                        < inp[jdx].ranges.magnitude[0, 0]
+                        or inp[idx].ranges.magnitude[0, 0]
+                        > inp[jdx].ranges.magnitude[0, 1]
                     ):
                         continue
                     else:
                         # append only if exactly the same ivec
                         idx_jdx_are_equal = True  # try to falsify
                         for i in np.arange(0, MAX_NUMBER_OF_ATOMS_PER_ION):
-                            if (
-                                inp[idx].nuclide_hash.values[i]
-                                != inp[jdx].nuclide_hash.values[i]
-                            ):
+                            if inp[idx].nuclide_hash[i] != inp[jdx].nuclide_hash[i]:
                                 idx_jdx_are_equal = False
                                 break
                         if idx_jdx_are_equal:
@@ -108,19 +107,15 @@ def try_to_reduce_to_unique_definitions(inp: list) -> list:
                 unique.append(inp[idx])
             else:
                 # combine range of isect candidates with the same nuclide_hash
-                mqmin = inp[idx].ranges.values[0, 0]
-                mqmax = inp[idx].ranges.values[0, 1]
+                mqmin = inp[idx].ranges.magnitude[0, 0]
+                mqmax = inp[idx].ranges.magnitude[0, 1]
                 for ids in isect:
                     visited[ids] = True
-                    mqmin = min(inp[ids].ranges.values[0, 0], mqmin)
-                    mqmax = max(inp[ids].ranges.values[0, 1], mqmax)
-                joined_ion = NxIon(
-                    nuclide_hash=inp[idx].nuclide_hash.values, charge_state=0
-                )
+                    mqmin = min(inp[ids].ranges.magnitude[0, 0], mqmin)
+                    mqmax = max(inp[ids].ranges.magnitude[0, 1], mqmax)
+                joined_ion = NxIon(nuclide_hash=inp[idx].nuclide_hash, charge_state=0)
                 joined_ion.add_range(mqmin, mqmax)
-                joined_ion.comment.values = (
-                    f"{inp[idx].comment.values} was combined with {isect}"
-                )
+                joined_ion.comment = f"{inp[idx].comment} was combined with {isect}"
                 # joined_ion.report()
                 unique.append(joined_ion)
     return unique
@@ -130,17 +125,15 @@ class NxIon:
     """Representative of a NeXus base class NXion."""
 
     def __init__(self, *args, **kwargs):
-        self.comment = NxField(
-            "", ""
-        )  # comment, use e.g. for label of custom ion types
-        self.color = NxField("", "")  # color used by software which created the dataset
-        self.volume = NxField("", "")  # volume value in range files
-        self.ion_type = NxField("", "")
+        self.comment = ""  # comment, use e.g. for label of custom ion types
+        self.color = ""  # color used by software which created the dataset
+        self.volume = ""  # volume value in range files
+        self.ion_type = ""
         self.charge_state_model = {}
         if len(args) >= 1:
             if not isinstance(args[0], list):
                 raise ValueError("args[0] needs to be a list.")
-            self.nuclide_hash = NxField(create_nuclide_hash(args[0]), "")
+            self.nuclide_hash = create_nuclide_hash(args[0])
         elif "nuclide_hash" in kwargs:
             if not isinstance(kwargs["nuclide_hash"], np.ndarray):
                 raise ValueError("kwargs nuclide_hash needs to be an np.ndarray.")
@@ -148,58 +141,53 @@ class NxIon:
                 raise ValueError(
                     f"kwargs nuclide_hash needs be a ({MAX_NUMBER_OF_ATOMS_PER_ION},) array."
                 )
-            self.nuclide_hash = NxField(
-                np.asarray(kwargs["nuclide_hash"], np.uint16), ""
-            )
+            self.nuclide_hash = np.asarray(kwargs["nuclide_hash"], np.uint16)
         else:
             # the default UNKNOWN IONTYPE
-            self.nuclide_hash = NxField(create_nuclide_hash([]), "")
-        self.nuclide_list = NxField(
-            nuclide_hash_to_nuclide_list(self.nuclide_hash.values), ""
-        )
+            self.nuclide_hash = create_nuclide_hash([])
+        self.nuclide_list = nuclide_hash_to_nuclide_list(self.nuclide_hash)
         if "charge_state" in kwargs:
             if isinstance(kwargs["charge_state"], int) and (
                 -8 < kwargs["charge_state"] < +8
             ):
-                self.charge_state = NxField(np.int8(kwargs["charge_state"]), "")
+                self.charge_state = np.int8(kwargs["charge_state"])
         else:
             # charge_state 0 flags and warns that it was impossible to recover
             # the relevant charge which is usually a sign that the range
             # is not matching the theoretically expect peak location
-            self.charge_state = NxField(np.int8(0), "")
-        self.name = NxField(
-            nuclide_hash_to_human_readable_name(
-                self.nuclide_hash.values, self.charge_state.values
-            )
+            self.charge_state = np.int8(0)
+        self.name = nuclide_hash_to_human_readable_name(
+            self.nuclide_hash, self.charge_state
         )
-        self.ranges = NxField(np.empty((0, 2), np.float64), "amu")
+        self.ranges = ureg.Quantity(np.empty((0, 2), np.float64), ureg.dalton)
 
     def add_range(self, mqmin: np.float64, mqmax: np.float64):
         """Adding mass-to-charge-state ratio interval."""
         if not is_range_significant(mqmin, mqmax):
             raise ValueError(f"Refusing to add epsilon range [{mqmin}, {mqmax}] .")
-        self.ranges.values = np.vstack((self.ranges.values, np.array([mqmin, mqmax])))
+        self.ranges = ureg.Quantity(
+            np.vstack((self.ranges.magnitude, np.array([mqmin, mqmax]))),
+            self.ranges.units,
+        )
 
     def update_human_readable_name(self):
         """Re-evaluate charge and nuclide_hash for name."""
-        self.name = NxField(
-            nuclide_hash_to_human_readable_name(
-                self.nuclide_hash.values, self.charge_state.values
-            )
+        self.name = nuclide_hash_to_human_readable_name(
+            self.nuclide_hash, self.charge_state
         )
 
     def report(self):
         """Report values."""
         logger.info(
-            f"ion_type: {self.ion_type.values}\n"
-            f"nuclide_hash: {self.nuclide_hash.values}\n"
-            f"nuclide_list: {self.nuclide_list.values}\n"
-            f"human-readable name: {self.name.values}\n"
-            f"charge_state: {self.charge_state.values}\n"
-            f"ranges: {self.ranges.values}\n"
-            f"comment: {self.comment.values}\n"
-            f"color: {self.color.values}\n"
-            f"volume: {self.volume.values}\n"
+            f"ion_type: {self.ion_type}\n"
+            f"nuclide_hash: {self.nuclide_hash}\n"
+            f"nuclide_list: {self.nuclide_list}\n"
+            f"human-readable name: {self.name}\n"
+            f"charge_state: {self.charge_state}\n"
+            f"ranges: {self.ranges}\n"
+            f"comment: {self.comment}\n"
+            f"color: {self.color}\n"
+            f"volume: {self.volume}\n"
         )
 
     def apply_combinatorics(self):
@@ -212,10 +200,10 @@ class NxIon:
             verbose=VERBOSE,
         )
         recovered_charge_state, m_ion_candidates = crawler.combinatorics(
-            self.nuclide_hash.values, self.ranges.values[0, 0], self.ranges.values[0, 1]
+            self.nuclide_hash, self.ranges.magnitude[0, 0], self.ranges.magnitude[0, 1]
         )
         # logger.debug(f"{recovered_charge_state}")
-        self.charge_state = NxField(np.int8(recovered_charge_state), "")
+        self.charge_state = np.int8(recovered_charge_state)
         self.update_human_readable_name()
         self.add_charge_state_model(
             {
