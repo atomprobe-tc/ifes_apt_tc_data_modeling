@@ -1,6 +1,6 @@
 site
 examples/data
-examples/logging.log
+examples/ifes_apt_tc_data_modeling.log
 .ipynb_checkpoints
 .py37
 .py38
@@ -34,4 +34,5 @@ dist
 # *.HDF5
 # *.nxs
 # *.NXS
+tests/data/cameca_hfive/
 tests/data/rrng/examples_without_provenance/aut_leoben_reichmann/

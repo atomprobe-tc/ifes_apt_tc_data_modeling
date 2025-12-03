@@ -61,40 +61,30 @@ class ReadCamecaHfiveFileFormat:
                 )
                 self.supported = 0
                 return
-        if self.supported == 3:
-            logger.debug(f"{self.file_path} is a supported Cameca HDF5 file.")
-        else:
+        if self.supported != 3:
             logger.warning(f"{self.file_path} is not a supported Cameca HDF5 file.")
-
-    def get_reconstructed_positions(self):
-        """Read xyz positions."""
-        values = np.zeros((self.number_of_events,), np.float32)
-        with h5py.File(self.file_path, "r") as h5r:
-            values[:, :] = np.asarray(h5r["mass"][...], np.float32)
-        return ureg.Quantity(values, ureg.nanometer)
-
-    def get_mass_to_charge_state_ratio(self):
-        """Read (calibrated?) mass-to-charge-state-ratio."""
-        values = np.zeros((self.number_of_events,), np.float32)
-        with h5py.File(self.file_path, "r") as h5r:
-            values[:] = np.asarray(h5r["mass"][...], np.float32)
-        return ureg.Quantity(values, ureg.dalton)
+            self.supported = 0
+            return
+        logger.debug(f"{self.file_path} is a supported Cameca HDF5 file.")
+        self.rng: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
+        self.get_ranging_definitions()
 
     def get_ranging_definitions(self):
         """Read ranging definitions."""
-        self.rng: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
-
         with h5py.File(self.file_path, "r") as h5r:
             for entry in h5r["ranges"]:
-                # clarify if reports following the creation order from Cameca or differently?
-                logger.info(entry)
-                match = re.compile(r"^range_\d+$", entry)
+                # follows the creation order of Cameca but, like it is usual for HDF5,
+                # groups named range_1, range_10, range_2, ... will be processed in that order
+                # rather than range_1, range_2, ..., range_10, would need leading 000
+                match = re.match(r"^range_\d+$", entry)
                 if not match or not all(
                     attribute_name in h5r["ranges"][entry].attrs
                     for attribute_name in ["element", "min_da", "max_da"]
                 ):  # , "volume"]:
+                    logger.debug(f"Ignoring {entry} from /ranges")
                     continue
                 # ion_id = int(entry.replace("range_", ""))
+                logger.info(f"{entry}")
                 atoms = parse_elements(f"""{h5r["ranges"][entry].attrs["element"]}""")
                 min_mass_to_charge = np.float64(
                     h5r["ranges"][entry].attrs["min_da"][()]
@@ -113,4 +103,18 @@ class ReadCamecaHfiveFileFormat:
                 m_ion.apply_combinatorics()
 
                 self.rng["molecular_ions"].append(m_ion)
-        logger.info(f"{self.file_path} ranging definitions parsed successfully.")
+            logger.debug(f"{self.file_path} ranging definitions parsed successfully.")
+
+    def get_reconstructed_positions(self):
+        """Read xyz positions."""
+        values = np.zeros((self.number_of_events, 3), np.float32)
+        with h5py.File(self.file_path, "r") as h5r:
+            values[:, :] = np.asarray(h5r["xyz"][...], np.float32)
+        return ureg.Quantity(values, ureg.nanometer)
+
+    def get_mass_to_charge_state_ratio(self):
+        """Read (calibrated?) mass-to-charge-state-ratio."""
+        values = np.zeros((self.number_of_events,), np.float32)
+        with h5py.File(self.file_path, "r") as h5r:
+            values[:] = np.asarray(h5r["mass"][...], np.float32)
+        return ureg.Quantity(values, ureg.dalton)
