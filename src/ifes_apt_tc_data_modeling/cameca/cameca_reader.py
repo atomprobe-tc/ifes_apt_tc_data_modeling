@@ -25,11 +25,13 @@ import h5py
 import re
 import numpy as np
 
-from ifes_apt_tc_data_modeling.nexus.nx_ion import NxIon
+from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
 from ifes_apt_tc_data_modeling.cameca.cameca_utils import parse_elements
 from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
-from ifes_apt_tc_data_modeling.utils.utils import create_nuclide_hash
-
+from ifes_apt_tc_data_modeling.utils.utils import (
+    create_nuclide_hash,
+    is_range_significant,
+)
 from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 
 
@@ -83,34 +85,32 @@ class ReadCamecaHfiveFileFormat:
         self.rng: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
 
         with h5py.File(self.file_path, "r") as h5r:
-            for entry in h5r[
-                "ranges"
-            ]:  # clarify if reports following the creation order from Cameca or differently?
-                print(entry)
+            for entry in h5r["ranges"]:
+                # clarify if reports following the creation order from Cameca or differently?
+                logger.info(entry)
                 match = re.compile(r"^range_\d+$", entry)
-                if match and all(
+                if not match or not all(
                     attribute_name in h5r["ranges"][entry].attrs
                     for attribute_name in ["element", "min_da", "max_da"]
                 ):  # , "volume"]:
-                    ion_id = int(entry.replace("range_", ""))
-                    atoms = parse_elements(
-                        f"""{h5r["ranges"][entry].attrs["element"]}"""
-                    )
-                    min_mass_to_charge = np.float64(
-                        h5r["ranges"][entry].attrs["min_da"][()]
-                    )  # in examples was already f64
-                    max_mass_to_charge = np.float64(
-                        h5r["ranges"][entry].attrs["max_da"][()]
-                    )  # in examples was already f64
+                    continue
+                # ion_id = int(entry.replace("range_", ""))
+                atoms = parse_elements(f"""{h5r["ranges"][entry].attrs["element"]}""")
+                min_mass_to_charge = np.float64(
+                    h5r["ranges"][entry].attrs["min_da"][()]
+                )  # in examples was already f64
+                max_mass_to_charge = np.float64(
+                    h5r["ranges"][entry].attrs["max_da"][()]
+                )  # in examples was already f64
+                if not is_range_significant(min_mass_to_charge, max_mass_to_charge):
+                    logger.warning(f"Range for {entry} is not significant.")
+                    continue
+                m_ion = NxIon(nuclide_hash=create_nuclide_hash(atoms), charge_state=0)
+                m_ion.comment = (
+                    entry  # for debugging above-mentioned issue if order retained
+                )
+                m_ion.add_range(min_mass_to_charge, max_mass_to_charge)
+                m_ion.apply_combinatorics()
 
-                    m_ion = NxIon(
-                        nuclide_hash=create_nuclide_hash(atoms), charge_state=0
-                    )
-                    m_ion.comment = (
-                        entry  # for debugging above-mentioned issue if order retained
-                    )
-                    m_ion.add_range(min_mass_to_charge, max_mass_to_charge)
-                    m_ion.apply_combinatorics()
-
-                    self.rng["molecular_ions"].append(m_ion)
+                self.rng["molecular_ions"].append(m_ion)
         logger.info(f"{self.file_path} ranging definitions parsed successfully.")
