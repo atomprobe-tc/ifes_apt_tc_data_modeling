@@ -9,10 +9,9 @@
             "type": "python",
             "request": "launch",
             "cwd": "${workspaceFolder}",
-            //"program": "../../.py3.12.3/bin/dataconverter",
-            //"args": ["examples/apm.oasis.specific.yaml"],
+            //"program": "../.py3.13.8/bin/dataconverter",
+            "args": ["tests/data/cameca_hdf/R69_152985-v01_Top_Level_ROI.hdf5"],
             "justMyCode": false,
-            //"env": {"PYTEST_ADDOPTS": "--no-cov"}
         },
         {
             "name": "Debug Unit Test",
