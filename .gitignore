@@ -8,6 +8,7 @@ examples/logging.log
 .py310
 *.pyc
 *__pycache__*
+.virtual_documents
 
 dist
 *.egg-info*
