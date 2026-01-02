@@ -28,7 +28,7 @@ from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
 from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 
 
-class ReadStuttgartRawFileFormat:
+class ReadStuttgartApytRawFileFormat:
     """Read *.raw file format."""
 
     def __init__(self, file_path: str):
