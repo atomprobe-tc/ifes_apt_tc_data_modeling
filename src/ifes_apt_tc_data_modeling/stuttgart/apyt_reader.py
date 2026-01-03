@@ -20,7 +20,6 @@
 
 # pylint: disable=duplicate-code
 
-import os
 import numpy as np
 
 from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
@@ -50,9 +49,9 @@ class ReadStuttgartApytMetadataFileFormat:
         try:
             with open(self.file_path, "r", encoding="utf-8") as stream:
                 database = yaml.safe_load(stream)
-                if "database_entry" in database:
+                if database_entry in database:
                     self.flat_metadata = fd.FlatDict(
-                        database["database_entry"], delimiter="/"
+                        database[database_entry], delimiter="/"
                     )
                     if self.verbose:
                         for key, val in self.flat_metadata.items():
@@ -61,10 +60,8 @@ class ReadStuttgartApytMetadataFileFormat:
                     logger.warning(
                         f"{self.file_path} does not contain an entry named {database_entry}"
                     )
-                    return
         except (FileNotFoundError, IOError):
             logger.warning(f"{self.file_path} either FileNotFound or IOError !")
-            return
 
 
 class ReadStuttgartApytSpectrumAlignFileFormat:
@@ -78,18 +75,22 @@ class ReadStuttgartApytSpectrumAlignFileFormat:
             )
             return
         with open(file_path, "r") as fp:
-            first_line = fp.readline().strip()
-            if first_line != "# m/q (amu/e)    counts":
-                logger.warning(
-                    f"{file_path} is likely not an APyT complete spectrum txt file"
-                )
+            first_line = fp.readline().strip().rstrip("\n")
+            if first_line != "# m/q (amu/e)	  counts":
+                logger.warning(f"{file_path} header is malformed")
                 return
-            pattern = re.compile(r"^[+-]\d+\.\d{3}[\t ]+\d+$")
+            pattern = re.compile(
+                r"^"
+                r"[+-]\d+\.\d{3}"
+                r"[\t ]+"
+                r"\d+"
+                r"$"
+            )
             for line in fp:
                 if pattern.fullmatch(line.strip().rstrip("\n")):
                     continue
                 else:
-                    logger.warning(f"{file_path} has an incorrectly formatted line")
+                    logger.warning(f"{file_path} line {line} is malformed")
                     return
         self.supported = True
         self.verbose = verbose
@@ -100,7 +101,7 @@ class ReadStuttgartApytSpectrumAlignFileFormat:
         if not self.supported:
             return
         try:
-            data_frame = pd.read_csv(self.file_path, delim_whitespace=True, comment="#")
+            data_frame = pd.read_csv(self.file_path, sep=r"\s+", comment="#")
             number_of_bins = np.shape(data_frame)[0]
             histogram_bin_edges = np.zeros((number_of_bins,), np.float32)
             histogram_bin_edges[:] = data_frame.iloc[:, 0]
@@ -145,7 +146,9 @@ class ReadStuttgartApytReconstructionFileFormat:
             )
             check_sum = 0
             for line in fp:
-                if pattern.fullmatch(line.strip().rstrip("\n")):
+                if pattern.match(
+                    line.strip().rstrip("\n")
+                ):  # relax to not catch last column recon volume per atom
                     parts = line.split(maxsplit=1)
                     try:
                         ion_id = int(parts[0])
@@ -162,7 +165,7 @@ class ReadStuttgartApytReconstructionFileFormat:
                         )
                         return
                 else:
-                    logger.warning(f"{file_path} has an incorrectly formatted line")
+                    logger.warning(f"{file_path} line {line} is malformed")
                     return
             if number_of_events != check_sum:
                 logger.warning(
@@ -181,6 +184,11 @@ class ReadStuttgartApytReconstructionFileFormat:
         values = np.asarray(
             np.loadtxt(self.file_path, skiprows=2, usecols=(1, 2, 3)), np.float32
         )
+        if np.shape(values)[0] != self.number_of_events:
+            logger.warning(
+                f"{self.file_path} number of reconstructed positions and events not matching"
+            )
+            return
         return ureg.Quantity(values, ureg.nanometer)
 
     def get_ion_type(self):
@@ -190,4 +198,9 @@ class ReadStuttgartApytReconstructionFileFormat:
         values = np.asarray(
             np.loadtxt(self.file_path, skiprows=2, usecols=(0)), np.uint8
         )
+        if np.shape(values)[0] != self.number_of_events:
+            logger.warning(
+                f"{self.file_path} number of ion type ids and events not matching"
+            )
+            return
         return values
