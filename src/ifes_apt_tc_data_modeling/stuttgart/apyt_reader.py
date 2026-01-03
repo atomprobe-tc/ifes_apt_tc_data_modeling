@@ -25,35 +25,95 @@ import numpy as np
 
 from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 from ifes_apt_tc_data_modeling.utils.custom_logging import logger
-    import pandas as pd
+import pandas as pd
+import flatdict as fd
+import yaml
+import re
 
 
 class ReadStuttgartApytMetadataFileFormat:
     """Read metadata of an entry from the db.yaml-style database-in-a-file as used by APyT."""
 
-    def __init__(self, file_path: str):
-        pass
+    def __init__(self, file_path: str, verbose: bool = False):
+        self.supported = False
+        if not file_path.lower().endswith((".yml", ".yaml")):
+            logger.warning(f"{file_path} is likely not an APyT database.yaml file")
+            return
+        self.supported = True
+        self.verbose = verbose
+        self.file_path = file_path
 
     def get_metadata(self, database_entry: int = 0):
         """Read metadata of a specific database entry."""
-        pass
+        if not self.supported:
+            return
+        try:
+            with open(self.file_path, "r", encoding="utf-8") as stream:
+                database = yaml.safe_load(stream)
+                if "database_entry" in database:
+                    self.flat_metadata = fd.FlatDict(
+                        database["database_entry"], delimiter="/"
+                    )
+                    if self.verbose:
+                        for key, val in self.flat_metadata.items():
+                            logger.info(f"key: {key}, value: {val}")
+                else:
+                    logger.warning(
+                        f"{self.file_path} does not contain an entry named {database_entry}"
+                    )
+                    return
+        except (FileNotFoundError, IOError):
+            logger.warning(f"{self.file_path} either FileNotFound or IOError !")
+            return
+
 
 class ReadStuttgartApytSpectrumAlignFileFormat:
     """Read results from the text file that an `apyt_spectrum_align --no-sql 1` call generates."""
 
-    def __init__(self, file_path: str):
-        expected_single_header = '# m/q (amu/e)    counts'
-        with open(file_path, 'r') as fp:
+    def __init__(self, file_path: str, verbose: bool = False):
+        self.supported = False
+        if not file_path.lower().endswith(".txt"):
+            logger.warning(
+                f"{file_path} is likely not an APyT complete spectrum txt file"
+            )
+            return
+        with open(file_path, "r") as fp:
             first_line = fp.readline().strip()
-
-            if first_line == expected_single_header:
-                self.df = pd.read_csv(file_path, delim_whitespace=True, comment='#')
-            else:
-                logger.error("Expected First line does not match the expected header. Found: '{first_line}'")
+            if first_line != "# m/q (amu/e)    counts":
+                logger.warning(
+                    f"{file_path} is likely not an APyT complete spectrum txt file"
+                )
+                return
+            pattern = re.compile(r"^[+-]\d+\.\d{3}[\t ]+\d+$")
+            for line in fp:
+                if pattern.fullmatch(line.strip().rstrip("\n")):
+                    continue
+                else:
+                    logger.warning(f"{file_path} has an incorrectly formatted line")
+                    return
+        self.supported = True
+        self.verbose = verbose
+        self.file_path = file_path
 
     def get_complete_spectrum(self):
         """Read complete (binned) mass spectrum."""
-        pass
+        if not self.supported:
+            return
+        try:
+            data_frame = pd.read_csv(self.file_path, delim_whitespace=True, comment="#")
+            number_of_bins = np.shape(data_frame)[0]
+            histogram_bin_edges = np.zeros((number_of_bins,), np.float32)
+            histogram_bin_edges[:] = data_frame.iloc[:, 0]
+            histogram_bin_counts = np.zeros((number_of_bins,), np.uint32)
+            histogram_bin_counts[:] = data_frame.iloc[:, 1]
+            return (
+                ureg.Quantity(histogram_bin_edges, ureg.dalton),
+                ureg.Quantity(histogram_bin_counts),
+            )
+        except (FileNotFoundError, IOError):
+            logger.warning(f"{self.file_path} either FileNotFound or IOError !")
+            return
+
 
 class ReadStuttgartApytSpectrumFitFileFormat:
     """Read results from text file(s) that an `apyt_spectrum_fit --no-sql 1 "{'W': ((3,), 0.0158)}` call generates."""
@@ -61,16 +121,73 @@ class ReadStuttgartApytSpectrumFitFileFormat:
     def __init__(self, file_path: str):
         pass
 
+
 class ReadStuttgartApytReconstructionFileFormat:
     """Read results from the text file that an `apyt_reconstruction --no-sql --module classic 1` call generates."""
 
-    def __init__(self, file_path: str):
-        pass
+    def __init__(self, file_path: str, verbose: bool = False):
+        self.supported = False
+        if not file_path.lower().endswith("_xyz.txt"):
+            logger.warning(f"{file_path} is likely not an APyT _xyz.txt file")
+            return
+        with open(file_path, "r") as fp:
+            number_of_events = int(fp.readline().strip())
+            skip = fp.readline().strip()
+            pattern = re.compile(
+                r"^"
+                r"\d+"
+                r"[\t ]+"
+                r"[+-]?\d+\.\d+e[+-]\d{2}"
+                r"[\t ]+"
+                r"[+-]?\d+\.\d+e[+-]\d{2}"
+                r"[\t ]+"
+                r"[+-]?\d+\.\d+e[+-]\d{2}"
+            )
+            check_sum = 0
+            for line in fp:
+                if pattern.fullmatch(line.strip().rstrip("\n")):
+                    parts = line.split(maxsplit=1)
+                    try:
+                        ion_id = int(parts[0])
+                        if 0 < ion_id <= 255:
+                            check_sum += 1
+                            continue
+                        else:
+                            logger.warning(
+                                f"{file_path} has a line with an ion id that exceeds the supported value range"
+                            )
+                    except ValueError:
+                        logger.warning(
+                            f"{file_path} has a line with an ion id that is incorrectly formatted"
+                        )
+                        return
+                else:
+                    logger.warning(f"{file_path} has an incorrectly formatted line")
+                    return
+            if number_of_events != check_sum:
+                logger.warning(
+                    f"{file_path} mismatch between number of events expected and found"
+                )
+                return
+        self.supported = True
+        self.verbose = verbose
+        self.file_path = file_path
+        self.number_of_events = number_of_events
 
     def get_reconstructed_positions(self):
         """Read xyz columns."""
-        pass
+        if not self.supported:
+            return
+        values = np.asarray(
+            np.loadtxt(self.file_path, skiprows=2, usecols=(1, 2, 3)), np.float32
+        )
+        return ureg.Quantity(values, ureg.nanometer)
 
     def get_ion_type(self):
         """Read ion identity."""
-        pass
+        if not self.supported:
+            return
+        values = np.asarray(
+            np.loadtxt(self.file_path, skiprows=2, usecols=(0)), np.uint8
+        )
+        return values
