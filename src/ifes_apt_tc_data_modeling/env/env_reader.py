@@ -21,15 +21,17 @@
 # pylint: disable=too-many-nested-blocks,duplicate-code
 
 import re
+
 import numpy as np
+
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
+from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
 from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
 from ifes_apt_tc_data_modeling.utils.utils import (
     create_nuclide_hash,
-    is_range_significant,
     get_smart_chemical_symbols,
+    is_range_significant,
 )
-from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
-from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 
 
 def evaluate_env_range_line(line: str):
@@ -95,7 +97,7 @@ class ReadEnvFileFormat:
     def read_env(self):
         """Read ENV system configuration and ranging definitions."""
         # GPM/Rouen ENV file format is neither standardized nor uses magic number
-        with open(self.file_path, mode="r", encoding="utf-8") as envf:
+        with open(self.file_path, encoding="utf-8") as envf:
             txt = envf.read()
             txt = txt.replace("\r\n", "\n")  # windows to unix EOL conversion
             txt = txt.replace(",", ".")  # use decimal dots instead of comma

@@ -18,8 +18,9 @@
 
 """Utility for parsing files via memory mapping."""
 
-import typing
 import mmap
+import typing
+
 import numpy as np
 
 

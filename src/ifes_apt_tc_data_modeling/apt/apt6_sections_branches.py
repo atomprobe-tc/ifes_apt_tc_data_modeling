@@ -20,7 +20,6 @@
 
 from ifes_apt_tc_data_modeling.apt.apt6_sections import AptFileSectionMetadata
 
-
 # define which header and sections to expect in an *.apt file
 # the sections below are referred to as branches in the commercial software
 # APSuite enables users select prior I/O which of the sections to write

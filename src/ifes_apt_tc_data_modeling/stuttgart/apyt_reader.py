@@ -20,14 +20,15 @@
 
 # pylint: disable=duplicate-code
 
-import numpy as np
-
-from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
-from ifes_apt_tc_data_modeling.utils.custom_logging import logger
-import pandas as pd
-import flatdict as fd
-import yaml
 import re
+
+import flatdict as fd
+import numpy as np
+import pandas as pd
+import yaml
+
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
+from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 
 
 class ReadStuttgartApytMetadataFileFormat:
@@ -47,7 +48,7 @@ class ReadStuttgartApytMetadataFileFormat:
         if not self.supported:
             return
         try:
-            with open(self.file_path, "r", encoding="utf-8") as stream:
+            with open(self.file_path, encoding="utf-8") as stream:
                 database = yaml.safe_load(stream)
                 if database_entry in database:
                     self.flat_metadata = fd.FlatDict(
@@ -60,7 +61,7 @@ class ReadStuttgartApytMetadataFileFormat:
                     logger.warning(
                         f"{self.file_path} does not contain an entry named {database_entry}"
                     )
-        except (FileNotFoundError, IOError):
+        except (OSError, FileNotFoundError):
             logger.warning(f"{self.file_path} either FileNotFound or IOError !")
 
 
@@ -74,7 +75,7 @@ class ReadStuttgartApytSpectrumAlignFileFormat:
                 f"{file_path} is likely not an APyT complete spectrum txt file"
             )
             return
-        with open(file_path, "r") as fp:
+        with open(file_path) as fp:
             first_line = fp.readline().strip().rstrip("\n")
             if first_line != "# m/q (amu/e)	  counts":
                 logger.warning(f"{file_path} header is malformed")
@@ -111,7 +112,7 @@ class ReadStuttgartApytSpectrumAlignFileFormat:
                 ureg.Quantity(histogram_bin_edges, ureg.dalton),
                 ureg.Quantity(histogram_bin_counts),
             )
-        except (FileNotFoundError, IOError):
+        except (OSError, FileNotFoundError):
             logger.warning(f"{self.file_path} either FileNotFound or IOError !")
             return
 
@@ -131,7 +132,7 @@ class ReadStuttgartApytReconstructionFileFormat:
         if not file_path.lower().endswith("_xyz.txt"):
             logger.warning(f"{file_path} is likely not an APyT _xyz.txt file")
             return
-        with open(file_path, "r") as fp:
+        with open(file_path) as fp:
             number_of_events = int(fp.readline().strip())
             skip = fp.readline().strip()
             pattern = re.compile(

@@ -21,17 +21,17 @@
 # pylint: disable=duplicate-code
 
 import re
+
 import numpy as np
 
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
+from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
+from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
 from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
 from ifes_apt_tc_data_modeling.utils.utils import (
     create_nuclide_hash,
     is_range_significant,
 )
-from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
-from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
-from ifes_apt_tc_data_modeling.utils.custom_logging import logger
-
 
 # there are specific examples for unusual range files here:
 # https://hg.sr.ht/~mycae/libatomprobe/browse/test/samples/ranges?rev=tip
@@ -120,7 +120,7 @@ class ReadRngFileFormat:
 
     def read_rng(self):
         """Read RNG range file content."""
-        with open(self.file_path, mode="r", encoding="utf8") as rngf:
+        with open(self.file_path, encoding="utf8") as rngf:
             txt = rngf.read()
 
         txt = txt.replace("\r\n", "\n")  # windows to unix EOL conversion
@@ -140,11 +140,11 @@ class ReadRngFileFormat:
         # polyatomic extension is redundant info
 
         tmp = None
-        current_line_id = int(0)  # search key header line
+        current_line_id = 0  # search key header line
         for line in txt_stripped:
             tmp = re.search(r"----", line)
             if tmp is None:
-                current_line_id += int(1)
+                current_line_id += 1
             else:
                 break
         if tmp is None:

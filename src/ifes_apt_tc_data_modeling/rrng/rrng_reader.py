@@ -24,13 +24,13 @@ import re
 
 import numpy as np
 
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
+from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
+from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
 from ifes_apt_tc_data_modeling.utils.nx_ion import (
     NxIon,
     try_to_reduce_to_unique_definitions,
 )
-from ifes_apt_tc_data_modeling.utils.custom_logging import logger
-from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
-from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
 from ifes_apt_tc_data_modeling.utils.utils import (
     create_nuclide_hash,
     is_range_significant,
@@ -127,7 +127,7 @@ class ReadRrngFileFormat:
 
     def read_rrng(self):
         """Read content of an RRNG range file."""
-        with open(self.file_path, mode="r", encoding="utf8") as rrngf:
+        with open(self.file_path, encoding="utf8") as rrngf:
             txt = rrngf.read()
 
         txt = txt.replace("\r\n", "\n")  # windows to unix EOL conversion

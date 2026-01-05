@@ -18,18 +18,18 @@
 
 """Utilities for working with molecular ions in atom probe microscopy."""
 
-from typing import Tuple
 import re
-import numpy as np
 
+import numpy as np
 from ase.data import atomic_numbers, chemical_symbols
-from ifes_apt_tc_data_modeling.utils.nist_isotope_data import isotopes
+
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 from ifes_apt_tc_data_modeling.utils.definitions import (
     MAX_NUMBER_OF_ATOMS_PER_ION,
     MQ_EPSILON,
     NEUTRON_NUMBER_FOR_ELEMENT,
 )
-from ifes_apt_tc_data_modeling.utils.custom_logging import logger
+from ifes_apt_tc_data_modeling.utils.nist_isotope_data import isotopes
 
 
 def get_smart_chemical_symbols():
@@ -62,7 +62,7 @@ def isotope_to_hash(
     return 0
 
 
-def hash_to_isotope(hashvalue: int = 0) -> Tuple[int, int]:
+def hash_to_isotope(hashvalue: int = 0) -> tuple[int, int]:
     """Decode a hashvalue to an isotope."""
     # see comment on isotope_to_hash
     if 0 <= hashvalue <= int(np.iinfo(np.uint16).max):

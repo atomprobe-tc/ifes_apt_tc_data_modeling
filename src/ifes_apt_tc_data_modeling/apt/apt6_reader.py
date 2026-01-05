@@ -19,18 +19,19 @@
 """AMETEK APT(6) data exchange file reader used by atom probe microscopists."""
 
 import os
+from typing import Any
+
 import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
-from typing import Any
 
-from ifes_apt_tc_data_modeling.apt.apt6_utils import np_uint16_to_string
 from ifes_apt_tc_data_modeling.apt.apt6_headers import AptFileHeaderMetadata
 from ifes_apt_tc_data_modeling.apt.apt6_sections import AptFileSectionMetadata
 from ifes_apt_tc_data_modeling.apt.apt6_sections_branches import EXPECTED_SECTIONS
-from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
-from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
+from ifes_apt_tc_data_modeling.apt.apt6_utils import np_uint16_to_string
 from ifes_apt_tc_data_modeling.utils.custom_logging import logger
+from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
+from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 
 
 class ReadAptFileFormat:

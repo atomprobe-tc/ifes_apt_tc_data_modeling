@@ -21,10 +21,10 @@
 import numpy as np
 
 from ifes_apt_tc_data_modeling.apt.apt6_utils import (
-    np_uint16_to_string,
-    string_to_typed_nparray,
     APT_SECTION_NAME_MAX_LENGTH,
     APT_SECTION_TYPE_MAX_LENGTH,
+    np_uint16_to_string,
+    string_to_typed_nparray,
 )
 from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 

@@ -22,24 +22,24 @@
 
 import numpy as np
 
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 from ifes_apt_tc_data_modeling.utils.definitions import MAX_NUMBER_OF_ATOMS_PER_ION
-from ifes_apt_tc_data_modeling.utils.utils import (
-    create_nuclide_hash,
-    nuclide_hash_to_nuclide_list,
-    nuclide_hash_to_human_readable_name,
-    is_range_significant,
-)
 from ifes_apt_tc_data_modeling.utils.molecular_ions import (
-    MolecularIonCandidate,
-    MolecularIonBuilder,
     PRACTICAL_ABUNDANCE,
     PRACTICAL_ABUNDANCE_PRODUCT,
     PRACTICAL_MIN_HALF_LIFE,
-    VERBOSE,
     SACRIFICE_ISOTOPIC_UNIQUENESS,
+    VERBOSE,
+    MolecularIonBuilder,
+    MolecularIonCandidate,
 )
 from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
-from ifes_apt_tc_data_modeling.utils.custom_logging import logger
+from ifes_apt_tc_data_modeling.utils.utils import (
+    create_nuclide_hash,
+    is_range_significant,
+    nuclide_hash_to_human_readable_name,
+    nuclide_hash_to_nuclide_list,
+)
 
 
 def try_to_reduce_to_unique_definitions(inp: list) -> list:

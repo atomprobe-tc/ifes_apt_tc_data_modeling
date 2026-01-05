@@ -21,25 +21,26 @@
 # pylint: disable=fixme
 
 import os
-import h5py
 import re
+
+import h5py
 import numpy as np
 
-from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
 from ifes_apt_tc_data_modeling.cameca.cameca_utils import parse_elements
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
+from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
 from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 from ifes_apt_tc_data_modeling.utils.utils import (
     create_nuclide_hash,
     is_range_significant,
 )
-from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 
 
 class ReadCamecaHfiveFileFormat:
     """Read Cameca HDF5 files used in this study https://doi.org/10.18126/dqxb-9m77."""
 
     def __init__(self, file_path: str):
-        if not file_path.lower().endswith((".hdf5")):
+        if not file_path.lower().endswith(".hdf5"):
             raise ImportError(
                 "WARNING::HDF5 file incorrect file_path ending or file type."
             )

@@ -21,10 +21,11 @@
 # pylint: disable=too-many-locals
 
 import re
-import numpy as np
 
+import numpy as np
 from ase.data import atomic_numbers
-from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
+
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 from ifes_apt_tc_data_modeling.utils.definitions import (
     MAX_NUMBER_OF_ATOMS_PER_ION,
     NEUTRON_NUMBER_FOR_ELEMENT,
@@ -33,7 +34,7 @@ from ifes_apt_tc_data_modeling.utils.molecular_ions import (
     get_chemical_symbols,
     isotope_to_hash,
 )
-from ifes_apt_tc_data_modeling.utils.custom_logging import logger
+from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
 
 
 class ReadFigTxtFileFormat:
@@ -50,7 +51,7 @@ class ReadFigTxtFileFormat:
 
     def read_fig_txt(self):
         """Read FIG.TXT range file content."""
-        with open(self.file_path, mode="r", encoding="utf8") as figf:
+        with open(self.file_path, encoding="utf8") as figf:
             txt = figf.read()
 
         txt = txt.replace("\r\n", "\n")  # windows to unix EOL conversion

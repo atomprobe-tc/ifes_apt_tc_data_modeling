@@ -20,24 +20,24 @@
 
 # pylint: disable=fixme
 
-from typing import Any
 import os
+from typing import Any
+
 import h5py
 import numpy as np
 import pandas as pd
-
 from ase.data import atomic_numbers
-from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
-from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
-from ifes_apt_tc_data_modeling.utils.utils import (
-    isotope_to_hash,
-    nuclide_hash_to_nuclide_list,
-    MAX_NUMBER_OF_ATOMS_PER_ION,
-)
-from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
 
 # from ifes_apt_tc_data_modeling.utils.combinatorics import apply_combinatorics
 from ifes_apt_tc_data_modeling.utils.custom_logging import logger
+from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
+from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
+from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
+from ifes_apt_tc_data_modeling.utils.utils import (
+    MAX_NUMBER_OF_ATOMS_PER_ION,
+    isotope_to_hash,
+    nuclide_hash_to_nuclide_list,
+)
 
 # this implementation focuses on the following state of the pyccapt repository
 # https://github.com/mmonajem/pyccapt/commit/e955beb4f2627befb8b4d26f2e74e4c52e00394e
@@ -224,20 +224,20 @@ class ReadPyccaptRangingFileFormat:
         self.rng["molecular_ions"] = []
         logger.debug(np.shape(self.df)[0])
         for idx in map(int, np.arange(0, np.shape(self.df)[0])):
-            if isinstance(self.df.iat[idx, 6], str):
-                if self.df.iat[idx, 6] == "unranged":
+            if isinstance(self.df.iat[idx, 6], str):  # type: ignore[index]
+                if self.df.iat[idx, 6] == "unranged":  # type: ignore[index]
                     continue
 
             ivec = get_nuclide_hash_from_fau_list(
-                elements=self.df.iat[idx, 6],
-                complexs=self.df.iat[idx, 7],
-                isotopes=self.df.iat[idx, 8],
+                elements=self.df.iat[idx, 6],  # type: ignore[index]
+                complexs=self.df.iat[idx, 7],  # type: ignore[index]
+                isotopes=self.df.iat[idx, 8],  # type: ignore[index]
             )
             m_ion = NxIon()
             m_ion.nuclide_hash = ivec
             m_ion.nuclide_list = nuclide_hash_to_nuclide_list(ivec)
-            m_ion.charge_state = np.int8(self.df.iat[idx, 9])
-            m_ion.add_range(self.df.iat[idx, 3], self.df.iat[idx, 4])
+            m_ion.charge_state = np.int8(self.df.iat[idx, 9])  # type: ignore[arg-type,index]
+            m_ion.add_range(self.df.iat[idx, 3], self.df.iat[idx, 4])  # type: ignore[arg-type,index]
             m_ion.apply_combinatorics()
             # m_ion.report()
             self.rng["molecular_ions"].append(m_ion)

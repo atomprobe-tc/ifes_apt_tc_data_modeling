@@ -22,21 +22,21 @@
 
 import numpy as np
 import radioactivedecay as rd
-
 from ase.data import atomic_numbers, chemical_symbols
-from ifes_apt_tc_data_modeling.utils.utils import (
-    isotope_to_hash,
-    hash_to_isotope,
-    nuclide_hash_to_dict_keyword,
-)
-from ifes_apt_tc_data_modeling.utils.nist_isotope_data import isotopes
+
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 from ifes_apt_tc_data_modeling.utils.definitions import (
     PRACTICAL_ABUNDANCE,
     PRACTICAL_ABUNDANCE_PRODUCT,
     PRACTICAL_MIN_HALF_LIFE,
     SACRIFICE_ISOTOPIC_UNIQUENESS,
 )
-from ifes_apt_tc_data_modeling.utils.custom_logging import logger
+from ifes_apt_tc_data_modeling.utils.nist_isotope_data import isotopes
+from ifes_apt_tc_data_modeling.utils.utils import (
+    hash_to_isotope,
+    isotope_to_hash,
+    nuclide_hash_to_dict_keyword,
+)
 
 VERBOSE = False
 

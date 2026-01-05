@@ -23,12 +23,13 @@
 # The example below shows how to extract ranging definitions.
 
 import re
-import xmltodict
+
 import flatdict as fd
 import numpy as np
-
+import xmltodict
 from ase.data import atomic_numbers, chemical_symbols
-from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
+
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 from ifes_apt_tc_data_modeling.utils.definitions import (
     MAX_NUMBER_OF_ATOMS_PER_ION,
     NEUTRON_NUMBER_FOR_ELEMENT,
@@ -37,7 +38,7 @@ from ifes_apt_tc_data_modeling.utils.molecular_ions import (
     get_chemical_symbols,
     isotope_to_hash,
 )
-from ifes_apt_tc_data_modeling.utils.custom_logging import logger
+from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
 
 
 class ReadImagoAnalysisFileFormat:
@@ -71,7 +72,7 @@ class ReadImagoAnalysisFileFormat:
         # the main idea behind the example is to show that information can
         # be extracted and to motivate that nowadays one should use data
         # structures that are more conveniently parsable
-        with open(self.file_path, "r", encoding="utf-8") as xmlf:
+        with open(self.file_path, encoding="utf-8") as xmlf:
             xml = xmltodict.parse(xmlf.read())
             flt = fd.FlatDict(xml, "/")
             for entry in flt["java/object/void"]:
