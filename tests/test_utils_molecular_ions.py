@@ -16,8 +16,9 @@
 # limitations under the License.
 #
 
-import pytest
 import numpy as np
+import pytest
+
 from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
 from ifes_apt_tc_data_modeling.utils.utils import create_nuclide_hash
 

@@ -16,21 +16,22 @@
 # limitations under the License.
 #
 
-import pytest
 import numpy as np
+import pytest
+
 from ifes_apt_tc_data_modeling.utils.definitions import NEUTRON_NUMBER_FOR_ELEMENT
 from ifes_apt_tc_data_modeling.utils.utils import (
-    get_smart_chemical_symbols,
-    isotope_to_hash,
-    hash_to_isotope,
-    create_nuclide_hash,
-    nuclide_hash_to_nuclide_list,
-    nuclide_hash_to_dict_keyword,
-    nuclide_hash_to_human_readable_name,
     MQ_EPSILON,
+    create_nuclide_hash,
+    element_or_nuclide_to_hash,
+    get_smart_chemical_symbols,
+    hash_to_isotope,
     is_range_overlapping,
     is_range_significant,
-    element_or_nuclide_to_hash,
+    isotope_to_hash,
+    nuclide_hash_to_dict_keyword,
+    nuclide_hash_to_human_readable_name,
+    nuclide_hash_to_nuclide_list,
     symbol_lst_to_matrix_of_nuclide_vector,
 )
 

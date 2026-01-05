@@ -17,6 +17,7 @@
 #
 
 import pytest
+
 from ifes_apt_tc_data_modeling.utils.string_handling import rchop
 
 
