@@ -54,25 +54,25 @@ def simple_hfive_file(fpw, idx, mion):
         trg + "/mass_to_charge_range", dtype=np.float32, data=mion.ranges.magnitude
     )
     dst.attrs["units"] = f"{mion.ranges.units}"
-    subgrpnm = f"{trg}/charge_state_analysis"
-    subgrp = fpw.create_group(subgrpnm)
-    subgrp.attrs["NX_class"] = "NXcharge_state_analysis"
+    sub_group_name = f"{trg}/charge_state_analysis"
+    sub_group = fpw.create_group(sub_group_name)
+    sub_group.attrs["NX_class"] = "NXcharge_state_analysis"
     # config
     dst = fpw.create_dataset(
-        f"{subgrpnm}/min_abundance",
+        f"{sub_group_name}/min_abundance",
         dtype=np.float64,
         data=mion.charge_state_model["min_abundance"],
     )
-    # dst = fpw.create_dataset(f"{subgrpnm}/min_abundance_product", dtype=np.float64,
+    # dst = fpw.create_dataset(f"{sub_group_name}/min_abundance_product", dtype=np.float64,
     #                          data=mion.charge_state_model["min_abundance_product"])
     dst = fpw.create_dataset(
-        f"{subgrpnm}/min_half_life",
+        f"{sub_group_name}/min_half_life",
         dtype=np.float64,
         data=mion.charge_state_model["min_half_life"],
     )
     dst.attrs["units"] = f"{ureg.second}"
     dst = fpw.create_dataset(
-        f"{subgrpnm}/sacrifice_isotopic_uniqueness",
+        f"{sub_group_name}/sacrifice_isotopic_uniqueness",
         dtype=np.uint8,
         data=mion.charge_state_model["sacrifice_isotopic_uniqueness"],
     )
@@ -89,7 +89,7 @@ def simple_hfive_file(fpw, idx, mion):
             all_opt_available = False
     if all_opt_available:
         dst = fpw.create_dataset(
-            f"{subgrpnm}/nuclide_hash",
+            f"{sub_group_name}/nuclide_hash",
             dtype=np.uint16,
             data=mion.charge_state_model["nuclide_hash"],
             chunks=True,
@@ -97,21 +97,23 @@ def simple_hfive_file(fpw, idx, mion):
             compression_opts=1,
         )
         dst = fpw.create_dataset(
-            f"{subgrpnm}/charge_state",
+            f"{sub_group_name}/charge_state",
             dtype=np.int8,
             data=mion.charge_state_model["charge_state"],
         )
         dst = fpw.create_dataset(
-            f"{subgrpnm}/mass", dtype=np.float64, data=mion.charge_state_model["mass"]
+            f"{sub_group_name}/mass",
+            dtype=np.float64,
+            data=mion.charge_state_model["mass"],
         )
         dst.attrs["units"] = f"{ureg.dalton}"
         dst = fpw.create_dataset(
-            f"{subgrpnm}/natural_abundance_product",
+            f"{sub_group_name}/natural_abundance_product",
             dtype=np.float64,
             data=mion.charge_state_model["natural_abundance_product"],
         )
         dst = fpw.create_dataset(
-            f"{subgrpnm}/shortest_half_life",
+            f"{sub_group_name}/shortest_half_life",
             dtype=np.float64,
             data=mion.charge_state_model["shortest_half_life"],
         )

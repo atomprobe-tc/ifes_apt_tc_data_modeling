@@ -58,7 +58,7 @@ from ifes_apt_tc_data_modeling.utils.utils import (
 # pyccapt/calibration
 # unfortunately the generated HDF5 file has internally no provenance information
 # with which pyccapt version it was generated. Therefore, developers of pyccapt should rather
-# write the content of the HDF5 file explicitly dset by dset e.g. using h5py instead
+# write the content of the HDF5 file explicitly dataset by dataset e.g. using h5py instead
 # of the pandas HDF5 dump convenience functionality
 # of course pandas stores its own version but that is not conclusive enough to infer with
 # which pyccapt version and most importantly from which other context the file was generated
@@ -70,23 +70,23 @@ def get_nuclide_hash_from_fau_list(elements, complexs, isotopes) -> np.ndarray:
     """Compute nuclide_hash from specific representation used at FAU/Erlangen."""
     # TODO:: add raise ValueError checks
     ivec = np.zeros((MAX_NUMBER_OF_ATOMS_PER_ION,), np.uint16)
-    hashvector: list = []
-    for idxj in np.arange(0, len(elements)):
-        symbol = elements[idxj]
+    hash_vector: list = []
+    for idx in np.arange(0, len(elements)):
+        symbol = elements[idx]
         if symbol in get_chemical_symbols():
             proton_number = atomic_numbers[symbol]
-            neutron_number = isotopes[idxj] - proton_number
-            hashvector.extend(
-                [isotope_to_hash(proton_number, neutron_number)] * complexs[idxj]
+            neutron_number = isotopes[idx] - proton_number
+            hash_vector.extend(
+                [isotope_to_hash(proton_number, neutron_number)] * complexs[idx]
             )
-    ivec[0 : len(hashvector)] = np.sort(
-        np.asarray(hashvector, np.uint16), kind="stable"
+    ivec[0 : len(hash_vector)] = np.sort(
+        np.asarray(hash_vector, np.uint16), kind="stable"
     )[::-1]
     return ivec
 
 
 class ReadPyccaptControlFileFormat:
-    """Read FAU/Erlangen pyccapt (controle module) HDF5 file format."""
+    """Read FAU/Erlangen pyccapt (control module) HDF5 file format."""
 
     def __init__(self, file_path: str):
         if not file_path.lower().endswith((".h5", ".hdf5")):
@@ -101,9 +101,9 @@ class ReadPyccaptControlFileFormat:
         # check that the formatting matches that of an pyccapt control module output HDF5 file
         with h5py.File(self.file_path, "r") as h5r:
             self.supported = 0  # voting-based
-            required_groups = ["apt", "dld", "tdc"]
-            for req_grpnm in required_groups:
-                if req_grpnm in h5r.keys():
+            required_group_names = ["apt", "dld", "tdc"]
+            for required_group_name in required_group_names:
+                if required_group_name in h5r.keys():
                     self.supported += 1
             if self.supported == 3:
                 logger.debug(

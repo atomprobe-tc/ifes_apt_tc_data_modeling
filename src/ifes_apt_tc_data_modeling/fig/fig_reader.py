@@ -51,8 +51,8 @@ class ReadFigTxtFileFormat:
 
     def read_fig_txt(self):
         """Read FIG.TXT range file content."""
-        with open(self.file_path, encoding="utf8") as figf:
-            txt = figf.read()
+        with open(self.file_path, encoding="utf8") as fig_fp:
+            txt = fig_fp.read()
 
         txt = txt.replace("\r\n", "\n")  # windows to unix EOL conversion
         txt = txt.replace(",", ".")  # use decimal dots instead of comma
@@ -65,12 +65,12 @@ class ReadFigTxtFileFormat:
             tmp = molecular_ion.split(" ")
             mqmin = np.float64(tmp[len(tmp) - 2 : -1][0])
             mqmax = np.float64(tmp[len(tmp) - 1 :][0])
-            ionname = " ".join(tmp[:-2])
-            # logger.debug(f"{ionname} [{mqmin}, {mqmax}]")
-            # ionname = '16O 1H2 + + +  + '
+            ion_name = " ".join(tmp[:-2])
+            # logger.debug(f"{ion_name} [{mqmin}, {mqmax}]")
+            # ion_name = '16O 1H2 + + +  + '
 
-            positive = ionname.count("+")
-            negative = ionname.count("-")
+            positive = ion_name.count("+")
+            negative = ion_name.count("-")
             if (0 < positive <= 7) and (negative == 0):
                 charge_state = positive
             elif (0 < negative <= 7) and (positive == 0):
@@ -78,7 +78,7 @@ class ReadFigTxtFileFormat:
             else:
                 charge_state = 0
 
-            tmp = ionname.replace("+", "").replace("-", "").split(" ")
+            tmp = ion_name.replace("+", "").replace("-", "").split(" ")
             ivec = []
             for isotope in tmp:
                 if isotope != "":
@@ -111,7 +111,7 @@ class ReadFigTxtFileFormat:
 
             m_ion = NxIon(nuclide_hash=ivector, charge_state=charge_state)
             m_ion.add_range(mqmin, mqmax)
-            m_ion.comment = ionname
+            m_ion.comment = ion_name
             m_ion.apply_combinatorics()
             # m_ion.report()
 

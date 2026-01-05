@@ -72,8 +72,8 @@ class ReadImagoAnalysisFileFormat:
         # the main idea behind the example is to show that information can
         # be extracted and to motivate that nowadays one should use data
         # structures that are more conveniently parsable
-        with open(self.file_path, encoding="utf-8") as xmlf:
-            xml = xmltodict.parse(xmlf.read())
+        with open(self.file_path, encoding="utf-8") as xml_fp:
+            xml = xmltodict.parse(xml_fp.read())
             flt = fd.FlatDict(xml, "/")
             for entry in flt["java/object/void"]:
                 # strategy is, walk the data structure and try to discard non-ranging content as early as possible
@@ -91,7 +91,7 @@ class ReadImagoAnalysisFileFormat:
                         cand_dct = fd.FlatDict(member, "/")
                         # logger.debug(f">>>>> {cand_dct}")
                         all_reqs_exist = True
-                        reqs = [
+                        required_names = [
                             "@method",
                             "object/@id",
                             "object/@class",
@@ -99,8 +99,8 @@ class ReadImagoAnalysisFileFormat:
                             "object/boolean",
                             "object/void",
                         ]
-                        for req in reqs:
-                            if req not in cand_dct.keys():
+                        for required_name in required_names:
+                            if required_name not in cand_dct.keys():
                                 all_reqs_exist = False
                         if not all_reqs_exist:
                             continue

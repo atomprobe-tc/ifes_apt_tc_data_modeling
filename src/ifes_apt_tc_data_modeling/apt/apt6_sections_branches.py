@@ -25,7 +25,7 @@ from ifes_apt_tc_data_modeling.apt.apt6_sections import AptFileSectionMetadata
 # APSuite enables users select prior I/O which of the sections to write
 # normally a range file from based on the exchange with AMETEK and
 
-# in addition there is usually a sextet of preceeding IEEE 32-bit floats
+# in addition there is usually a sextet of preceding IEEE 32-bit floats
 # to the position section. This sextett encodes the min,max bounds of the point
 # cloud in x, y, z direction respectively
 # F. M. M. de Oliveira reported cases where *.apt from mere flat test runs,
@@ -68,7 +68,7 @@ EXPECTED_SECTIONS["Mass"].set_i_record_size(4)
 EXPECTED_SECTIONS["Mass"].set_wc_data_unit("Da")
 EXPECTED_SECTIONS["Mass"].set_accepted_units(["da", "Da", "amu"])
 
-# M. K\"uhbach detected there are at least APSuite versions which write
+# M. Kühbach detected there are at least APSuite versions which write
 # files with Da and some with da as wcDataUnits argument, it seems there
 # was a source code change, we use pint to detect these issues and warn
 

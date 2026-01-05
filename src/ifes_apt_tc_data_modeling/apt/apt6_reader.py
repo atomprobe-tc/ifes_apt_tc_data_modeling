@@ -127,7 +127,7 @@ class ReadAptFileFormat:
 
                 self.byte_offsets[keyword] = np.uint64(fp.tell())
                 if keyword == "Position":
-                    # special case six IEEE 32-bit floats preceeding raw data
+                    # special case six IEEE 32-bit floats preceding raw data
                     self.byte_offsets[keyword] += np.uint64(6 * 4)
                 self.byte_offsets[keyword] += np.uint64(found_section["llByteCount"][0])
                 logger.debug(

@@ -52,9 +52,9 @@ def try_to_reduce_to_unique_definitions(inp: list) -> list:
                 "Argument inp to try_to_reduce_to_unique_definitions needs to list of NxIon."
             )
     unique = []
-    # unique if mqival does not overlap (but can touch) either side
+    # unique if mass-to-charge-state-interval does not overlap (but can touch) either side
     # extrema of ranging definition and ivec is different or all 0
-    # from a scientific point of view we would like iontypes to be
+    # from a scientific point of view we would like types of ions to be
     # unique and ranges at most touching numerically but not overlapping
     # as then for a given mass-to-charge-state value an ion can qualify
     # to be an instance more than one iontype thus making the ranging

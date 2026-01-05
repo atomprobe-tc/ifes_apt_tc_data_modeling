@@ -97,8 +97,8 @@ class ReadEnvFileFormat:
     def read_env(self):
         """Read ENV system configuration and ranging definitions."""
         # GPM/Rouen ENV file format is neither standardized nor uses magic number
-        with open(self.file_path, encoding="utf-8") as envf:
-            txt = envf.read()
+        with open(self.file_path, encoding="utf-8") as env_fp:
+            txt = env_fp.read()
             txt = txt.replace("\r\n", "\n")  # windows to unix EOL conversion
             txt = txt.replace(",", ".")  # use decimal dots instead of comma
             txt_stripped = [line for line in txt.split("\n") if line.strip() != ""]

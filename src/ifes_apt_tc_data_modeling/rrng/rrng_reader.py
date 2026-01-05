@@ -116,7 +116,7 @@ class ReadRrngFileFormat:
             )
         self.file_path = file_path
         self.rrng: dict = {
-            "ionnames": [],
+            "ion_names": [],
             "ranges": {},
             "ions": {},
             "molecular_ions": [],
@@ -127,8 +127,8 @@ class ReadRrngFileFormat:
 
     def read_rrng(self):
         """Read content of an RRNG range file."""
-        with open(self.file_path, encoding="utf8") as rrngf:
-            txt = rrngf.read()
+        with open(self.file_path, encoding="utf8") as rrng_fp:
+            txt = rrng_fp.read()
 
         txt = txt.replace("\r\n", "\n")  # windows to unix EOL conversion
         txt = txt.replace(",", ".")  # use decimal dots instead of comma
@@ -187,7 +187,7 @@ class ReadRrngFileFormat:
                 raise ValueError(
                     f"Line {txt_stripped[current_line_id + i]} [Ions]/Name not a string."
                 )
-            self.rrng["ionnames"].append(tmp[1])
+            self.rrng["ion_names"].append(tmp[1])
 
         # second, parse [Ranges] section
         where = [

@@ -120,8 +120,8 @@ class ReadRngFileFormat:
 
     def read_rng(self):
         """Read RNG range file content."""
-        with open(self.file_path, encoding="utf8") as rngf:
-            txt = rngf.read()
+        with open(self.file_path, encoding="utf8") as rng_fp:
+            txt = rng_fp.read()
 
         txt = txt.replace("\r\n", "\n")  # windows to unix EOL conversion
         txt = txt.replace(",", ".")  # use decimal dots instead of comma

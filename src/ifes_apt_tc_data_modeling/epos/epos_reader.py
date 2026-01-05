@@ -81,7 +81,7 @@ class ReadEposFileFormat:
         values = np.zeros((self.number_of_events,), np.float32)
         # according to DOI: 10.1007/978-1-4899-7430-3 raw time-of-flight
         # i.e. this is an uncorrected time-of-flight
-        # for which effects uncorrect?
+        # for which effects incorrect?
         # Only the proprietary IVAS/APSuite source code knows for sure
         values[:] = get_memory_mapped_data(
             self.file_path, ">f4", 4 * 4, 11 * 4, self.number_of_events
