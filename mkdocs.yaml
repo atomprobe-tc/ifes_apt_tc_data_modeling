@@ -19,6 +19,7 @@ nav:
 
 plugins:
   - search
+  - markdown-exec
   - macros:
       module_name: src/ifes_apt_tc_data_modeling/mkdocs
 
@@ -36,11 +37,14 @@ theme:
     - navigation.footer
     - content.code.copy
     - content.code.annotate
+    - search.suggest
   custom_dir: docs/theme
   icon:
     repo: fontawesome/brands/github
 
 markdown_extensions:
+  - markdown_include.include:
+      base_path: docs
   - attr_list
   - md_in_html
   - admonition
@@ -56,6 +60,8 @@ markdown_extensions:
   - pymdownx.emoji
   - mkdocs-click
   - pymdownx.extra
+  - pymdownx.tabbed:
+      alternate_style: true
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid

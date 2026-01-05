@@ -1,35 +1,32 @@
-name: cspell
+name: Spell Check
 
 on: [push]
-  # push:
-  #   branches:
-  #     - main
-  
-env:
-  python-version: 3.12
-
-# permissions:
-#    contents: write
+#  pull_request:
+#    branches: [main]
 
 jobs:
-  deploy:
+  spellcheck:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          submodules: recursive
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      # - name: Configure Git Credentials
-      #   run: |
-      #     git config user.name github-actions[bot]
-      #     git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+    - name: Install dependencies and dictionary
+      run: |
+        npm install -g cspell jq @cspell/dict-scientific-terms-us
 
-      - name: Check spelling
-        uses: streetsidesoftware/cspell-action@v7
-        with:
-          files: "*.md"
-          strict: true
-          incremental_files_only: false
+    - name: Run cspell
+      run: |
+        cspell --config cspell.json \
+        "README.md" "CITATION.cff" \
+        "docs/**/*" \
+        "src/ifes_apt_tc_data_modeling/**/*.py" \
+        "tests/**/*.py"
+
+    - name: Fail on errors
+      run: |
+        if [[ $? -ne 0 ]]; then
+          echo "There are spelling errors in your code. Please fix them and try again."
+          exit 1
+        fi
