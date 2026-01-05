@@ -1,3 +1,4 @@
+src/ifes_apt_tc_data_modeling/_version.py
 site
 examples/data
 examples/ifes_apt_tc_data_modeling.log
