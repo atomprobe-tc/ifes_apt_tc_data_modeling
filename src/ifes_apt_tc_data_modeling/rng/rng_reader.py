@@ -109,12 +109,15 @@ def evaluate_rng_ion_type_header(line: str) -> dict:
 class ReadRngFileFormat:
     """Read *.rng file format."""
 
-    def __init__(self, file_path: str):
-        if (len(file_path) <= 4) or not file_path.lower().endswith(".rng"):
-            raise ImportError(
-                "WARNING::RNG file incorrect file_path ending or file type."
-            )
+    def __init__(self, file_path: str, unique: bool = False, verbose: bool = False):
+        self.supported = False
+        if not file_path.lower().endswith(".rng"):
+            logger.warning(f"{file_path} is likely not a RNG file")
+            return
+        self.supported = True
         self.file_path = file_path
+        self.unique = unique
+        self.verbose = verbose
         self.rng: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
         self.read_rng()
 

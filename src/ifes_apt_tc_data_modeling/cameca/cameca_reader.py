@@ -39,15 +39,15 @@ from ifes_apt_tc_data_modeling.utils.utils import (
 class ReadCamecaHfiveFileFormat:
     """Read Cameca HDF5 files used in this study https://doi.org/10.18126/dqxb-9m77."""
 
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: str, verbose: bool = False):
+        self.supported = 0  # voting-based
         if not file_path.lower().endswith(".hdf5"):
-            raise ImportError(
-                "WARNING::HDF5 file incorrect file_path ending or file type."
-            )
+            logger.warning(f"{file_path} is likely not a HDF5 file")
+            return
         self.file_path = file_path
+        self.verbose = verbose
         self.file_size = os.path.getsize(self.file_path)
         self.number_of_events = None
-        self.supported = 0  # voting-based
         with h5py.File(self.file_path, "r") as h5r:
             for entry in ("mass", "xyz", "ranges"):
                 if entry in h5r.keys():
@@ -66,6 +66,8 @@ class ReadCamecaHfiveFileFormat:
             logger.warning(f"{self.file_path} is not a supported Cameca HDF5 file.")
             self.supported = 0
             return
+        else:
+            self.supported = 3
         logger.debug(f"{self.file_path} is a supported Cameca HDF5 file.")
         self.rng: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
         self.get_ranging_definitions()

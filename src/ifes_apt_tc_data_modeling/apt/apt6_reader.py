@@ -37,10 +37,14 @@ from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 class ReadAptFileFormat:
     """Read AMETEK's open exchange *.apt file format."""
 
-    def __init__(self, file_path: str):
-        if (len(file_path) <= 4) or not file_path.lower().endswith(".apt"):
-            raise ImportError("APT file incorrect file_path ending or file type.")
+    def __init__(self, file_path: str, verbose: bool = False):
+        self.supported = False
+        if not file_path.lower().endswith(".apt"):
+            logger.warning(f"{file_path} is likely not a Cameca APT file")
+            return
+        self.supported = True
         self.file_path = file_path
+        self.verbose = verbose
         self.file_size = os.path.getsize(self.file_path)
         logger.debug(f"Reading {self.file_path} which is {self.file_size} B")
 

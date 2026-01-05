@@ -44,12 +44,14 @@ from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
 class ReadImagoAnalysisFileFormat:
     """Read *.analysis file (format), extract ranging definitions as an example."""
 
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: str, verbose: bool = False):
+        self.supported = False
         if not file_path.lower().endswith((".analysis", ".analysisset")):
-            raise ImportError(
-                "WARNING::analysis file incorrect file_path ending or file type."
-            )
+            logger.warning(f"{file_path} is likely not an Imago XML analysis file")
+            return
+        self.supported = True
         self.file_path = file_path
+        self.verbose = verbose
         self.imago: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
         self.read_imago_analysis_ranging_definitions()
 

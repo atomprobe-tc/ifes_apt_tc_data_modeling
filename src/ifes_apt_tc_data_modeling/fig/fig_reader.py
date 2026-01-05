@@ -40,12 +40,16 @@ from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
 class ReadFigTxtFileFormat:
     """Read *.fig.txt file format."""
 
-    def __init__(self, file_path: str):
-        if (len(file_path) <= 8) or not file_path.lower().endswith(".fig.txt"):
-            raise ImportError(
-                "WARNING::FIG.TXT file incorrect file_path ending or file type."
+    def __init__(self, file_path: str, verbose: bool = False):
+        self.supported = False
+        if not file_path.lower().endswith(".fig.txt"):
+            logger.warning(
+                f"{file_path} is likely not a FIG.TXT as used in the Erlangen Atom Probe Toolbox"
             )
+            return
+        self.supported = True
         self.file_path = file_path
+        self.verbose = verbose
         self.fig: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
         self.read_fig_txt()
 

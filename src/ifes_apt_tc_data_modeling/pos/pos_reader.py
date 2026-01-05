@@ -32,14 +32,15 @@ from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 class ReadPosFileFormat:
     """Read *.pos file format."""
 
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: str, verbose: bool = False):
         """Initialize the reader."""
-        if (len(file_path) <= 4) or (not file_path.lower().endswith(".pos")):
-            raise ImportError(
-                "WARNING::POS file incorrect file_path ending or file type."
-            )
+        self.supported = False
+        if not file_path.lower().endswith(".pos"):
+            logger.warning(f"{file_path} is likely not a POS file")
+            return
+        self.supported = True
         self.file_path = file_path
-
+        self.verbose = verbose
         self.file_size = os.path.getsize(self.file_path)
         if self.file_size % (4 * 4) != 0:
             raise ValueError("POS file_size not integer multiple of 4*4B.")

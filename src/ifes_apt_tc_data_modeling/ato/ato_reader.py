@@ -30,12 +30,16 @@ from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 class ReadAtoFileFormat:
     """Read Rouen group *.ato file format."""
 
-    def __init__(self, file_path: str):
-        if (len(file_path) <= 4) or not file_path.lower().endswith(".ato"):
-            raise ImportError(
-                "WARNING::ATO file incorrect file_path ending or file type."
+    def __init__(self, file_path: str, verbose: bool = False):
+        self.supported = False
+        if not file_path.lower().endswith(".ato"):
+            logger.warning(
+                f"{file_path} is likely not an  ATO file as those from atom probe"
             )
+            return
+        self.supported = True
         self.file_path = file_path
+        self.verbose = verbose
 
         self.file_size = os.path.getsize(self.file_path)
         self.number_of_events = None

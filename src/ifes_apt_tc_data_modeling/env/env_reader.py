@@ -85,12 +85,14 @@ def evaluate_env_range_line(line: str):
 class ReadEnvFileFormat:
     """Read GPM/Rouen *.env file format."""
 
-    def __init__(self, file_path: str):
-        if (len(file_path) <= 4) or not file_path.lower().endswith(".env"):
-            raise ImportError(
-                "WARNING::ENV file incorrect file_path ending or file type."
-            )
+    def __init__(self, file_path: str, verbose: bool = False):
+        self.supported = False
+        if not file_path.lower().endswith(".env"):
+            logger.warning(f"{file_path} is likely not an ENV file")
+            return
+        self.supported = True
         self.file_path = file_path
+        self.verbose = verbose
         self.env: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
         self.read_env()
 

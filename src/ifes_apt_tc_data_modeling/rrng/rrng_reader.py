@@ -108,21 +108,22 @@ def evaluate_rrng_range_line(i: int, line: str) -> dict:
 class ReadRrngFileFormat:
     """Read *.rrng file format."""
 
-    def __init__(self, file_path: str, unique=False, verbose=False):
+    def __init__(self, file_path: str, unique: bool = False, verbose: bool = False):
         """Initialize the class."""
-        if (len(file_path) <= 5) or not file_path.lower().endswith(".rrng"):
-            raise ImportError(
-                "WARNING::RRNG file incorrect file_path ending or file type."
-            )
+        self.supported = False
+        if not file_path.lower().endswith(".rrng"):
+            logger.warning(f"{file_path} is likely not a RRNG file")
+            return
+        self.supported = True
         self.file_path = file_path
+        self.unique = unique
+        self.verbose = verbose
         self.rrng: dict = {
             "ion_names": [],
             "ranges": {},
             "ions": {},
             "molecular_ions": [],
         }
-        self.unique = unique
-        self.verbose = verbose
         self.read_rrng()
 
     def read_rrng(self):

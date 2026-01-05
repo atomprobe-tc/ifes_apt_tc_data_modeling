@@ -32,11 +32,13 @@ from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 class ReadStuttgartApytRawFileFormat:
     """Read *.raw file format."""
 
-    def __init__(self, file_path: str):
-        if (len(file_path) <= 4) or not file_path.lower().endswith(".raw"):
-            raise ImportError(
-                "WARNING::Stuttgart raw file incorrect file_path ending or file type."
-            )
+    def __init__(self, file_path: str, verbose: bool = False):
+        self.supported = False
+        if not file_path.lower().endswith(".raw"):
+            logger.warning(f"{file_path} is likely not a Stuttgart TAP-style raw file")
+            return
+        self.supported = True
+        self.verbose = verbose
         self.file_path = file_path
         self.file_size = os.path.getsize(self.file_path)
         if self.file_size % (8 * 4) != 0:
