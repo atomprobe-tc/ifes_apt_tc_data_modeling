@@ -45,7 +45,7 @@ class ReadEposFileFormat:
         self.number_of_events = np.uint32(self.file_size / (11 * 4))
 
         # https://doi.org/10.1007/978-1-4614-3436-8 for file format details
-        # dtyp_names = ["Reconstructed position along the x-axis (nm)",
+        # dtype_names = ["Reconstructed position along the x-axis (nm)",
         #               "Reconstructed position along the y-axis (nm)",
         #               "Reconstructed position along the z-axis (nm)",
         #               "Reconstructed mass-to-charge-state ratio (Da)",
@@ -56,7 +56,7 @@ class ReadEposFileFormat:
         #               "Ion impact y-coordinate at the detector (mm)",
         #               "Number of pulses since the last detected ion (pulses)",
         #               "Hit multiplicity (ions)"]
-        # raw = np.fromfile( fnm, dtype= {"names": dtyp_names,
+        # raw = np.fromfile( fnm, dtype= {"names": dtype_names,
         # "formats": (, ">f4",">f4",">f4",">f4",">f4",">f4",">u4",">u4") } )
 
     def get_reconstructed_positions(self):

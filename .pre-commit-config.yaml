@@ -7,3 +7,17 @@ repos:
         files: ^(src/pynxtools|tests)/.*\.py$
       - id: ruff-format
         files: ^(src/pynxtools|tests)/.*\.py$
+
+  - repo: https://github.com/streetsidesoftware/cspell-cli
+    rev: v9.3.0
+    hooks:
+      - id: cspell  # spellchecking
+        pass_filenames: false
+        args:
+          - --config
+          - cspell.json
+          - README.md
+          - CITATION.cff
+          - docs/**/*
+          - src/ifes_apt_tc_data_modeling/**/*.py
+          - tests/**/*.py

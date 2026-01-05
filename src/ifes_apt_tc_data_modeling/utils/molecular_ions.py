@@ -262,8 +262,8 @@ class MolecularIonBuilder:
                 )
                 new_halflife = self.get_shortest_half_life(cand_arr_curr)
                 n_electrons = self.get_number_of_electrons(cand_arr_curr)
-                for new_chrg in np.arange(1, min(n_electrons + 1, 8)):
-                    mass_to_charge = new_mass / new_chrg
+                for new_charge in np.arange(1, min(n_electrons + 1, 8)):
+                    mass_to_charge = new_mass / new_charge
                     if mass_to_charge < low:
                         break
                     # we can break the entire charge state generation here already
@@ -283,7 +283,7 @@ class MolecularIonBuilder:
                     self.candidates.append(
                         MolecularIonCandidate(
                             cand_arr_curr,
-                            new_chrg,
+                            new_charge,
                             new_mass,
                             new_abundance_product,
                             new_halflife,

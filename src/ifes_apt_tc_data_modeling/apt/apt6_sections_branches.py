@@ -676,7 +676,7 @@ EXPECTED_SECTIONS["Detector Coordinates"].set_accepted_units(["mm"])
 
 # sections whose formatting and purpose is completely unclear
 
-# Var44 ? magic-in-action? M. K\"uhbach, could well for AMETEK development only
+# Var44 ? magic-in-action? M. Kühbach, could well for AMETEK development only
 # EXPECTED_SECTIONS["Var44"].set_section_name("Var44")
 
 
@@ -692,5 +692,5 @@ EXPECTED_SECTIONS["Vref"].set_accepted_units(["V"])
 
 # other comments and issues
 # Need to check APSuite version and build number
-# "Voltage" section, M. K\"uhbach: expect to have units but example *.apt files
+# "Voltage" section, M. Kühbach: expect to have units but example *.apt files
 # from flat test do not encode a unit in the "Voltage" section

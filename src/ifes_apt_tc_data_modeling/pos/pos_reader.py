@@ -49,7 +49,7 @@ class ReadPosFileFormat:
         logger.debug(f"Parsing {self.number_of_events} events from {self.file_path}")
 
         # https://doi.org/10.1007/978-1-4614-3436-8 for file format details
-        # dtyp_names = ["Reconstructed position along the x-axis (nm)",
+        # dtype_names = ["Reconstructed position along the x-axis (nm)",
         #               "Reconstructed position along the y-axis (nm)",
         #               "Reconstructed position along the z-axis (nm)",
         #               "Reconstructed mass-to-charge-state ratio (Da)"]

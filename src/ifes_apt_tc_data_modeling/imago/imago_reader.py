@@ -90,7 +90,7 @@ class ReadImagoAnalysisFileFormat:
                         # logger.debug(">>>>>>>>>>>At the level of a molecular ion that can be so simple that it is just an element ion")
                         cand_dct = fd.FlatDict(member, "/")
                         # logger.debug(f">>>>> {cand_dct}")
-                        all_reqs_exist = True
+                        all_required_exist = True
                         required_names = [
                             "@method",
                             "object/@id",
@@ -101,8 +101,8 @@ class ReadImagoAnalysisFileFormat:
                         ]
                         for required_name in required_names:
                             if required_name not in cand_dct.keys():
-                                all_reqs_exist = False
-                        if not all_reqs_exist:
+                                all_required_exist = False
+                        if not all_required_exist:
                             continue
 
                         if (

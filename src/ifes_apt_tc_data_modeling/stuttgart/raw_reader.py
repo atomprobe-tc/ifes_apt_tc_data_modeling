@@ -58,8 +58,8 @@ class ReadStuttgartApytRawFileFormat:
         # tof           float32    time of flight (ns)
         # epoch         int32      epoch of evaporation event
         # pulse_num     uint32     pulse number of evaporation event
-        # dtyp_names = []
-        # raw = np.fromfile( fnm, dtype= {"names": dtyp_names,
+        # dtype_names = []
+        # raw = np.fromfile( fnm, dtype= {"names": dtype_names,
         # "formats": (, "<f4","<f4","<f4","<f4","<f4","<f4","<i4","<u4") } )
 
     def get_base_voltage(self):

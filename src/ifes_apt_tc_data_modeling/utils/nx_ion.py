@@ -218,16 +218,18 @@ class NxIon:
     def add_charge_state_model(self, parameters, candidates):
         """Add details about the model how self.charge_state was defined."""
         self.charge_state_model = {}
-        req_parms = [
+        required_parameters = [
             "min_abundance",
             "min_abundance_product",
             "min_half_life",
             "sacrifice_isotopic_uniqueness",
         ]
-        for req in req_parms:
-            if req in parameters:
+        for required_parameter in required_parameters:
+            if required_parameter in parameters:
                 continue
-            raise ValueError(f"Parameter {req} not defined in parameters dict.")
+            raise ValueError(
+                f"Parameter {required_parameter} not defined in parameters dict."
+            )
         self.charge_state_model = {"n_cand": 0}
         for key, val in parameters.items():
             if key not in self.charge_state_model:
