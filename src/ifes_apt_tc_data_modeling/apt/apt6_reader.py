@@ -22,6 +22,7 @@ import os
 import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
+from typing import Any
 
 from ifes_apt_tc_data_modeling.apt.apt6_utils import np_uint16_to_string
 from ifes_apt_tc_data_modeling.apt.apt6_headers import AptFileHeaderMetadata
@@ -198,15 +199,14 @@ class ReadAptFileFormat:
                 self.available_sections[keyword].meta["i_data_type_size"] / 8
             )
             count = self.available_sections[keyword].get_ametek_count()
-            data: NDArray[np.generic] = get_memory_mapped_data(
+            data: NDArray[Any] = get_memory_mapped_data(
                 self.file_path, dtype, offset, stride, count
             )
-            shape: tuple[np.uint64, np.uint64] = tuple(
-                self.available_sections[keyword].get_ametek_shape()
-            )
+            shape = self.available_sections[keyword].get_ametek_shape()
             unit = self.available_sections[keyword].meta["wc_data_unit"]
             return ureg.Quantity(
-                np.reshape(data, newshape=shape), f"{np_uint16_to_string(unit)}"
+                np.reshape(data, shape=(int(shape[0]), int(shape[1]))),
+                f"{np_uint16_to_string(unit)}",
             )
         else:
             logger.error(f"Unable to get_named_quantity {keyword}")

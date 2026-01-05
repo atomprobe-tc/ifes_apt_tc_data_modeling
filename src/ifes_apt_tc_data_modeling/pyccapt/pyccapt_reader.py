@@ -223,7 +223,7 @@ class ReadPyccaptRangingFileFormat:
         self.rng: dict[str, Any] = {}
         self.rng["molecular_ions"] = []
         logger.debug(np.shape(self.df)[0])
-        for idx in np.arange(0, np.shape(self.df)[0], dtype=np.uint64):
+        for idx in range(np.shape(self.df)[0]):
             if isinstance(self.df.iat[idx, 6], str):
                 if self.df.iat[idx, 6] == "unranged":
                     continue
