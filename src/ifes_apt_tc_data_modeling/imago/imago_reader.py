@@ -46,7 +46,7 @@ class ReadImagoAnalysisFileFormat:
 
     def __init__(self, file_path: str, verbose: bool = False):
         self.supported = False
-        if not file_path.lower().endswith((".analysis", ".analysisset")):
+        if not file_path.lower().endswith(".analysis"):
             logger.warning(f"{file_path} is likely not an Imago XML analysis file")
             return
         self.supported = True
@@ -198,7 +198,7 @@ class ReadImagoAnalysisFileFormat:
                                 m_ion.add_range(float(mq[0]), float(mq[1]))
                                 m_ion.comment = " ".join(element_symbol)
                                 m_ion.apply_combinatorics()
-                                m_ion.report()
+                                # m_ion.report()
 
                                 self.imago["molecular_ions"].append(m_ion)
         logger.info(f"{self.file_path} parsed successfully.")
