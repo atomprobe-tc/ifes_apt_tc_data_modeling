@@ -21,21 +21,25 @@
 # pylint: disable=duplicate-code
 
 import os
+
 import numpy as np
 
-from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
+from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 
 
 class ReadEposFileFormat:
     """Read *.epos file format."""
 
-    def __init__(self, file_path: str):
-        if (len(file_path) <= 5) or not file_path.lower().endswith(".epos"):
-            raise ImportError(
-                "WARNING::ePOS file incorrect file_path ending or file type."
-            )
+    def __init__(self, file_path: str, verbose: bool = False):
+        self.supported = False
+        if not file_path.lower().endswith(".epos"):
+            logger.warning(f"{file_path} is likely not an ePOS file")
+            return
+        self.supported = True
         self.file_path = file_path
+        self.verbose = verbose
         self.file_size = os.path.getsize(self.file_path)
         if self.file_size % (11 * 4) != 0:
             raise ValueError("ePOS file_size not integer multiple of 11*4B.")
@@ -44,7 +48,7 @@ class ReadEposFileFormat:
         self.number_of_events = np.uint32(self.file_size / (11 * 4))
 
         # https://doi.org/10.1007/978-1-4614-3436-8 for file format details
-        # dtyp_names = ["Reconstructed position along the x-axis (nm)",
+        # dtype_names = ["Reconstructed position along the x-axis (nm)",
         #               "Reconstructed position along the y-axis (nm)",
         #               "Reconstructed position along the z-axis (nm)",
         #               "Reconstructed mass-to-charge-state ratio (Da)",
@@ -55,7 +59,7 @@ class ReadEposFileFormat:
         #               "Ion impact y-coordinate at the detector (mm)",
         #               "Number of pulses since the last detected ion (pulses)",
         #               "Hit multiplicity (ions)"]
-        # raw = np.fromfile( fnm, dtype= {"names": dtyp_names,
+        # raw = np.fromfile( fnm, dtype= {"names": dtype_names,
         # "formats": (, ">f4",">f4",">f4",">f4",">f4",">f4",">u4",">u4") } )
 
     def get_reconstructed_positions(self):
@@ -80,7 +84,7 @@ class ReadEposFileFormat:
         values = np.zeros((self.number_of_events,), np.float32)
         # according to DOI: 10.1007/978-1-4899-7430-3 raw time-of-flight
         # i.e. this is an uncorrected time-of-flight
-        # for which effects uncorrect?
+        # for which effects incorrect?
         # Only the proprietary IVAS/APSuite source code knows for sure
         values[:] = get_memory_mapped_data(
             self.file_path, ">f4", 4 * 4, 11 * 4, self.number_of_events

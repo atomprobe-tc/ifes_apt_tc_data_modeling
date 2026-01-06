@@ -21,17 +21,17 @@
 # pylint: disable=duplicate-code
 
 import re
+
 import numpy as np
 
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
+from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
+from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
 from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
 from ifes_apt_tc_data_modeling.utils.utils import (
     create_nuclide_hash,
     is_range_significant,
 )
-from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
-from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
-from ifes_apt_tc_data_modeling.utils.custom_logging import logger
-
 
 # there are specific examples for unusual range files here:
 # https://hg.sr.ht/~mycae/libatomprobe/browse/test/samples/ranges?rev=tip
@@ -109,19 +109,22 @@ def evaluate_rng_ion_type_header(line: str) -> dict:
 class ReadRngFileFormat:
     """Read *.rng file format."""
 
-    def __init__(self, file_path: str):
-        if (len(file_path) <= 4) or not file_path.lower().endswith(".rng"):
-            raise ImportError(
-                "WARNING::RNG file incorrect file_path ending or file type."
-            )
+    def __init__(self, file_path: str, unique: bool = False, verbose: bool = False):
+        self.supported = False
+        if not file_path.lower().endswith(".rng"):
+            logger.warning(f"{file_path} is likely not a RNG file")
+            return
+        self.supported = True
         self.file_path = file_path
+        self.unique = unique
+        self.verbose = verbose
         self.rng: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
         self.read_rng()
 
     def read_rng(self):
         """Read RNG range file content."""
-        with open(self.file_path, mode="r", encoding="utf8") as rngf:
-            txt = rngf.read()
+        with open(self.file_path, encoding="utf8") as rng_fp:
+            txt = rng_fp.read()
 
         txt = txt.replace("\r\n", "\n")  # windows to unix EOL conversion
         txt = txt.replace(",", ".")  # use decimal dots instead of comma
@@ -140,11 +143,11 @@ class ReadRngFileFormat:
         # polyatomic extension is redundant info
 
         tmp = None
-        current_line_id = int(0)  # search key header line
+        current_line_id = 0  # search key header line
         for line in txt_stripped:
             tmp = re.search(r"----", line)
             if tmp is None:
-                current_line_id += int(1)
+                current_line_id += 1
             else:
                 break
         if tmp is None:

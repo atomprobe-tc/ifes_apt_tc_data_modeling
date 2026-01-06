@@ -18,18 +18,18 @@
 
 """Utilities for working with molecular ions in atom probe microscopy."""
 
-from typing import Tuple
 import re
-import numpy as np
 
+import numpy as np
 from ase.data import atomic_numbers, chemical_symbols
-from ifes_apt_tc_data_modeling.utils.nist_isotope_data import isotopes
+
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 from ifes_apt_tc_data_modeling.utils.definitions import (
     MAX_NUMBER_OF_ATOMS_PER_ION,
     MQ_EPSILON,
     NEUTRON_NUMBER_FOR_ELEMENT,
 )
-from ifes_apt_tc_data_modeling.utils.custom_logging import logger
+from ifes_apt_tc_data_modeling.utils.nist_isotope_data import isotopes
 
 
 def get_smart_chemical_symbols():
@@ -62,7 +62,7 @@ def isotope_to_hash(
     return 0
 
 
-def hash_to_isotope(hashvalue: int = 0) -> Tuple[int, int]:
+def hash_to_isotope(hashvalue: int = 0) -> tuple[int, int]:
     """Decode a hashvalue to an isotope."""
     # see comment on isotope_to_hash
     if 0 <= hashvalue <= int(np.iinfo(np.uint16).max):
@@ -83,39 +83,39 @@ def create_nuclide_hash(building_blocks: list) -> np.ndarray:
     ivec = np.zeros((MAX_NUMBER_OF_ATOMS_PER_ION,), np.uint16)
     if 0 < len(building_blocks) <= MAX_NUMBER_OF_ATOMS_PER_ION:
         symbol_to_proton_number = atomic_numbers
-        hashvector = []
+        hash_vector = []
         for block in building_blocks:
             if isinstance(block, str) and block != "":
                 if block.count("-") == 0:  # an element
                     if (block not in symbol_to_proton_number) or (block == "X"):
                         return ivec
-                    hashvector.append(
+                    hash_vector.append(
                         isotope_to_hash(
                             symbol_to_proton_number[block], NEUTRON_NUMBER_FOR_ELEMENT
                         )
                     )
                 elif block.count("-") == 1:
-                    symb_mass = block.split("-")
+                    symbol_mass = block.split("-")
                     if (
-                        (len(symb_mass) != 2)
-                        or (symb_mass[0] not in symbol_to_proton_number)
-                        or (symb_mass[0] == "X")
+                        (len(symbol_mass) != 2)
+                        or (symbol_mass[0] not in symbol_to_proton_number)
+                        or (symbol_mass[0] == "X")
                     ):
                         logger.warning(
                             f"{block} is not properly formatted <symbol>-<mass_number>"
                         )
                         return ivec
-                    proton_number = symbol_to_proton_number[symb_mass[0]]
-                    mass_number = int(symb_mass[1])
+                    proton_number = symbol_to_proton_number[symbol_mass[0]]
+                    mass_number = int(symbol_mass[1])
                     neutron_number = mass_number - proton_number
                     if (proton_number in isotopes) and (
                         mass_number in isotopes[proton_number]
                     ):
-                        hashvector.append(
+                        hash_vector.append(
                             isotope_to_hash(proton_number, neutron_number)
                         )
-        ivec[0 : len(hashvector)] = np.sort(
-            np.asarray(hashvector, np.uint16), kind="stable"
+        ivec[0 : len(hash_vector)] = np.sort(
+            np.asarray(hash_vector, np.uint16), kind="stable"
         )[::-1]
     return ivec
 
@@ -213,26 +213,26 @@ def is_convertible_to_isotope_hash(symbol: str):
             raise ValueError(f"Symbol needs to be in {get_smart_chemical_symbols()}.")
         return 1
     # alternative case eventually specific nuclide e.g. "K-40"
-    symb_mass = symbol.split("-")
-    if len(symb_mass) != 2:
+    symbol_mass = symbol.split("-")
+    if len(symbol_mass) != 2:
         raise TypeError(
             "Argument symbol is not properly formatted <symbol>-<mass_number>."
         )
-    if len(symb_mass[0]) != 1 and len(symb_mass[0]) != 2:
+    if len(symbol_mass[0]) != 1 and len(symbol_mass[0]) != 2:
         raise ValueError(
             "Argument symbol is not properly formatted <symbol>-<mass_number>."
         )
-    if len(symb_mass[1]) <= 0:
+    if len(symbol_mass[1]) <= 0:
         raise ValueError(
-            f"Argument symbol {symb_mass[1]} needs to be a physical mass number."
+            f"Argument symbol {symbol_mass[1]} needs to be a physical mass number."
         )
-    if symb_mass[0] not in get_smart_chemical_symbols():
+    if symbol_mass[0] not in get_smart_chemical_symbols():
         raise ValueError(
-            f"{symb_mass[0]} is not a symbol in {get_smart_chemical_symbols()}."
+            f"{symbol_mass[0]} is not a symbol in {get_smart_chemical_symbols()}."
         )
-    if int(symb_mass[1]) not in isotopes[atomic_numbers[symb_mass[0]]].keys():
+    if int(symbol_mass[1]) not in isotopes[atomic_numbers[symbol_mass[0]]].keys():
         raise ValueError(
-            f"No value for isotopes[atomic_numbers[{symb_mass[0]}][{int(symb_mass[1])}] exists."
+            f"No value for isotopes[atomic_numbers[{symbol_mass[0]}][{int(symbol_mass[1])}] exists."
         )
     return 2
 
@@ -244,10 +244,10 @@ def element_or_nuclide_to_hash(symbol: str):
     if case == 1:
         return isotope_to_hash(atomic_numbers[symbol], NEUTRON_NUMBER_FOR_ELEMENT)
     if case == 2:
-        symb_mass = symbol.split("-")
+        symbol_mass = symbol.split("-")
         return isotope_to_hash(
-            atomic_numbers[symb_mass[0]],
-            int(symb_mass[1]) - atomic_numbers[symb_mass[0]],
+            atomic_numbers[symbol_mass[0]],
+            int(symbol_mass[1]) - atomic_numbers[symbol_mass[0]],
         )
     return isotope_to_hash(0, 0)
 

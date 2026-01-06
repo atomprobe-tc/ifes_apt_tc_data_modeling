@@ -21,15 +21,17 @@
 # pylint: disable=too-many-nested-blocks,duplicate-code
 
 import re
+
 import numpy as np
+
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
+from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
 from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
 from ifes_apt_tc_data_modeling.utils.utils import (
     create_nuclide_hash,
-    is_range_significant,
     get_smart_chemical_symbols,
+    is_range_significant,
 )
-from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
-from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 
 
 def evaluate_env_range_line(line: str):
@@ -83,20 +85,22 @@ def evaluate_env_range_line(line: str):
 class ReadEnvFileFormat:
     """Read GPM/Rouen *.env file format."""
 
-    def __init__(self, file_path: str):
-        if (len(file_path) <= 4) or not file_path.lower().endswith(".env"):
-            raise ImportError(
-                "WARNING::ENV file incorrect file_path ending or file type."
-            )
+    def __init__(self, file_path: str, verbose: bool = False):
+        self.supported = False
+        if not file_path.lower().endswith(".env"):
+            logger.warning(f"{file_path} is likely not an ENV file")
+            return
+        self.supported = True
         self.file_path = file_path
+        self.verbose = verbose
         self.env: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
         self.read_env()
 
     def read_env(self):
         """Read ENV system configuration and ranging definitions."""
         # GPM/Rouen ENV file format is neither standardized nor uses magic number
-        with open(self.file_path, mode="r", encoding="utf-8") as envf:
-            txt = envf.read()
+        with open(self.file_path, encoding="utf-8") as env_fp:
+            txt = env_fp.read()
             txt = txt.replace("\r\n", "\n")  # windows to unix EOL conversion
             txt = txt.replace(",", ".")  # use decimal dots instead of comma
             txt_stripped = [line for line in txt.split("\n") if line.strip() != ""]

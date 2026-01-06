@@ -23,12 +23,13 @@
 # The example below shows how to extract ranging definitions.
 
 import re
-import xmltodict
+
 import flatdict as fd
 import numpy as np
-
+import xmltodict
 from ase.data import atomic_numbers, chemical_symbols
-from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
+
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 from ifes_apt_tc_data_modeling.utils.definitions import (
     MAX_NUMBER_OF_ATOMS_PER_ION,
     NEUTRON_NUMBER_FOR_ELEMENT,
@@ -37,18 +38,20 @@ from ifes_apt_tc_data_modeling.utils.molecular_ions import (
     get_chemical_symbols,
     isotope_to_hash,
 )
-from ifes_apt_tc_data_modeling.utils.custom_logging import logger
+from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
 
 
 class ReadImagoAnalysisFileFormat:
     """Read *.analysis file (format), extract ranging definitions as an example."""
 
-    def __init__(self, file_path: str):
-        if (len(file_path) <= 9) or not file_path.lower().endswith(".analysis"):
-            raise ImportError(
-                "WARNING::ANALYSIS file incorrect file_path ending or file type."
-            )
+    def __init__(self, file_path: str, verbose: bool = False):
+        self.supported = False
+        if not file_path.lower().endswith((".analysis", ".analysisset")):
+            logger.warning(f"{file_path} is likely not an Imago XML analysis file")
+            return
+        self.supported = True
         self.file_path = file_path
+        self.verbose = verbose
         self.imago: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
         self.read_imago_analysis_ranging_definitions()
 
@@ -71,8 +74,8 @@ class ReadImagoAnalysisFileFormat:
         # the main idea behind the example is to show that information can
         # be extracted and to motivate that nowadays one should use data
         # structures that are more conveniently parsable
-        with open(self.file_path, "r", encoding="utf-8") as xmlf:
-            xml = xmltodict.parse(xmlf.read())
+        with open(self.file_path, encoding="utf-8") as xml_fp:
+            xml = xmltodict.parse(xml_fp.read())
             flt = fd.FlatDict(xml, "/")
             for entry in flt["java/object/void"]:
                 # strategy is, walk the data structure and try to discard non-ranging content as early as possible
@@ -89,8 +92,8 @@ class ReadImagoAnalysisFileFormat:
                         # logger.debug(">>>>>>>>>>>At the level of a molecular ion that can be so simple that it is just an element ion")
                         cand_dct = fd.FlatDict(member, "/")
                         # logger.debug(f">>>>> {cand_dct}")
-                        all_reqs_exist = True
-                        reqs = [
+                        all_required_exist = True
+                        required_names = [
                             "@method",
                             "object/@id",
                             "object/@class",
@@ -98,10 +101,10 @@ class ReadImagoAnalysisFileFormat:
                             "object/boolean",
                             "object/void",
                         ]
-                        for req in reqs:
-                            if req not in cand_dct.keys():
-                                all_reqs_exist = False
-                        if not all_reqs_exist:
+                        for required_name in required_names:
+                            if required_name not in cand_dct.keys():
+                                all_required_exist = False
+                        if not all_required_exist:
                             continue
 
                         if (

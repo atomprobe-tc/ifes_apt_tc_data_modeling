@@ -25,18 +25,21 @@ import os
 import numpy as np
 import pandas as pd
 
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 
 
 class ReadCsvFileFormat:
     """Read CSV file assuming (n_ions, 4) like in POS."""
 
-    def __init__(self, file_path: str):
-        if (len(file_path) <= 4) or not file_path.lower().endswith(".csv"):
-            raise ImportError(
-                "WARNING::CSV file incorrect file_path ending or file type."
-            )
+    def __init__(self, file_path: str, verbose: bool = False):
+        self.supported = False
+        if not file_path.lower().endswith(".csv"):
+            logger.warning(f"{file_path} is likely not a CSV file")
+            return
+        self.supported = True
         self.file_path = file_path
+        self.verbose = verbose
 
         self.file_size = os.path.getsize(self.file_path)
         self.number_of_events = None

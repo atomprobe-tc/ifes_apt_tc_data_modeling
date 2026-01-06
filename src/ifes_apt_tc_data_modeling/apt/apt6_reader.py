@@ -19,25 +19,32 @@
 """AMETEK APT(6) data exchange file reader used by atom probe microscopists."""
 
 import os
+from typing import Any
+
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
 
-from ifes_apt_tc_data_modeling.apt.apt6_utils import np_uint16_to_string
 from ifes_apt_tc_data_modeling.apt.apt6_headers import AptFileHeaderMetadata
 from ifes_apt_tc_data_modeling.apt.apt6_sections import AptFileSectionMetadata
 from ifes_apt_tc_data_modeling.apt.apt6_sections_branches import EXPECTED_SECTIONS
-from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
-from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
+from ifes_apt_tc_data_modeling.apt.apt6_utils import np_uint16_to_string
 from ifes_apt_tc_data_modeling.utils.custom_logging import logger
+from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
+from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 
 
 class ReadAptFileFormat:
     """Read AMETEK's open exchange *.apt file format."""
 
-    def __init__(self, file_path: str):
-        if (len(file_path) <= 4) or not file_path.lower().endswith(".apt"):
-            raise ImportError("APT file incorrect file_path ending or file type.")
+    def __init__(self, file_path: str, verbose: bool = False):
+        self.supported = False
+        if not file_path.lower().endswith(".apt"):
+            logger.warning(f"{file_path} is likely not a Cameca APT file")
+            return
+        self.supported = True
         self.file_path = file_path
+        self.verbose = verbose
         self.file_size = os.path.getsize(self.file_path)
         logger.debug(f"Reading {self.file_path} which is {self.file_size} B")
 
@@ -124,7 +131,7 @@ class ReadAptFileFormat:
 
                 self.byte_offsets[keyword] = np.uint64(fp.tell())
                 if keyword == "Position":
-                    # special case six IEEE 32-bit floats preceeding raw data
+                    # special case six IEEE 32-bit floats preceding raw data
                     self.byte_offsets[keyword] += np.uint64(6 * 4)
                 self.byte_offsets[keyword] += np.uint64(found_section["llByteCount"][0])
                 logger.debug(
@@ -197,11 +204,14 @@ class ReadAptFileFormat:
                 self.available_sections[keyword].meta["i_data_type_size"] / 8
             )
             count = self.available_sections[keyword].get_ametek_count()
-            data = get_memory_mapped_data(self.file_path, dtype, offset, stride, count)
-            shape = tuple(self.available_sections[keyword].get_ametek_shape())
+            data: NDArray[Any] = get_memory_mapped_data(
+                self.file_path, dtype, offset, stride, count
+            )
+            shape = self.available_sections[keyword].get_ametek_shape()
             unit = self.available_sections[keyword].meta["wc_data_unit"]
             return ureg.Quantity(
-                np.reshape(data, newshape=shape), f"{np_uint16_to_string(unit)}"
+                np.reshape(data, shape=(int(shape[0]), int(shape[1]))),
+                f"{np_uint16_to_string(unit)}",
             )
         else:
             logger.error(f"Unable to get_named_quantity {keyword}")

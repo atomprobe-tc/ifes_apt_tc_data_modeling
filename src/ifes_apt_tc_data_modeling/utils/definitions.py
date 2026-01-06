@@ -32,20 +32,20 @@ MAX_NUMBER_OF_ATOMS_PER_ION = 32
 # practical and required minimum mass-resolution Da or atomic mass unit (amu)
 MQ_EPSILON = np.float64(1.0 / 2000.0)
 
-# three types of nuclids are distinguished based on their half life:
+# three types of nuclides are distinguished based on their half life:
 # i) half life infinite modeled as np.inf, stable never practically observed decaying,
 # ii) half life finite, known half life, in many cases irrelevant except for geo
-# iii) half life unclear, exotic nuclids modeled as np.nan, typically irrelevant for atom probe
+# iii) half life unclear, exotic nuclides modeled as np.nan, typically irrelevant for atom probe
 
 # do not consider isotopes with a low natural abundance
 PRACTICAL_ABUNDANCE = 0.0
 # do not consider molecular ions whose product of natural abundance low
 PRACTICAL_ABUNDANCE_PRODUCT = 0.0
-# do consider too shortliving isotopes
+# do consider too short-living isotopes
 # PRACTICAL_MIN_HALF_LIFE = 0.0  # this setting would give access to the most exhaustive search
-# but in reality even a specimen with radioactive nuclides needs to be measureable which takes some
+# but in reality even a specimen with radioactive nuclides needs to be measurable which takes some
 # time during which the fast decaying nuclides might have already experienced that many iterations that
-# no such atom of the nuclid remains, let's assume that this practical half life is one minute, then
+# no such atom of the nuclide remains, let's assume that this practical half life is one minute, then
 # even if one rushes setting up the experiment several dozen iterations will pass until
 # that isotope is measured
 PRACTICAL_MIN_HALF_LIFE = np.inf  # 60.0

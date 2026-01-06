@@ -22,24 +22,24 @@
 
 import numpy as np
 
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 from ifes_apt_tc_data_modeling.utils.definitions import MAX_NUMBER_OF_ATOMS_PER_ION
-from ifes_apt_tc_data_modeling.utils.utils import (
-    create_nuclide_hash,
-    nuclide_hash_to_nuclide_list,
-    nuclide_hash_to_human_readable_name,
-    is_range_significant,
-)
 from ifes_apt_tc_data_modeling.utils.molecular_ions import (
-    MolecularIonCandidate,
-    MolecularIonBuilder,
     PRACTICAL_ABUNDANCE,
     PRACTICAL_ABUNDANCE_PRODUCT,
     PRACTICAL_MIN_HALF_LIFE,
-    VERBOSE,
     SACRIFICE_ISOTOPIC_UNIQUENESS,
+    VERBOSE,
+    MolecularIonBuilder,
+    MolecularIonCandidate,
 )
 from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
-from ifes_apt_tc_data_modeling.utils.custom_logging import logger
+from ifes_apt_tc_data_modeling.utils.utils import (
+    create_nuclide_hash,
+    is_range_significant,
+    nuclide_hash_to_human_readable_name,
+    nuclide_hash_to_nuclide_list,
+)
 
 
 def try_to_reduce_to_unique_definitions(inp: list) -> list:
@@ -52,9 +52,9 @@ def try_to_reduce_to_unique_definitions(inp: list) -> list:
                 "Argument inp to try_to_reduce_to_unique_definitions needs to list of NxIon."
             )
     unique = []
-    # unique if mqival does not overlap (but can touch) either side
+    # unique if mass-to-charge-state-interval does not overlap (but can touch) either side
     # extrema of ranging definition and ivec is different or all 0
-    # from a scientific point of view we would like iontypes to be
+    # from a scientific point of view we would like types of ions to be
     # unique and ranges at most touching numerically but not overlapping
     # as then for a given mass-to-charge-state value an ion can qualify
     # to be an instance more than one iontype thus making the ranging
@@ -218,16 +218,18 @@ class NxIon:
     def add_charge_state_model(self, parameters, candidates):
         """Add details about the model how self.charge_state was defined."""
         self.charge_state_model = {}
-        req_parms = [
+        required_parameters = [
             "min_abundance",
             "min_abundance_product",
             "min_half_life",
             "sacrifice_isotopic_uniqueness",
         ]
-        for req in req_parms:
-            if req in parameters:
+        for required_parameter in required_parameters:
+            if required_parameter in parameters:
                 continue
-            raise ValueError(f"Parameter {req} not defined in parameters dict.")
+            raise ValueError(
+                f"Parameter {required_parameter} not defined in parameters dict."
+            )
         self.charge_state_model = {"n_cand": 0}
         for key, val in parameters.items():
             if key not in self.charge_state_model:

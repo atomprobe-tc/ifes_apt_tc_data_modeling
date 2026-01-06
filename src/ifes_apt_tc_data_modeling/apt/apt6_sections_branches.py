@@ -20,13 +20,12 @@
 
 from ifes_apt_tc_data_modeling.apt.apt6_sections import AptFileSectionMetadata
 
-
 # define which header and sections to expect in an *.apt file
 # the sections below are referred to as branches in the commercial software
 # APSuite enables users select prior I/O which of the sections to write
 # normally a range file from based on the exchange with AMETEK and
 
-# in addition there is usually a sextet of preceeding IEEE 32-bit floats
+# in addition there is usually a sextet of preceding IEEE 32-bit floats
 # to the position section. This sextett encodes the min,max bounds of the point
 # cloud in x, y, z direction respectively
 # F. M. M. de Oliveira reported cases where *.apt from mere flat test runs,
@@ -69,7 +68,7 @@ EXPECTED_SECTIONS["Mass"].set_i_record_size(4)
 EXPECTED_SECTIONS["Mass"].set_wc_data_unit("Da")
 EXPECTED_SECTIONS["Mass"].set_accepted_units(["da", "Da", "amu"])
 
-# M. K\"uhbach detected there are at least APSuite versions which write
+# M. Kühbach detected there are at least APSuite versions which write
 # files with Da and some with da as wcDataUnits argument, it seems there
 # was a source code change, we use pint to detect these issues and warn
 
@@ -677,7 +676,7 @@ EXPECTED_SECTIONS["Detector Coordinates"].set_accepted_units(["mm"])
 
 # sections whose formatting and purpose is completely unclear
 
-# Var44 ? magic-in-action? M. K\"uhbach, could well for AMETEK development only
+# Var44 ? magic-in-action? M. Kühbach, could well for AMETEK development only
 # EXPECTED_SECTIONS["Var44"].set_section_name("Var44")
 
 
@@ -693,5 +692,5 @@ EXPECTED_SECTIONS["Vref"].set_accepted_units(["V"])
 
 # other comments and issues
 # Need to check APSuite version and build number
-# "Voltage" section, M. K\"uhbach: expect to have units but example *.apt files
+# "Voltage" section, M. Kühbach: expect to have units but example *.apt files
 # from flat test do not encode a unit in the "Voltage" section

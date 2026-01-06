@@ -1,9 +1,23 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.12.8
+    rev: v0.14.0
     hooks:
-      # Run the linter.
-      - id: ruff
-      # Run the formatter.
+      - id: ruff-check
+        files: ^(src/pynxtools|tests)/.*\.py$
       - id: ruff-format
+        files: ^(src/pynxtools|tests)/.*\.py$
+
+  - repo: https://github.com/streetsidesoftware/cspell-cli
+    rev: v9.3.0
+    hooks:
+      - id: cspell  # spellchecking
+        pass_filenames: false
+        args:
+          - --config
+          - cspell.json
+          - README.md
+          - CITATION.cff
+          - docs/**/*
+          - src/ifes_apt_tc_data_modeling/**/*.py
+          - tests/**/*.py

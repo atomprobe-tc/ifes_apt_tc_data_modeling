@@ -19,22 +19,27 @@
 """ATO file format reader used by atom probe microscopists."""
 
 import os
+
 import numpy as np
 
-from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
-from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
 from ifes_apt_tc_data_modeling.utils.custom_logging import logger
+from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
+from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 
 
 class ReadAtoFileFormat:
     """Read Rouen group *.ato file format."""
 
-    def __init__(self, file_path: str):
-        if (len(file_path) <= 4) or not file_path.lower().endswith(".ato"):
-            raise ImportError(
-                "WARNING::ATO file incorrect file_path ending or file type."
+    def __init__(self, file_path: str, verbose: bool = False):
+        self.supported = False
+        if not file_path.lower().endswith(".ato"):
+            logger.warning(
+                f"{file_path} is likely not an  ATO file as those from atom probe"
             )
+            return
+        self.supported = True
         self.file_path = file_path
+        self.verbose = verbose
 
         self.file_size = os.path.getsize(self.file_path)
         self.number_of_events = None
@@ -61,7 +66,7 @@ class ReadAtoFileFormat:
         # details three versions of the Rouen/GPM ato format v3, v4, v5
         # Cameca/AMETEK's runrootl/FileConvert utility know two ATO flavours:
         # CamecaRoot v18.46.533g built Marc, 21, 2022 against ROOT 5.34/36
-        # v3 LAWATOP and v5 current GPM
+        # v3 LAWATAP and v5 current GPM
         # specifically an earlier parser
         # https://hg.sr.ht/~mycae/libatomprobe/browse/src/io/dataFiles.cpp?rev=tip
         # mentions that storage format may not be robust enough against overflow and
@@ -98,9 +103,9 @@ class ReadAtoFileFormat:
                 )
                 # wpx -> x, wpy -> y, fpz -> z
         elif self.version == 5:
-            # publicly available sources are inconclusive whether coordinates are in angstroem or nm
+            # publicly available sources are inconclusive whether coordinates are in angstrom or nm
             # based on the evidence of usa_denton_smith Si.epos converted to v5 ATO via CamecaRoot
-            # the resulting x, y coordinates suggests that v5 ATO stores in angstroem, while fpz is stored in nm?
+            # the resulting x, y coordinates suggests that v5 ATO stores in angstrom, while fpz is stored in nm?
             # however https://zenodo.org/records/8382828 reports the reconstructed positions to be named
             # not at all wpx, wpy and fpz but x, y, z instead and here claims the nm
             for dim in [0, 1]:  # wpx -> x, wpy -> y
@@ -116,7 +121,7 @@ class ReadAtoFileFormat:
                     )
                     * 0.01
                 )
-            # angstroem to nm conversion for wpx and wpy was dropped to make results consistent with
+            # angstrom to nm conversion for wpx and wpy was dropped to make results consistent with
             # APSuite based file format conversion tool, again a signature that the ATO format
             # demands better documentation by those who use it especially if claiming to perform
             # FAIR research, nothing about the documentation of this format is currently ticking the

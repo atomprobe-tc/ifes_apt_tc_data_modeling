@@ -15,16 +15,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-import pytest
-
-from ifes_apt_tc_data_modeling.utils.string_handling import rchop
-
-
-@pytest.mark.parametrize(
-    "string, suffix, expected",
-    [("nochop", "", "nochop"), ("nochop", "chop", "no"), ("chop_me", "_me", "chop")],
-    ids=["rchop-nochop", "rchop-no-underscore", "rchop-underscore"],
-)
-def test_string_handling_rchop(string: str, suffix: str, expected: str):
-    assert rchop(string, suffix) == expected

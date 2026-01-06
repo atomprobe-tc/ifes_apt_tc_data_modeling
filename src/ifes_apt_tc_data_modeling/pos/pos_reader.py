@@ -21,24 +21,26 @@
 # pylint: disable=duplicate-code
 
 import os
+
 import numpy as np
 
-from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
-from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
 from ifes_apt_tc_data_modeling.utils.custom_logging import logger
+from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
+from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 
 
 class ReadPosFileFormat:
     """Read *.pos file format."""
 
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: str, verbose: bool = False):
         """Initialize the reader."""
-        if (len(file_path) <= 4) or (not file_path.lower().endswith(".pos")):
-            raise ImportError(
-                "WARNING::POS file incorrect file_path ending or file type."
-            )
+        self.supported = False
+        if not file_path.lower().endswith(".pos"):
+            logger.warning(f"{file_path} is likely not a POS file")
+            return
+        self.supported = True
         self.file_path = file_path
-
+        self.verbose = verbose
         self.file_size = os.path.getsize(self.file_path)
         if self.file_size % (4 * 4) != 0:
             raise ValueError("POS file_size not integer multiple of 4*4B.")
@@ -48,7 +50,7 @@ class ReadPosFileFormat:
         logger.debug(f"Parsing {self.number_of_events} events from {self.file_path}")
 
         # https://doi.org/10.1007/978-1-4614-3436-8 for file format details
-        # dtyp_names = ["Reconstructed position along the x-axis (nm)",
+        # dtype_names = ["Reconstructed position along the x-axis (nm)",
         #               "Reconstructed position along the y-axis (nm)",
         #               "Reconstructed position along the z-axis (nm)",
         #               "Reconstructed mass-to-charge-state ratio (Da)"]

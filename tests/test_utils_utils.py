@@ -16,21 +16,22 @@
 # limitations under the License.
 #
 
-import pytest
 import numpy as np
+import pytest
+
 from ifes_apt_tc_data_modeling.utils.definitions import NEUTRON_NUMBER_FOR_ELEMENT
 from ifes_apt_tc_data_modeling.utils.utils import (
-    get_smart_chemical_symbols,
-    isotope_to_hash,
-    hash_to_isotope,
-    create_nuclide_hash,
-    nuclide_hash_to_nuclide_list,
-    nuclide_hash_to_dict_keyword,
-    nuclide_hash_to_human_readable_name,
     MQ_EPSILON,
+    create_nuclide_hash,
+    element_or_nuclide_to_hash,
+    get_smart_chemical_symbols,
+    hash_to_isotope,
     is_range_overlapping,
     is_range_significant,
-    element_or_nuclide_to_hash,
+    isotope_to_hash,
+    nuclide_hash_to_dict_keyword,
+    nuclide_hash_to_human_readable_name,
+    nuclide_hash_to_nuclide_list,
     symbol_lst_to_matrix_of_nuclide_vector,
 )
 
@@ -51,7 +52,7 @@ def test_get_smart_chemical_symbols():
         (43, 56, 14379),
     ],
     ids=[
-        "isotope_to_hash_zerozero",
+        "isotope_to_hash_zero_zero",
         "isotope_to_hash_hydrogen",
         "isotope_to_hash_1h",
         "isotope_to_hash_2h",
@@ -74,7 +75,7 @@ def test_isotope_to_hash(proton_number: int, neutron_number: int, expected: int)
         (14379, (43, 56)),
     ],
     ids=[
-        "hash_to_isotope_zerozero",
+        "hash_to_isotope_zero_zero",
         "hash_to_isotope_hydrogen",
         "hash_to_isotope_1h",
         "hash_to_isotope_2h",
@@ -208,8 +209,8 @@ def test_is_range_overlapping(
         "is_range_significant_zero",
         "is_range_significant_small_edge",
         "is_range_significant_small_safe",
-        "is_range_significant_left_largerthan_right_edge",
-        "is_range_significant_left_largerthan_right_safe",
+        "is_range_significant_left_larger_than_right_edge",
+        "is_range_significant_left_larger_than_right_safe",
     ],
 )
 def test_is_range_significant(left: np.float64, right: np.float64, expected: bool):

@@ -21,10 +21,10 @@
 import numpy as np
 
 from ifes_apt_tc_data_modeling.apt.apt6_utils import (
-    np_uint16_to_string,
-    string_to_typed_nparray,
     APT_SECTION_NAME_MAX_LENGTH,
     APT_SECTION_TYPE_MAX_LENGTH,
+    np_uint16_to_string,
+    string_to_typed_nparray,
 )
 from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 
@@ -274,7 +274,7 @@ class AptFileSectionMetadata:
         return np.uint64(self.meta["ll_byte_count"])
 
     def get_ametek_type(self) -> str:
-        """Interpret numpy endianess/datatype from AMETEK defs."""
+        """Interpret numpy endianness/datatype from AMETEK defs."""
         byte_length = self.meta["i_data_type_size"] / 8
         if self.meta["e_record_data_type"] not in [1, 2, 3]:
             raise ValueError(
@@ -393,7 +393,7 @@ class AptFileSectionMetadata:
 
         if found_section["llByteCount"][0] <= 0:
             raise ValueError("Section llByteCount indicates llByteCount is not > 0")
-        # modify dynamic quanities that can only be inferred from the file
+        # modify dynamic quantities that can only be inferred from the file
         self.meta["ll_record_count"] = found_section["llRecordCount"][0]
         self.meta["ll_byte_count"] = found_section["llByteCount"][0]
         return True

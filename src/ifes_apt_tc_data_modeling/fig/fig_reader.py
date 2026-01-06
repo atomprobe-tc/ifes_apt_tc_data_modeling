@@ -21,10 +21,11 @@
 # pylint: disable=too-many-locals
 
 import re
-import numpy as np
 
+import numpy as np
 from ase.data import atomic_numbers
-from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
+
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 from ifes_apt_tc_data_modeling.utils.definitions import (
     MAX_NUMBER_OF_ATOMS_PER_ION,
     NEUTRON_NUMBER_FOR_ELEMENT,
@@ -33,25 +34,29 @@ from ifes_apt_tc_data_modeling.utils.molecular_ions import (
     get_chemical_symbols,
     isotope_to_hash,
 )
-from ifes_apt_tc_data_modeling.utils.custom_logging import logger
+from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
 
 
 class ReadFigTxtFileFormat:
     """Read *.fig.txt file format."""
 
-    def __init__(self, file_path: str):
-        if (len(file_path) <= 8) or not file_path.lower().endswith(".fig.txt"):
-            raise ImportError(
-                "WARNING::FIG.TXT file incorrect file_path ending or file type."
+    def __init__(self, file_path: str, verbose: bool = False):
+        self.supported = False
+        if not file_path.lower().endswith(".fig.txt"):
+            logger.warning(
+                f"{file_path} is likely not a FIG.TXT as used in the Erlangen Atom Probe Toolbox"
             )
+            return
+        self.supported = True
         self.file_path = file_path
+        self.verbose = verbose
         self.fig: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
         self.read_fig_txt()
 
     def read_fig_txt(self):
         """Read FIG.TXT range file content."""
-        with open(self.file_path, mode="r", encoding="utf8") as figf:
-            txt = figf.read()
+        with open(self.file_path, encoding="utf8") as fig_fp:
+            txt = fig_fp.read()
 
         txt = txt.replace("\r\n", "\n")  # windows to unix EOL conversion
         txt = txt.replace(",", ".")  # use decimal dots instead of comma
@@ -64,12 +69,12 @@ class ReadFigTxtFileFormat:
             tmp = molecular_ion.split(" ")
             mqmin = np.float64(tmp[len(tmp) - 2 : -1][0])
             mqmax = np.float64(tmp[len(tmp) - 1 :][0])
-            ionname = " ".join(tmp[:-2])
-            # logger.debug(f"{ionname} [{mqmin}, {mqmax}]")
-            # ionname = '16O 1H2 + + +  + '
+            ion_name = " ".join(tmp[:-2])
+            # logger.debug(f"{ion_name} [{mqmin}, {mqmax}]")
+            # ion_name = '16O 1H2 + + +  + '
 
-            positive = ionname.count("+")
-            negative = ionname.count("-")
+            positive = ion_name.count("+")
+            negative = ion_name.count("-")
             if (0 < positive <= 7) and (negative == 0):
                 charge_state = positive
             elif (0 < negative <= 7) and (positive == 0):
@@ -77,7 +82,7 @@ class ReadFigTxtFileFormat:
             else:
                 charge_state = 0
 
-            tmp = ionname.replace("+", "").replace("-", "").split(" ")
+            tmp = ion_name.replace("+", "").replace("-", "").split(" ")
             ivec = []
             for isotope in tmp:
                 if isotope != "":
@@ -110,7 +115,7 @@ class ReadFigTxtFileFormat:
 
             m_ion = NxIon(nuclide_hash=ivector, charge_state=charge_state)
             m_ion.add_range(mqmin, mqmax)
-            m_ion.comment = ionname
+            m_ion.comment = ion_name
             m_ion.apply_combinatorics()
             # m_ion.report()
 

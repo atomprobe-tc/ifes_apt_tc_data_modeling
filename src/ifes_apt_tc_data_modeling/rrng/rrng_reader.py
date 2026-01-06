@@ -24,13 +24,13 @@ import re
 
 import numpy as np
 
+from ifes_apt_tc_data_modeling.utils.custom_logging import logger
+from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
+from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
 from ifes_apt_tc_data_modeling.utils.nx_ion import (
     NxIon,
     try_to_reduce_to_unique_definitions,
 )
-from ifes_apt_tc_data_modeling.utils.custom_logging import logger
-from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
-from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
 from ifes_apt_tc_data_modeling.utils.utils import (
     create_nuclide_hash,
     is_range_significant,
@@ -108,27 +108,28 @@ def evaluate_rrng_range_line(i: int, line: str) -> dict:
 class ReadRrngFileFormat:
     """Read *.rrng file format."""
 
-    def __init__(self, file_path: str, unique=False, verbose=False):
+    def __init__(self, file_path: str, unique: bool = False, verbose: bool = False):
         """Initialize the class."""
-        if (len(file_path) <= 5) or not file_path.lower().endswith(".rrng"):
-            raise ImportError(
-                "WARNING::RRNG file incorrect file_path ending or file type."
-            )
+        self.supported = False
+        if not file_path.lower().endswith(".rrng"):
+            logger.warning(f"{file_path} is likely not a RRNG file")
+            return
+        self.supported = True
         self.file_path = file_path
+        self.unique = unique
+        self.verbose = verbose
         self.rrng: dict = {
-            "ionnames": [],
+            "ion_names": [],
             "ranges": {},
             "ions": {},
             "molecular_ions": [],
         }
-        self.unique = unique
-        self.verbose = verbose
         self.read_rrng()
 
     def read_rrng(self):
         """Read content of an RRNG range file."""
-        with open(self.file_path, mode="r", encoding="utf8") as rrngf:
-            txt = rrngf.read()
+        with open(self.file_path, encoding="utf8") as rrng_fp:
+            txt = rrng_fp.read()
 
         txt = txt.replace("\r\n", "\n")  # windows to unix EOL conversion
         txt = txt.replace(",", ".")  # use decimal dots instead of comma
@@ -187,7 +188,7 @@ class ReadRrngFileFormat:
                 raise ValueError(
                     f"Line {txt_stripped[current_line_id + i]} [Ions]/Name not a string."
                 )
-            self.rrng["ionnames"].append(tmp[1])
+            self.rrng["ion_names"].append(tmp[1])
 
         # second, parse [Ranges] section
         where = [
