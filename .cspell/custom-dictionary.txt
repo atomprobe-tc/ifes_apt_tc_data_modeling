@@ -53,6 +53,7 @@ laserpower
 laserx
 lasery
 laserz
+libatom
 loadtxt
 microscopists
 mion

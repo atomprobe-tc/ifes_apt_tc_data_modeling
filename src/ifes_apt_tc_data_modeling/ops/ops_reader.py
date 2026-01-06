@@ -24,6 +24,7 @@
 # PoSAP instrument that paved the way for the modern LEAP type systems
 # this is a Python implementation of the legacy PoSAP ops reader from libatom-probe
 # https://sourceforge.net/p/apttools/libatomprobe/ci/default/tree/src/io/dataFiles.cpp#l1172
+# https://www.repository.cam.ac.uk/items/2af37a7a-65d3-421f-ab06-a0ae2400b5f7 for example data
 
 import os
 
