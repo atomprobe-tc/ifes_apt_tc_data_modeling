@@ -198,7 +198,7 @@ class ReadImagoAnalysisFileFormat:
                                 m_ion.add_range(float(mq[0]), float(mq[1]))
                                 m_ion.comment = " ".join(element_symbol)
                                 m_ion.apply_combinatorics()
-                                m_ion.report()
+                                # m_ion.report()
 
                                 self.imago["molecular_ions"].append(m_ion)
         logger.info(f"{self.file_path} parsed successfully.")

@@ -131,12 +131,11 @@ class ReadAnalysissetFileFormat:
                 return
 
             for idx in range(0, len(ion_type_info_record)):
-                print(f">>>>> {idx} >>>>")
                 key_name = "Formula/Element/Name"
-                if key_name in ion_type_info_record[idx]:
-                    ivec = []  # used for all ranges ion_type_info_range[idx]
+                ivec = []  # used for all ranges ion_type_info_range[idx]
+                if key_name in ion_type_info_record[idx]:  # element, e.g., "Zn"
                     data = ion_type_info_record[idx][key_name]
-                    if isinstance(data, str):  # e.g. "Zn", Formula/Element/Count
+                    if isinstance(data, str):
                         if data in get_chemical_symbols():
                             proton_number = atomic_numbers[data]
                             neutron_number = NEUTRON_NUMBER_FOR_ELEMENT
@@ -158,9 +157,15 @@ class ReadAnalysissetFileFormat:
                                     f"{self.file_path} idx {idx} Formula/Element/Count not found"
                                 )
                                 continue
-                    elif isinstance(
-                        data, list
-                    ):  # e.g. molecular ions  [{'Name': 'Si', 'Count': '1'}, {'Name': 'Fe', 'Count': '1'}]
+                        else:
+                            logger.warning(
+                                f"{self.file_path} idx {idx} {data} not a chemical symbol"
+                            )
+                            continue
+                elif "Formula/Element" in ion_type_info_record[idx]:
+                    data = ion_type_info_record[idx]["Formula/Element"]
+                    if isinstance(data, list):
+                        # e.g. molecular ions  [{'Name': 'Si', 'Count': '1'}, {'Name': 'Fe', 'Count': '1'}]
                         if all(
                             tuple(dictionary.keys()) == ("Name", "Count")
                             for dictionary in data
@@ -184,62 +189,71 @@ class ReadAnalysissetFileFormat:
                                             f"{self.file_path} idx {idx} Formula/Element/Count not finite"
                                         )
                                         break  # must not continue parsing molecular ion partly
+                                else:
+                                    logger.warning(
+                                        f"{self.file_path} idx {idx} {dictionary['Name']} not a chemical symbol"
+                                    )
+                                    break
+                        else:
+                            logger.warning(
+                                f"{self.file_path} idx {idx} Formula/Element dictionary malformed"
+                            )
+                            continue
                     else:
                         logger.warning(
                             f"{self.file_path} idx {idx} Formula/Element malformed"
                         )
                         continue
-
-                    if len(ivec) > 0:
-                        ivec = np.sort(np.asarray(ivec, np.uint16))[::-1]
-                        ivector = np.zeros((MAX_NUMBER_OF_ATOMS_PER_ION,), np.uint16)
-                        ivector[0 : len(ivec)] = ivec
-                        if isinstance(ion_type_info_range[idx], dict):
-                            if tuple(ion_type_info_range[idx].keys()) == ("Max", "Min"):
+                else:
+                    logger.warning(
+                        f"{self.file_path} idx {idx} {ion_type_info_record[idx]} malformed"
+                    )
+                    continue
+                if len(ivec) > 0:
+                    ivec = np.sort(np.asarray(ivec, np.uint16))[::-1]
+                    ivector = np.zeros((MAX_NUMBER_OF_ATOMS_PER_ION,), np.uint16)
+                    ivector[0 : len(ivec)] = ivec
+                    if isinstance(ion_type_info_range[idx], dict):
+                        if tuple(ion_type_info_range[idx].keys()) == ("Max", "Min"):
+                            mq = [
+                                float(ion_type_info_range[idx]["Min"]),
+                                float(ion_type_info_range[idx]["Max"]),
+                            ]
+                            m_ion = NxIon(nuclide_hash=ivector, charge_state=0)
+                            m_ion.add_range(mq[0], mq[1])
+                            m_ion.apply_combinatorics()
+                            # m_ion.report()
+                            self.analysisset["molecular_ions"].append(m_ion)
+                        else:
+                            logger.warning(
+                                f"{self.file_path} idx {idx} ion_type_info_range dictionary malformed"
+                            )
+                            continue
+                    elif isinstance(ion_type_info_range[idx], list):
+                        if all(
+                            tuple(dictionary.keys()) == ("Max", "Min")
+                            for dictionary in ion_type_info_range[idx]
+                        ):
+                            for dictionary in ion_type_info_range[idx]:
                                 mq = [
-                                    float(ion_type_info_range[idx]["Min"]),
-                                    float(ion_type_info_range[idx]["Max"]),
+                                    float(dictionary["Min"]),
+                                    float(dictionary["Max"]),
                                 ]
                                 m_ion = NxIon(nuclide_hash=ivector, charge_state=0)
                                 m_ion.add_range(mq[0], mq[1])
                                 m_ion.apply_combinatorics()
-                                m_ion.report()
+                                # m_ion.report()
                                 self.analysisset["molecular_ions"].append(m_ion)
-                            else:
-                                logger.warning(
-                                    f"{self.file_path} idx {idx} ion_type_info_range dictionary malformed"
-                                )
-                                continue
-                        elif isinstance(ion_type_info_range[idx], list):
-                            if all(
-                                tuple(dictionary.keys()) == ("Max", "Min")
-                                for dictionary in ion_type_info_range[idx]
-                            ):
-                                for dictionary in ion_type_info_range[idx]:
-                                    mq = [
-                                        float(dictionary["Min"]),
-                                        float(dictionary["Max"]),
-                                    ]
-                                    m_ion = NxIon(nuclide_hash=ivector, charge_state=0)
-                                    m_ion.add_range(mq[0], mq[1])
-                                    m_ion.apply_combinatorics()
-                                    m_ion.report()
-                                    self.analysisset["molecular_ions"].append(m_ion)
-                            else:
-                                logger.warning(
-                                    f"{self.file_path} idx {idx} ion_type_info_range list malformed"
-                                )
-                                continue
                         else:
                             logger.warning(
-                                f"{self.file_path} idx {idx} ion_type_info_range neither dict nor list"
+                                f"{self.file_path} idx {idx} ion_type_info_range list malformed"
                             )
                             continue
                     else:
-                        logger.warning(f"{self.file_path} idx {idx} ivec empty")
+                        logger.warning(
+                            f"{self.file_path} idx {idx} ion_type_info_range neither dict nor list"
+                        )
                         continue
                 else:
-                    logger.warning(
-                        f"{self.file_path} idx {idx} ion_type_info_record entry malformed"
-                    )
+                    logger.warning(f"{self.file_path} idx {idx} ivec empty")
                     continue
