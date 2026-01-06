@@ -282,7 +282,9 @@ class ReadOpsFileFormat:
                 event_data[hit_sequence]["tof"] = [0.0] * number_of_events
                 for idx in range(0, number_of_events):
                     if time_map[idx] != 0:
-                        event_data[hit_sequence]["tof"][idx] = tof_values[time_map[idx] - 1]
+                        event_data[hit_sequence]["tof"][idx] = tof_values[
+                            time_map[idx] - 1
+                        ]
                 event_data[hit_sequence]["det_x"] = det_x.copy()
                 event_data[hit_sequence]["det_y"] = det_y.copy()
                 last_line = OPS_LINE_OTHER_OR_NONE
