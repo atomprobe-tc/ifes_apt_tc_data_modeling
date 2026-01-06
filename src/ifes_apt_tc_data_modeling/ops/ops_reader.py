@@ -34,6 +34,9 @@ from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
 from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 
+OPS_LINE_DASH = 0
+OPS_LINE_OTHER_OR_NONE = 1
+
 
 class ReadOpsFileFormat:
     """Read *.ops file format."""
@@ -48,6 +51,151 @@ class ReadOpsFileFormat:
         self.file_path = file_path
         self.verbose = verbose
 
-    def parse(self):
+    def parse(self, number_delay_lines: int = 2, strict_mode: bool = True):
         """Interpret ops file."""
-        pass
+        with open(self.file_path, encoding="utf8") as ops_fp:
+            txt = ops_fp.read()
+        txt = txt.replace("\r\n", "\n")  # windows to unix EOL conversion
+        txt = txt.replace(",", ".")  # use decimal dots instead of comma
+        txt_stripped = [line
+            for line in txt.split("\n")
+            if line.strip() != ""
+        ]
+        del txt
+
+        instrument: dict = {}
+        event_data_keywords = ["voltage", "pulse_number", "time_of_flight"]  # det_x", "det_y"]
+        event_data: dict[str, list] = {}  # collects all valid
+        event_cache: dict[str, list] = {}
+        voltage_keywords = ["voltage", "pulse_voltage", "beta"]
+        voltage_cache: dict[str, float] = {}
+        for keyword in event_data_keywords:
+            event_data[keyword] = []
+            event_cache[keyword] = []
+
+        # need to parse sequence of pairs of a dash line that ought to be followed
+        # by exactly one S line holding event data, ones such a pair is found it is
+        # stored in the event_cache and only if the pair is valid that cache content
+        # gets added to event_data otherwise the cache is cleared
+        # lines store metadata and raw data of different type, the first character
+        # identifies what content a line stores
+        last_line = OPS_LINE_OTHER_OR_NONE
+        hit_group = 0
+        for line in txt_stripped:
+            if line.startswith("*") or line == "":
+                continue
+
+            parts = [value.strip() for value in line.strip().split()]
+            if parts[0] == "C":
+                if len(parts) == 5:
+                    for idx, parameter in enumerate(["flight_path", "alpha", "beta", "t_zero"]):
+                        if parameter not in instrument:
+                            instrument[parameter] = parts[idx + 1]
+                            last_line = OPS_LINE_OTHER_OR_NONE
+                        else:
+                            logger.warning(f"OPS_READER_FORMAT_DUPLICATE_C {parameter}")
+                            return
+                else:
+                    logger.warning("OPS_READER_FORMAT_C")
+                    return
+            elif parts[0] == "I" or parts[0] == "IR":
+                if len(parts) == 2:
+                    if "detector_radius" not in instrument:
+                        try:
+                            instrument["detector_radius"] = float(parts[1])
+                            last_line = OPS_LINE_OTHER_OR_NONE
+                        except ValueError:
+                            logger.warning(f"OPS_READER_FORMAT_I value error {parts[1]}")
+                            return
+                    else:
+                        logger.warning("OPS_READER_FORMAT_DUPLICATE_I")
+                        return
+                else:
+                    logger.warning("OPS_READER_FORMAT_I")
+                    return
+            elif parts[0] == "P":
+                if len(parts) == 2:
+                    if "detector_channels" not in instrument:
+                        instrument["detector_channels"] = int(parts[1])
+                        last_line = OPS_LINE_OTHER_OR_NONE
+                    else:
+                        logger.warning("OPS_READER_FORMAT_DUPLICATE_P")
+                        return
+                else:
+                    logger.warning("OPS_READER_FORMAT_P")
+                    return
+            elif parts[0] == "T":
+                logger.warning("OPS_READER_FORMAT_T found but ignored")
+                break
+            elif parts[0] == "V":
+                if 3 <= len(parts) <= 4:
+                    event_cache["voltage"] = {}
+                    event_cache["voltage"]["voltage"] = int(parts[1])
+                    event_cache["voltage"]["pulse_voltage"] = int(parts[2])
+                    if len(parts) == 4:
+                        event_cache["voltage"]["beta"] = float(parts[3])
+                    else:
+                        if "beta" in instrument:
+                            event_cache["voltage"]["beta"] = float(instrument["beta"])
+                        else:
+                            logger.warning("OPS_READER_FORMAT_V_NO_BETA")
+                            return
+                    event_cache["voltage"]["next_hit_group_offset"] = len(event_data[])  # WHICH_ONE ??
+                    # ?? .append(voltage_data)
+                    last_line = OPS_LINE_OTHER_OR_NONE
+                else:
+                    logger.warning("OPS_READER_FORMAT_V")
+                    return
+            elif parts[0].startswith("-"):
+                if last_line == OPS_LINE_DASH:
+                    logger.warning("OPS_READER_FORMAT_DOUBLE_DASH")
+                    return
+                if len(parts) < 2:
+                    logger.warning("OPS_READER_FORMAT_DASH")
+                    return
+
+                pulse_delta = float(parts[0].replace("-", ""))
+                # TODO what to do with pulse_number
+                event_cache["pulse_number"].append(pulse_delta + 1)
+
+                for idx in range(1, len(parts)):
+                    event_cache["time_of_flight"].append(int(parts[idx]))
+
+                last_line = OPS_LINE_DASH
+            elif parts[0].startswith("S"):
+                if last_line != OPS_LINE_DASH:
+                    if strict_mode:
+                        logger.warning("OPS_READER_FORMAT_SLINE_PREFIX_ERR")
+                        return
+                    else:
+                        continue  # hope for the best with the next line
+
+                # TODO handle less positions than TOF, pop
+
+                number_of_events = int(parts[0].replace("S", ""))
+                # TODO handle number_of_events pop
+
+                if number_of_events != (len(parts) - 1) / (number_delay_lines + 1):
+                    logger.warning("OPS_READER_FORMAT_S_EVENT_COUNT")
+                    return
+
+                if number_of_events < len(event_cache["time_of_flight"]):
+                    if strict_mode:
+                        logger.warning("OPS_READER_FORMAT_S_EVENT_COUNT")
+                        return
+                    else:
+                        # TODO event_count pop
+                        last_line = OPS_LINE_OTHER_OR_NONE
+
+                # TODO
+            else:
+                logger.warning("OPS_READER_FORMAT line with an unknown format")
+                return
+
+        if last_line == OPS_LINE_DASH:
+            if strict_mode:
+                logger.warning("OPS_READER_FORMAT_TRAILING_DASH_ERR")
+            discard = event_data.pop()
+
+        return
+        # TODO clean data
