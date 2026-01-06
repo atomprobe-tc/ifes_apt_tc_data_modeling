@@ -46,7 +46,7 @@ class ReadImagoAnalysisFileFormat:
 
     def __init__(self, file_path: str, verbose: bool = False):
         self.supported = False
-        if not file_path.lower().endswith((".analysis", ".analysisset")):
+        if not file_path.lower().endswith(".analysis"):
             logger.warning(f"{file_path} is likely not an Imago XML analysis file")
             return
         self.supported = True
