@@ -59,19 +59,24 @@ class ReadOpsFileFormat:
             txt = ops_fp.read()
         txt = txt.replace("\r\n", "\n")  # windows to unix EOL conversion
         txt = txt.replace(",", ".")  # use decimal dots instead of comma
-        txt_stripped = [line for line in txt.split("\n") if line.strip() != ""]
+        lines = [line for line in txt.split("\n")]
         del txt
 
         instrument: dict[str, str] = {}
         event_data: dict[int, dict[str, list[float]]] = {}
         # first-level key is hit_group: int
         # second-level keys "tof", "det_x", "det_y", all: str
-        voltage_keywords = [
-            "standing_voltage",  # ureg.volt
-            "pulse_voltage",  # ureg.volt
-            "beta",  # coupling coefficient, ureg.dimensionless
-        ]
+        # voltage_keywords = [
+        #     "standing_voltage",  # ureg.volt
+        #     "pulse_voltage",  # ureg.volt
+        #     "beta",  # coupling coefficient, ureg.dimensionless
+        # ]
         voltage_data: dict[int, dict[str, str]] = {}
+        # first-level key is hit_group: int
+        # second-level key standing_voltage, pulse_voltage, beta, all: str
+        pulse_number: dict[int, int] = {}
+        # first-level key is hit_group: int
+        last_pulse_number: int = 0
 
         # need to parse sequence of pairs of a dash line that ought to be followed
         # by exactly one S line holding event data, ones such a pair is found it is
@@ -84,7 +89,10 @@ class ReadOpsFileFormat:
         voltage_sequence = 0
         hit_sequence = 0
         # hit_group_to_pulse_number_look_up: dict[int, int] = {}
-        for line in txt_stripped:
+        for jdx, line in enumerate(lines):
+            # if jdx % 1000 == 0:
+            print(f"Processing line {jdx} of {len(lines)}")
+
             if line.startswith("*") or line == "":
                 continue
 
@@ -105,42 +113,48 @@ class ReadOpsFileFormat:
                     ):
                         if parameter not in instrument:
                             instrument[parameter] = parts[idx + 1]
-                            last_line = OPS_LINE_OTHER_OR_NONE
                         else:
                             logger.warning(f"OPS_READER_FORMAT_DUPLICATE_C {parameter}")
                             return
                 else:
                     logger.warning("OPS_READER_FORMAT_C")
                     return
+                last_line = OPS_LINE_OTHER_OR_NONE
             elif parts[0] == "I" or parts[0] == "IR":
-                if parts[0] == "IR":
+                if parts[0] == "I":
+                    instrument["reflectron"] = "no"
+                else:
                     instrument["reflectron"] = "yes"
+
                 if len(parts) == 2:
                     if "detector_radius" not in instrument:
                         instrument["detector_radius"] = parts[1]
-                        last_line = OPS_LINE_OTHER_OR_NONE
                     else:
                         logger.warning("OPS_READER_FORMAT_DUPLICATE_I")
                         return
                 else:
                     logger.warning("OPS_READER_FORMAT_I")
                     return
+                last_line = OPS_LINE_OTHER_OR_NONE
             elif parts[0] == "P":
                 if len(parts) == 2:
                     if "detector_channels" not in instrument:
                         instrument["detector_channels"] = parts[1]
-                        last_line = OPS_LINE_OTHER_OR_NONE
                     else:
                         logger.warning("OPS_READER_FORMAT_DUPLICATE_P")
                         return
                 else:
                     logger.warning("OPS_READER_FORMAT_P")
                     return
+                last_line = OPS_LINE_OTHER_OR_NONE
             elif parts[0] == "T":
                 logger.warning("OPS_READER_FORMAT_T found but ignored")
-                break
+                last_line = OPS_LINE_OTHER_OR_NONE
             elif parts[0] == "V":
-                if 3 <= len(parts) <= 4:
+                if len(parts) != 3 and len(parts) != 4:
+                    logger.warning("OPS_READER_FORMAT_V")
+                    return
+                else:
                     voltage_sequence += 1
                     voltage_data[voltage_sequence] = {
                         "standing_voltage": parts[1],
@@ -158,9 +172,6 @@ class ReadOpsFileFormat:
                         f"{len(event_data.keys())}"
                     )
                     last_line = OPS_LINE_OTHER_OR_NONE
-                else:
-                    logger.warning("OPS_READER_FORMAT_V")
-                    return
             elif parts[0].startswith("-"):
                 if last_line == OPS_LINE_DASH:
                     logger.warning("OPS_READER_FORMAT_DOUBLE_DASH")
@@ -169,9 +180,16 @@ class ReadOpsFileFormat:
                     logger.warning("OPS_READER_FORMAT_DASH")
                     return
 
-                # TODO::parsing of pulse_delta does not get dereferenced
-                # pulse_delta = parts[0].replace("-", "")
                 hit_sequence += 1
+                # pulse_delta are parsed by libatomprobe but thereafter
+                try:
+                    pulse_delta = int(parts[0].replace("-", ""))
+                    last_pulse_number += pulse_delta + 1
+                    pulse_number[hit_sequence] = last_pulse_number
+                except ValueError:
+                    logger.warning(f"OPS_READER_FORMAT_DASH pulse_delta {parts[0]}")
+                    return
+
                 event_data[hit_sequence] = {"tof": [], "det_x": [], "det_y": []}
                 for idx in range(1, len(parts)):
                     try:
@@ -183,10 +201,11 @@ class ReadOpsFileFormat:
                 last_line = OPS_LINE_DASH
             elif parts[0].startswith("S"):
                 if last_line != OPS_LINE_DASH:
+                    logger.warning("OPS_READER_FORMAT_SLINE_PREFIX_ERR")
                     if strict_mode:
-                        logger.warning("OPS_READER_FORMAT_SLINE_PREFIX_ERR")
                         return
                     else:
+                        last_line = OPS_LINE_OTHER_OR_NONE
                         continue  # hope for the best with the next line
 
                 # TODO handle less positions than TOF, pop
@@ -222,11 +241,11 @@ class ReadOpsFileFormat:
                         if hit_sequence in event_data:
                             del event_data[hit_sequence]
                         last_line = OPS_LINE_OTHER_OR_NONE
+                        continue
 
                 tof_values: list[float] = [0.0] * number_of_events
                 det_x: list[float] = []
                 det_y: list[float] = []
-                # det_y = ["n/a"] * number_of_events
                 for idx in range(0, len(event_data[hit_sequence]["tof"])):
                     tof_values[idx] = event_data[hit_sequence]["tof"][idx]
 
@@ -239,17 +258,17 @@ class ReadOpsFileFormat:
                     try:
                         det_x.append(float(parts[idx]))
                     except ValueError:
+                        logger.warning("OPS_READER_FORMAT_S_DET_X_VALUE_ERROR")
                         if strict_mode:
-                            logger.warning("OPS_READER_FORMAT_S_DET_X_VALUE_ERROR")
                             return
                         else:
                             healthy = False
-                            break
+                            break  # no need to continue on that loop go to healthy check
                     try:
                         det_y.append(float(parts[idx + 1]))
                     except ValueError:
+                        logger.warning("OPS_READER_FORMAT_S_DET_Y_VALUE_ERROR")
                         if strict_mode:
-                            logger.warning("OPS_READER_FORMAT_S_DET_Y_VALUE_ERROR")
                             return
                         else:
                             healthy = False
@@ -257,15 +276,16 @@ class ReadOpsFileFormat:
                 if not healthy:
                     if hit_sequence in event_data:
                         del event_data[hit_sequence]
-                        last_line = OPS_LINE_OTHER_OR_NONE
+                    last_line = OPS_LINE_OTHER_OR_NONE
+                    continue
 
                 time_map: list[int] = []
                 for idx in range(timing_index, len(parts)):
                     try:
                         time_map.append(int(parts[idx]))
                     except ValueError:
+                        logger.warning(f"OPS_READER_FORMAT_S_MAP_ENTRY {line}")
                         if strict_mode:
-                            logger.warning(f"OPS_READER_FORMAT_S_MAP_ENTRY {line}")
                             return
                         else:
                             healthy = False
@@ -273,18 +293,24 @@ class ReadOpsFileFormat:
                 if not healthy:
                     if hit_sequence in event_data:
                         del event_data[hit_sequence]
-                        last_line = OPS_LINE_OTHER_OR_NONE
+                    last_line = OPS_LINE_OTHER_OR_NONE
+                    continue
 
                 if len(time_map) != number_of_events:
-                    logger.warning(f"OPS_READER_FORMAT_S_ASSERT")
+                    logger.warning(
+                        f"OPS_READER_FORMAT_S_TIME_MAP_NUMBER_OF_EVENTS_ASSERT"
+                    )
                     return
 
                 event_data[hit_sequence]["tof"] = [0.0] * number_of_events
                 for idx in range(0, number_of_events):
-                    if time_map[idx] != 0:
+                    if time_map[idx] > 0:
+                        # > 0 because for Python using int, while in C++ was unsigned int
+                        # also > 0 required cuz index time_map[idx] - 1 needs to be >= 0
                         event_data[hit_sequence]["tof"][idx] = tof_values[
                             time_map[idx] - 1
                         ]
+                    # no else statement as values were already set to zero
                 event_data[hit_sequence]["det_x"] = det_x.copy()
                 event_data[hit_sequence]["det_y"] = det_y.copy()
                 last_line = OPS_LINE_OTHER_OR_NONE
@@ -298,8 +324,6 @@ class ReadOpsFileFormat:
                 return
             if hit_sequence in event_data:
                 del event_data[hit_sequence]
-
-        return
         # TODO clean data
 
 

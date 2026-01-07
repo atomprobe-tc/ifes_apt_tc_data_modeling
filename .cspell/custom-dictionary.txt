@@ -54,6 +54,7 @@ laserx
 lasery
 laserz
 libatom
+libatomprobe
 loadtxt
 microscopists
 mion
