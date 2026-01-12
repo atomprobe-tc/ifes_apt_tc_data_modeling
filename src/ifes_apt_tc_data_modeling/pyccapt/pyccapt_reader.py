@@ -163,6 +163,8 @@ class ReadPyccaptCalibrationFileFormat:
 
     def get_named_quantities(self, term: str):
         """Get named quantities from dataframe."""
+        # see https://pyccapt.readthedocs.io/en/latest/Calibration_DATA_STRUCTURE.html
+        # for the semantics, typically float64 are returned by pyccapt !!
         if term in self.df.keys():
             return self.df[term]
         return None
@@ -170,17 +172,92 @@ class ReadPyccaptCalibrationFileFormat:
     def get_reconstructed_positions(self):
         """Read xyz columns."""
         values = np.zeros((self.number_of_events, 3), np.float32)
-        dim = 0
-        for quant in ["x (nm)", "y (nm)", "z (nm)"]:
-            values[:, dim] = np.asarray(self.get_named_quantities(quant), np.float32)
-            dim += 1
+        for dim, prefix in enumerate(["x", "y", "z"]):
+            found = False
+            for typo in [
+                f"{prefix.capitalize()} (nm)",
+                f"{prefix.capitalize()}(nm)",
+                f"{prefix} (nm)",
+                f"{prefix}(nm)",
+                f"{prefix.capitalize()} (cm)",
+                f"{prefix.capitalize()}(cm)",
+                f"{prefix} (cm)",
+                f"{prefix}(cm)",
+            ]:  # several typos across versions, pick the first found
+                if typo in self.df:
+                    values[:, dim] = np.asarray(
+                        self.get_named_quantities(typo), np.float32
+                    )
+                    found = True
+                    break
+            if not found:
+                raise ValueError(
+                    f"{self.get_reconstructed_positions.__name__} dim {prefix} not found"
+                )
         return ureg.Quantity(values, ureg.nanometer)
 
     def get_mass_to_charge_state_ratio(self):
         """Read (calibrated) mass-to-charge-state-ratio column."""
         values = np.zeros((self.number_of_events,), np.float32)
-        values[:] = np.asarray(self.get_named_quantities("mc_c (Da)"), np.float32)
-        return ureg.Quantity(values, ureg.dalton)
+        for typo in ["mc (Da)", "mc(Da)"]:
+            if typo in self.df:
+                values[:] = np.asarray(self.get_named_quantities(typo), np.float32)
+                return ureg.Quantity(values, ureg.dalton)
+        raise ValueError(f"{self.get_mass_to_charge_state_ratio.__name__} not found")
+
+    def get_standing_voltage(self):
+        """Read high voltage mapping it to the standing voltage."""
+        values = np.zeros((self.number_of_events,), np.float32)
+        for typo in ["high-voltage (V)", "high_voltage (V)"]:
+            if typo in self.df:
+                values[:] = np.asarray(self.get_named_quantities(typo), np.float32)
+                return ureg.Quantity(values, ureg.volt)
+        raise ValueError(f"{self.get_standing_voltage.__name__} not found")
+
+    def get_pulse_voltage(self):
+        """Read pulse mapping it to pulse voltage."""
+        # !! the concept can either be a voltage or a laser energy !!
+        # in the past FAU-Erlangen-Nürnberg OXCART instrument had no laser
+        # TODO how to know whether voltage or laser run?
+        values = np.zeros((self.number_of_events,), np.float32)
+        values[:] = np.asarray(self.get_named_quantities("pulse"), np.float32)
+        return ureg.Quantity(values, ureg.volt)
+
+    def get_raw_time_of_flight(self):
+        """Read uncalibrated time of flight."""
+        values = np.zeros((self.number_of_events,), np.float32)
+        for typo in ["t(ns)", "t (ns)"]:
+            if typo in self.df:
+                values[:] = np.asarray(self.get_named_quantities(typo), np.float32)
+                return ureg.Quantity(values, ureg.nanosecond)
+        raise ValueError(f"{self.get_raw_time_of_flight.__name__} not found")
+
+    def get_calibrated_time_of_flight(self):
+        """Read bowl and voltage calibrated time of flight."""
+        values = np.zeros((self.number_of_events,), np.float32)
+        for typo in ["t_c(ns)", "t_c (ns)"]:
+            if typo in self.df:
+                values[:] = np.asarray(self.get_named_quantities(typo), np.float32)
+                return ureg.Quantity(values, ureg.nanosecond)
+        raise ValueError(f"{self.get_calibrated_time_of_flight.__name__} not found")
+
+    def get_detector_hit_positions(self):
+        """Read (calibrated) hit positions on the detector."""
+        values = np.zeros((self.number_of_events, 2), np.float32)
+        for dim, prefix in enumerate(["x", "y"]):
+            found = False
+            for typo in [f"{prefix}_det (cm)", f"{prefix}_det(cm)"]:
+                if typo in self.df:
+                    values[:, dim] = np.asarray(
+                        self.get_named_quantities(typo), np.float32
+                    )
+                    found = True
+                    break
+            if not found:
+                raise ValueError(
+                    f"{self.get_detector_hit_positions.__name__} dim {prefix} not found"
+                )
+        return ureg.Quantity(values, ureg.centimeter).to(ureg.millimeter)
 
 
 class ReadPyccaptRangingFileFormat:
