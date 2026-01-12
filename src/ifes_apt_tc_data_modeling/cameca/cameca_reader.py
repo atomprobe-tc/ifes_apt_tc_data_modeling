@@ -112,12 +112,18 @@ class ReadCamecaHfiveFileFormat:
         """Read xyz positions."""
         values = np.zeros((self.number_of_events, 3), np.float32)
         with h5py.File(self.file_path, "r") as h5r:
-            values[:, :] = np.asarray(h5r["xyz"][...], np.float32)
-        return ureg.Quantity(values, ureg.nanometer)
+            if "xyz" in h5r:
+                values[:, :] = np.asarray(h5r["xyz"][...], np.float32)
+                return ureg.Quantity(values, ureg.nanometer)
+            else:
+                logger.warning("Unable to get_reconstructed positions")
 
     def get_mass_to_charge_state_ratio(self):
         """Read (calibrated?) mass-to-charge-state-ratio."""
         values = np.zeros((self.number_of_events,), np.float32)
         with h5py.File(self.file_path, "r") as h5r:
-            values[:] = np.asarray(h5r["mass"][...], np.float32)
-        return ureg.Quantity(values, ureg.dalton)
+            if "mass" in h5r:
+                values[:] = np.asarray(h5r["mass"][...], np.float32)
+                return ureg.Quantity(values, ureg.dalton)
+            else:
+                logger.warning("Unable to get_mass_to_charge_state_ratio")

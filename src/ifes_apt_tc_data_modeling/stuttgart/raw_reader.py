@@ -67,56 +67,87 @@ class ReadStuttgartApytRawFileFormat:
     def get_base_voltage(self):
         """Read (uncorrected) base voltage column."""
         values = np.zeros((self.number_of_events,), np.float32)
-        values[:] = get_memory_mapped_data(
+        data = get_memory_mapped_data(
             self.file_path, "<f4", 0 * 4, 8 * 4, self.number_of_events
         )
-        return ureg.Quantity(values, ureg.volt)
+        if data is not None:
+            np.copyto(values[:], data, casting="unsafe")
+            return ureg.Quantity(values, ureg.volt)
+        else:
+            logger.warning("Unable to get_base_voltage")
 
     def get_pulse_voltage(self):
         """Read (uncorrected) pulse voltage column."""
         values = np.zeros((self.number_of_events,), np.float32)
-        values[:] = get_memory_mapped_data(
+        data = get_memory_mapped_data(
             self.file_path, "<f4", 1 * 4, 8 * 4, self.number_of_events
         )
-        return ureg.Quantity(values, ureg.volt)
+        if data is not None:
+            np.copyto(values[:], data, casting="unsafe")
+            return ureg.Quantity(values, ureg.volt)
+        else:
+            logger.warning("Unable to get_pulse_voltage")
 
     def get_reflectron_voltage(self):
         """Read (uncorrected) reflectron voltage column."""
         values = np.zeros((self.number_of_events,), np.float32)
-        values[:] = get_memory_mapped_data(
+        data = get_memory_mapped_data(
             self.file_path, "<f4", 2 * 4, 8 * 4, self.number_of_events
         )
-        return ureg.Quantity(values, ureg.volt)
+        if data is not None:
+            np.copyto(values[:], data, casting="unsafe")
+            return ureg.Quantity(values, ureg.volt)
+        else:
+            logger.warning("Unable to get_reflectron_voltage")
 
     def get_raw_detector_position(self):
         """Read (uncorrected) detector position columns."""
         values = np.zeros((self.number_of_events, 2), np.float32)
+        all_values = True
         for dim in [0, 1]:  # x, y
-            values[:, dim] = get_memory_mapped_data(
+            data = get_memory_mapped_data(
                 self.file_path, "<f4", (3 + dim) * 4, 8 * 4, self.number_of_events
             )
-        return ureg.Quantity(values, ureg.millimeter)
+            if data is not None:
+                np.copyto(values[:, dim], data, casting="unsafe")
+            else:
+                all_values = False
+                logger.warning(f"Unable to get_raw_detector_position dim {dim}")
+        if all_values:
+            return ureg.Quantity(values, ureg.millimeter)
 
     def get_raw_time_of_flight(self):
         """Read (uncorrected) time-of-flight column."""
         values = np.zeros((self.number_of_events,), np.float32)
-        values[:] = get_memory_mapped_data(
+        data = get_memory_mapped_data(
             self.file_path, "<f4", 5 * 4, 8 * 4, self.number_of_events
         )
-        return ureg.Quantity(values, ureg.nanosecond)
+        if data is not None:
+            np.copyto(values[:], data, casting="unsafe")
+            return ureg.Quantity(values, ureg.nanosecond)
+        else:
+            logger.warning("Unable to get_raw_time_of_flight")
 
     def get_epoch_evaporation_event(self):
         """Read epoch of evaporation event column."""
         values = np.zeros((self.number_of_events,), np.int32)
-        values[:] = get_memory_mapped_data(
+        data = get_memory_mapped_data(
             self.file_path, "<i4", 6 * 4, 8 * 4, self.number_of_events
         )
-        return ureg.Quantity(values)
+        if data is not None:
+            np.copyto(values[:], data, casting="unsafe")
+            return ureg.Quantity(values)
+        else:
+            logger.warning("Unable to get_epoch_evaporation_event")
 
     def get_pulse_number_evaporation_event(self):
         """Read epoch of evaporation event column."""
         values = np.zeros((self.number_of_events,), np.uint32)
-        values[:] = get_memory_mapped_data(
+        data = get_memory_mapped_data(
             self.file_path, "<u4", 7 * 4, 8 * 4, self.number_of_events
         )
-        return ureg.Quantity(values)
+        if data is not None:
+            np.copyto(values[:], data, casting="unsafe")
+            return ureg.Quantity(values)
+        else:
+            logger.warning("Unable to get_pulse_number_evaporation_event")

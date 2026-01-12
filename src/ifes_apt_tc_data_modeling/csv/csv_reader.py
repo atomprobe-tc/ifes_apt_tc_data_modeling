@@ -68,11 +68,10 @@ class ReadCsvFileFormat:
 
     def get_mass_to_charge_state_ratio(self):
         """Read mass-to-charge-state-ratio column."""
-
         values = np.zeros((self.number_of_events,), np.float32)
         # again such a strong assumption!
         # why reported in Da?
-        # why in the third column
+        # why in the third column?
         # why at all a mass-to-charge-state-ratio value array?
         values[:] = pd.read_csv(self.file_path).iloc[:, 3]
         return ureg.Quantity(values, ureg.dalton)

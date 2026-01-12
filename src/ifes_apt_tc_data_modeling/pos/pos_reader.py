@@ -58,16 +58,27 @@ class ReadPosFileFormat:
     def get_reconstructed_positions(self):
         """Read xyz columns."""
         values = np.zeros((self.number_of_events, 3), np.float32)
+        all_values = True
         for dim in [0, 1, 2]:  # x, y, z
-            values[:, dim] = get_memory_mapped_data(
+            data = get_memory_mapped_data(
                 self.file_path, ">f4", dim * 4, 4 * 4, self.number_of_events
             )
-        return ureg.Quantity(values, ureg.nanometer)
+            if data is not None:
+                np.copyto(values[:, dim], data, casting="unsafe")
+            else:
+                all_values = False
+                logger.warning(f"Unable to get_reconstructed_positions dim {dim}")
+        if all_values:
+            return ureg.Quantity(values, ureg.nanometer)
 
     def get_mass_to_charge_state_ratio(self):
         """Read mass-to-charge-state-ratio column."""
         values = np.zeros((self.number_of_events,), np.float32)
-        values[:] = get_memory_mapped_data(
+        data = get_memory_mapped_data(
             self.file_path, ">f4", 3 * 4, 4 * 4, self.number_of_events
         )
-        return ureg.Quantity(values, ureg.dalton)
+        if data is not None:
+            np.copyto(values[:], data, casting="unsafe")
+            return ureg.Quantity(values, ureg.dalton)
+        else:
+            logger.warning("Unable to get_mass_to_charge_state_ratio")

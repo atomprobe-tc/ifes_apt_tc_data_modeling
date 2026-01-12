@@ -338,7 +338,7 @@ class ReadOpsFileFormat:
 
                 if len(time_map) != number_of_events:
                     logger.warning(
-                        f"OPS_READER_FORMAT_S_TIME_MAP_NUMBER_OF_EVENTS_ASSERT"
+                        "OPS_READER_FORMAT_S_TIME_MAP_NUMBER_OF_EVENTS_ASSERT"
                     )
                     return
 
@@ -390,7 +390,7 @@ class ReadOpsFileFormat:
             )
 
         # build flattened event data into pint quantities
-        self.event_data_flattened: dict[str, ureg.Quantity] = {}
+        self.events: dict[str, ureg.Quantity] = {}
         for parameter_name, unit in parameter_names:
             numpy_array = np.zeros((event_data_stats[parameter_name],), np.float32)
             idx = 0
@@ -401,14 +401,14 @@ class ReadOpsFileFormat:
                     idx += len(event_dict[parameter_name])
             print(f"numpy_array.dtype {numpy_array.dtype}")
             print(f"np.shape(numpy_array) {np.shape(numpy_array)}")
-            self.event_data_flattened[parameter_name] = ureg.Quantity(numpy_array, unit)
+            self.events[parameter_name] = ureg.Quantity(numpy_array, unit)
             del numpy_array
             print(
-                f"event_data_flattened {parameter_name}, {self.event_data_flattened[parameter_name]}"
+                f"event_data_flattened {parameter_name}, {self.events[parameter_name]}"
             )
 
         # type convert and build flattened voltage data into pint quantities
-        self.voltage_data_flattened: dict[str, ureg.Quantity] = {}
+        self.voltages: dict[str, ureg.Quantity] = {}
         parameter_names = [
             ("standing_voltage", ureg.volt),
             ("pulse_voltage", ureg.volt),
@@ -434,17 +434,15 @@ class ReadOpsFileFormat:
                         numpy_array[idx] = int(voltage_dict[parameter_name])
                     idx += 1
                 except ValueError:
-                    logger.warning(f"ValueError during voltage data conversion")
+                    logger.warning("ValueError during voltage data conversion")
                     return
 
             print(f"numpy_array.dtype {numpy_array.dtype}")
             print(f"np.shape(numpy_array) {np.shape(numpy_array)}")
-            self.voltage_data_flattened[parameter_name] = ureg.Quantity(
-                numpy_array, unit
-            )
+            self.voltages[parameter_name] = ureg.Quantity(numpy_array, unit)
             del numpy_array
             print(
-                f"voltage_data_flattened {parameter_name}, {self.voltage_data_flattened[parameter_name]}"
+                f"voltage_data_flattened {parameter_name}, {self.voltages[parameter_name]}"
             )
 
         for parameter_name, unit in [

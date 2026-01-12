@@ -19,11 +19,9 @@
 """AMETEK APT(6) data exchange file reader used by atom probe microscopists."""
 
 import os
-from typing import Any
 
 import numpy as np
 import pandas as pd
-from numpy.typing import NDArray
 
 from ifes_apt_tc_data_modeling.apt.apt6_headers import AptFileHeaderMetadata
 from ifes_apt_tc_data_modeling.apt.apt6_sections import AptFileSectionMetadata
@@ -204,17 +202,20 @@ class ReadAptFileFormat:
                 self.available_sections[keyword].meta["i_data_type_size"] / 8
             )
             count = self.available_sections[keyword].get_ametek_count()
-            data: NDArray[Any] = get_memory_mapped_data(
+            data = get_memory_mapped_data(
                 self.file_path, dtype, offset, stride, count
-            )
-            shape = self.available_sections[keyword].get_ametek_shape()
-            unit = self.available_sections[keyword].meta["wc_data_unit"]
-            return ureg.Quantity(
-                np.reshape(data, shape=(int(shape[0]), int(shape[1]))),
-                f"{np_uint16_to_string(unit)}",
-            )
+            )  # type ignore
+            if data is not None:
+                shape = self.available_sections[keyword].get_ametek_shape()
+                unit = self.available_sections[keyword].meta["wc_data_unit"]
+                return ureg.Quantity(
+                    np.reshape(data, shape=(int(shape[0]), int(shape[1]))),
+                    f"{np_uint16_to_string(unit)}",
+                )
+            else:
+                logger.warning(f"Unable to get_named_quantity {keyword}")
         else:
-            logger.error(f"Unable to get_named_quantity {keyword}")
+            logger.warning(f"Unable to get_named_quantity {keyword}")
 
     def get_mass_to_charge_state_ratio(self):
         """Read mass-to-charge."""
