@@ -1,4 +1,4 @@
-site_name: Documentation
+site_name: Documentation for ifes_apt_tc_data_modeling
 site_description: |
   The documentation for the ifes_apt_tc_data_modeling Python library.
 site_author: The IFES APT TC, the atom probe community, and the NOMAD Authors
@@ -19,9 +19,6 @@ nav:
 
 plugins:
   - search
-  - markdown-exec
-  - macros:
-      module_name: src/ifes_apt_tc_data_modeling/mkdocs
 
 theme:
   name: material
@@ -43,8 +40,6 @@ theme:
     repo: fontawesome/brands/github
 
 markdown_extensions:
-  - markdown_include.include:
-      base_path: docs
   - attr_list
   - md_in_html
   - admonition

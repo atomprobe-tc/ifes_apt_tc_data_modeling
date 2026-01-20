@@ -1,10 +1,10 @@
 cff-version: 1.2.0
 title: 'ifes_apt_tc_data_modeling: A Python Library for reading file formats and working with atom probe data'
+version: 0.3.2
 message:
   If you use this software, please cite it using the
   metadata from this file.
 type: software
-version: 0.3.2
 authors:
   - given-names: Markus
     family-names: Kühbach
@@ -12,13 +12,21 @@ authors:
 # doi: 10.5281/zenodo.13862041
 repository-code: 'https://github.com/atomprobe-tc/ifes_apt_tc_data_modeling'
 # url: https://doi.org/10.5281/zenodo.13862042
+keywords:
+  - Atom probe tomography
+  - Field-ion microscopy
+  - File format
+  - Research data management
 abstract:
-
   A library of readers for file formats from the research field of
   atom probe tomography and related field-ion microscopy.
- 
-  This work was supported by the FAIRmat project (project ID 460197019), funded by the Deutsche
-  Forschungsgemeinschaft (DFG, German Research Foundation)
+
+  The work is funded by the Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) - 460197019 (FAIRmat)
   (https://gepris.dfg.de/gepris/projekt/460197019?language=en).
 
 license: Apache-2.0
+funding:
+  - name: Deutsche Forschungsgemeinschaft
+    award-number: 460197019
+    title: FAIRmat - FAIR Data Infrastructure for Condensed-Matter Physics and the Chemical Physics of Solids
+    award-uri: https://gepris.dfg.de/gepris/projekt/460197019?language=en
