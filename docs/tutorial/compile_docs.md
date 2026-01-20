@@ -4,6 +4,5 @@ Provided `ifes_apt_tc_data_modeling` library was installed with the optional dep
 the documentation can be compiled locally using `mkdocs`
 
 ```bash
-mkdocs build
 mkdocs serve
 ```

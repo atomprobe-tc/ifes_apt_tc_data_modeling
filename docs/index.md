@@ -53,8 +53,8 @@ For questions or suggestions:
 
 - Open an issue on the repository via [GitHub](https://github.com/atomprobe-tc/ifes_apt_tc_data_modeling/issues).
 
-[The work is supported by the International Field Emission Society (IFES) Atom Probe Tomography Technical Committee (APT TC)](https://fieldemission.org/article.php?id=technical_committee)
+[The work is supported by the International Field Emission Society (IFES) Atom Probe Tomography Technical Committee (APT TC).](https://fieldemission.org/article.php?id=technical_committee)
 
 [The work is funded by the Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) - 460197019 (FAIRmat).](https://gepris.dfg.de/gepris/projekt/460197019?language=en)
 
-[The library is used for the pynxtools-apm to standardized atom probe data using NeXus](https://www.github.com/FAIRmat-NFDI/pynxtools-apm.git)
+[The library is used for the pynxtools-apm to standardized atom probe data using NeXus.](https://www.github.com/FAIRmat-NFDI/pynxtools-apm.git)
