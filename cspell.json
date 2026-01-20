@@ -9,7 +9,8 @@
         "venv",
         "__pycache__",
         "dist",
-        "build"
+        "build",
+	"_version.py"
     ],
   "dictionaryDefinitions": [
     {
