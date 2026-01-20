@@ -32,7 +32,6 @@ from ifes_apt_tc_data_modeling.utils.utils import (
     nuclide_hash_to_dict_keyword,
     nuclide_hash_to_human_readable_name,
     nuclide_hash_to_nuclide_list,
-    symbol_lst_to_matrix_of_nuclide_vector,
 )
 
 

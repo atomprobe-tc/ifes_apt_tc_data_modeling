@@ -37,6 +37,7 @@ dev = [
     "mypy",
     "ruff>=0.14.0",
     "types-xmltodict",
+    "types-pyyaml",
     "pandas-stubs",
     "pytest",
     "pre-commit"
