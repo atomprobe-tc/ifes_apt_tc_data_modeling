@@ -59,6 +59,9 @@ ipynb = [
 [project.urls]
 "Homepage" = "https://github.com/atomprobe-tc/ifes_apt_tc_data_modeling"
 
+[tool.setuptools.package-data]
+ifes_apt_tc_data_modeling = ["_version.py"]
+
 [tool.setuptools.packages.find]
 where = [
     "src",

@@ -65,19 +65,30 @@ class ReadEposFileFormat:
     def get_reconstructed_positions(self):
         """Read xyz columns."""
         values = np.zeros((self.number_of_events, 3), np.float32)
+        all_values = True
         for dim in [0, 1, 2]:  # x, y, z
-            values[:, dim] = get_memory_mapped_data(
+            data = get_memory_mapped_data(
                 self.file_path, ">f4", dim * 4, 11 * 4, self.number_of_events
             )
-        return ureg.Quantity(values, ureg.nanometer)
+            if data is not None:
+                np.copyto(values[:, dim], data, casting="unsafe")
+            else:
+                all_values = False
+                logger.warning("Unable to get_reconstructed positions dim {dim}")
+        if all_values:
+            return ureg.Quantity(values, ureg.nanometer)
 
     def get_mass_to_charge_state_ratio(self):
         """Read mass-to-charge-state-ratio column."""
-        values = np.asarray((self.number_of_events,), np.float32)
-        values[:] = get_memory_mapped_data(
+        values = np.zeros((self.number_of_events,), np.float32)
+        data = get_memory_mapped_data(
             self.file_path, ">f4", 3 * 4, 11 * 4, self.number_of_events
         )
-        return ureg.Quantity(values, ureg.dalton)
+        if data is not None:
+            np.copyto(values[:], data, casting="unsafe")
+            return ureg.Quantity(values, ureg.dalton)
+        else:
+            logger.warning("Unable to get_mass_to_charge_state_ratio")
 
     def get_raw_time_of_flight(self):
         """Read raw (uncorrected) time-of-flight."""
@@ -86,10 +97,14 @@ class ReadEposFileFormat:
         # i.e. this is an uncorrected time-of-flight
         # for which effects incorrect?
         # Only the proprietary IVAS/APSuite source code knows for sure
-        values[:] = get_memory_mapped_data(
+        data = get_memory_mapped_data(
             self.file_path, ">f4", 4 * 4, 11 * 4, self.number_of_events
         )
-        return ureg.Quantity(values, ureg.nanosecond)
+        if data is not None:
+            np.copyto(values[:], data, casting="unsafe")
+            return ureg.Quantity(values, ureg.nanosecond)
+        else:
+            logger.warning("Unable to get_raw_time_of_flight")
 
     def get_standing_voltage(self):
         """Read standing voltage."""
@@ -97,10 +112,14 @@ class ReadEposFileFormat:
         # standing voltage on the specimen
         # according to DOI: 10.1007/978-1-4614-8721-0 also-known as DC voltage
         values = np.zeros((self.number_of_events,), np.float32)
-        values[:] = get_memory_mapped_data(
+        data = get_memory_mapped_data(
             self.file_path, ">f4", 5 * 4, 11 * 4, self.number_of_events
         )
-        return ureg.Quantity(values, ureg.kilovolt)
+        if data is not None:
+            np.copyto(values[:], data, casting="unsafe")
+            return ureg.Quantity(values, ureg.kilovolt).to(ureg.volt)
+        else:
+            logger.warning("Unable to get_standing_voltage")
 
     def get_pulse_voltage(self):
         """Read pulse voltage."""
@@ -108,19 +127,30 @@ class ReadEposFileFormat:
         # additional voltage to trigger field evaporation in case
         # of high-voltage pulsing, 0 for laser pulsing
         values = np.zeros((self.number_of_events,), np.float32)
-        values[:] = get_memory_mapped_data(
+        data = get_memory_mapped_data(
             self.file_path, ">f4", 6 * 4, 11 * 4, self.number_of_events
         )
-        return ureg.Quantity(values, ureg.kilovolt)
+        if data is not None:
+            np.copyto(values[:], data, casting="unsafe")
+            return ureg.Quantity(values, ureg.kilovolt).to(ureg.volt)
+        else:
+            logger.warning("Unable to get_pulse_voltage")
 
     def get_hit_positions(self):
         """Read ion impact positions on detector."""
         values = np.zeros((self.number_of_events, 2), np.float32)
+        all_values = True
         for dim in [0, 1]:  # x, y
-            values[:, dim] = get_memory_mapped_data(
+            data = get_memory_mapped_data(
                 self.file_path, ">f4", (7 + dim) * 4, 11 * 4, self.number_of_events
             )
-        return ureg.Quantity(values, ureg.millimeter)
+            if data is not None:
+                np.copyto(values[:, dim], data, casting="unsafe")
+            else:
+                all_values = False
+                logger.warning("Unable to get_hit_positions dim {dim}")
+        if all_values:
+            return ureg.Quantity(values, ureg.millimeter)
 
     def get_number_of_pulses(self):
         """Read number of pulses."""
@@ -129,17 +159,25 @@ class ReadEposFileFormat:
         # 0 after the first ion per pulse
         # also known as $\Delta Pulse$
         values = np.zeros((self.number_of_events,), np.uint32)
-        values[:] = get_memory_mapped_data(
+        data = get_memory_mapped_data(
             self.file_path, ">u4", 9 * 4, 11 * 4, self.number_of_events
         )
-        return ureg.Quantity(values)
+        if data is not None:
+            np.copyto(values[:], data, casting="unsafe")
+            return ureg.Quantity(values)
+        else:
+            logger.warning("Unable to get_number_of_pulses")
 
     def get_ions_per_pulse(self):
         """Read ions per pulse."""
         # according to DOI: 10.1007/978-1-4899-7430-3
         # ions per pulse, 0 after the first ion
         values = np.zeros((self.number_of_events,), np.uint32)
-        values[:] = get_memory_mapped_data(
+        data = get_memory_mapped_data(
             self.file_path, ">u4", 10 * 4, 11 * 4, self.number_of_events
         )
-        return ureg.Quantity(values)
+        if data is not None:
+            np.copyto(values[:], data, casting="unsafe")
+            return ureg.Quantity(values)
+        else:
+            logger.warning("Unable to get_ions_per_pulse")

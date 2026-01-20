@@ -681,10 +681,17 @@ EXPECTED_SECTIONS["Detector Coordinates"].set_accepted_units(["mm"])
 
 
 # deprecated sections or sections with detected inconsistencies across versions
-# Vref vs Voltage branch issue
+# Vref vs Voltage branch issue, reflectron voltage
 EXPECTED_SECTIONS["Vref"] = EXPECTED_SECTIONS["Voltage"]
 EXPECTED_SECTIONS["Vref"].set_wc_data_unit("V")
 EXPECTED_SECTIONS["Vref"].set_accepted_units(["V"])
+
+# aperture aka pulse voltage
+# https://github.com/CamecaAPT/cameca-customanalysis-interface/wiki/IonData:-Sections
+EXPECTED_SECTIONS["Pulse Voltage"] = EXPECTED_SECTIONS["Vap"]
+EXPECTED_SECTIONS["Pulse Voltage"].set_wc_data_unit("V")
+EXPECTED_SECTIONS["Pulse Voltage"].set_accepted_units(["V"])
+
 
 # pulseDelta vs Delta Pulse issue
 # at least in one case a section Delta Pulse appeared

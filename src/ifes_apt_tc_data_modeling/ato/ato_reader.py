@@ -34,7 +34,7 @@ class ReadAtoFileFormat:
         self.supported = False
         if not file_path.lower().endswith(".ato"):
             logger.warning(
-                f"{file_path} is likely not an  ATO file as those from atom probe"
+                f"{file_path} is likely not an ATO file as those from atom probe"
             )
             return
         self.supported = True
@@ -79,67 +79,77 @@ class ReadAtoFileFormat:
         # for little and big endian
         if header[1] in [3, 4, 5]:
             return header[1]
-        return None
 
     def get_reconstructed_positions(self):
         """Read xyz columns."""
 
         values = np.zeros((self.number_of_events, 3), np.float32)
-        dtype_v3 = "<f4"  # we assume little-endian here, yes it is in contradiction
+        # with "<f4" we assume little-endian here, yes it is in contradiction
         # to the statement made in https://link.springer.com/content/pdf/bbm:978-1-4614-8721-0/1?pdf=chapter%20toc
         # analyzed examples are all consistent with all reported evidence that ATO v3 files
         # have a two times four byte header followed by records with 14 * 4 B each
         if self.version == 3:
+            # wpx -> x, wpy -> y, fpz -> z
+            all_values = True
             for dim in [0, 1, 2]:
-                values[:, dim] = np.float32(
-                    get_memory_mapped_data(
-                        self.file_path,
-                        dtype_v3,
-                        2 * 4 + dim * 4,
-                        14 * 4,
-                        self.number_of_events,
-                    )
-                    * 0.1
+                data = get_memory_mapped_data(
+                    self.file_path,
+                    "<f4",
+                    2 * 4 + dim * 4,
+                    14 * 4,
+                    self.number_of_events,
                 )
-                # wpx -> x, wpy -> y, fpz -> z
+                if data is not None:
+                    np.multiply(data, 0.1, out=values[:, dim], casting="unsafe")
+                else:
+                    all_values = False
+                    logger.warning("Unable to get_reconstructed positions dim {dim}")
+            if all_values:
+                return ureg.Quantity(values, ureg.nanometer)
         elif self.version == 5:
             # publicly available sources are inconclusive whether coordinates are in angstrom or nm
             # based on the evidence of usa_denton_smith Si.epos converted to v5 ATO via CamecaRoot
             # the resulting x, y coordinates suggests that v5 ATO stores in angstrom, while fpz is stored in nm?
             # however https://zenodo.org/records/8382828 reports the reconstructed positions to be named
             # not at all wpx, wpy and fpz but x, y, z instead and here claims the nm
-            for dim in [0, 1]:  # wpx -> x, wpy -> y
-                values[:, dim] = (
-                    np.float32(
-                        get_memory_mapped_data(
-                            self.file_path,
-                            "<i2",
-                            5000 + (dim * 2),
-                            40,
-                            self.number_of_events,
-                        )
-                    )
-                    * 0.01
+            # wpx -> x, wpy -> y
+            all_values = True
+            for dim in [0, 1]:
+                data = get_memory_mapped_data(
+                    self.file_path,
+                    "<i2",
+                    5000 + (dim * 2),
+                    40,
+                    self.number_of_events,
                 )
+                if data is not None:
+                    np.multiply(data, 0.01, out=values[:, dim], casting="unsafe")
+                else:
+                    all_values = False
+                    logger.warning("Unable to get_reconstructed positions dim {dim}")
             # angstrom to nm conversion for wpx and wpy was dropped to make results consistent with
             # APSuite based file format conversion tool, again a signature that the ATO format
             # demands better documentation by those who use it especially if claiming to perform
             # FAIR research, nothing about the documentation of this format is currently ticking the
             # FAIR principles but rather software development is prohibited because of contradictory/insufficient
             # documentation
-            values[:, 2] = np.float32(
-                get_memory_mapped_data(
-                    self.file_path, "<f4", 5000 + 4, 40, self.number_of_events
-                )
-                * 0.1
-            )  # fpz -> z
-        return ureg.Quantity(values, ureg.nanometer)
+            # fpz -> z
+            data = get_memory_mapped_data(
+                self.file_path, "<f4", 5000 + 4, 40, self.number_of_events
+            )
+            if data is not None:
+                np.multiply(data, 0.1, out=values[:, 2], casting="unsafe")
+            else:
+                all_values = False
+                logger.warning("Unable to get_reconstructed positions dim 2")
+        if all_values:
+            return ureg.Quantity(values, ureg.nanometer)
 
     def get_mass_to_charge_state_ratio(self):
         """Read mass-to-charge-state-ratio column."""
 
         values = np.zeros((self.number_of_events,), np.float32)
-        dtype_v3 = "<f4"  # see comment under respective function for xyz,
+        # see comment under respective function for xyz,
         # problem is m/q values typically are in the lower part of the byte
         # because of which some examples yield even physical reasonable
         # m/q values when reading with dtype_v3 = ">f4" !
@@ -147,11 +157,17 @@ class ReadAtoFileFormat:
         # this is another significant problem with just sharing files without
         # any self-documentation or context around it
         if self.version == 3:
-            values[:] = get_memory_mapped_data(
-                self.file_path, dtype_v3, 2 * 4 + 3 * 4, 14 * 4, self.number_of_events
+            data = get_memory_mapped_data(
+                self.file_path, "<f4", 2 * 4 + 3 * 4, 14 * 4, self.number_of_events
             )
+            if data is not None:
+                np.copyto(values[:], data, casting="unsafe")
+                return ureg.Quantity(values, ureg.dalton)
         elif self.version == 5:
-            values[:] = get_memory_mapped_data(
+            data = get_memory_mapped_data(
                 self.file_path, "<f4", 5000 + 8, 40, self.number_of_events
             )
-        return ureg.Quantity(values, ureg.dalton)
+            if data is not None:
+                np.copyto(values[:], data, casting="unsafe")
+                return ureg.Quantity(values, ureg.dalton)
+        logger.warning("Unable to get_mass_to_charge_state_ratio")
