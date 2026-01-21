@@ -26,7 +26,10 @@ import numpy as np
 
 from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
-from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
+from ifes_apt_tc_data_modeling.utils.nx_ion import (
+    NxIon,
+    try_to_reduce_to_unique_definitions,
+)
 from ifes_apt_tc_data_modeling.utils.utils import (
     create_nuclide_hash,
     get_smart_chemical_symbols,
@@ -85,13 +88,14 @@ def evaluate_env_range_line(line: str):
 class ReadEnvFileFormat:
     """Read GPM/Rouen *.env file format."""
 
-    def __init__(self, file_path: str, verbose: bool = False):
+    def __init__(self, file_path: str, unique: bool = False, verbose: bool = False):
         self.supported = False
         if not file_path.lower().endswith(".env"):
             logger.warning(f"{file_path} is likely not an ENV file")
             return
         self.supported = True
         self.file_path = file_path
+        self.unique = unique
         self.verbose = verbose
         self.env: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
         self.read_env()
@@ -121,6 +125,7 @@ class ReadEnvFileFormat:
                 logger.warning("No ranging definitions were found.")
                 return
 
+            m_ions = []
             for idx in np.arange(rng_s + 1, rng_e):
                 dct = evaluate_env_range_line(txt_stripped[idx])
                 if dct is None:
@@ -131,8 +136,22 @@ class ReadEnvFileFormat:
                 )
                 m_ion.add_range(dct["range"][0], dct["range"][1])
                 m_ion.comment = dct["name"]
+                m_ions.append(m_ion)
+
+            if self.unique:
+                unique_m_ions = try_to_reduce_to_unique_definitions(m_ions)
+                logger.info(
+                    f"Found {len(m_ions)} ranging definitions, performed reduction to {len(unique_m_ions)} unique ones."
+                )
+            else:
+                unique_m_ions = m_ions.copy()
+                logger.info(
+                    f"Found {len(m_ions)} ranging definitions, no reduction, {len(unique_m_ions)} remain."
+                )
+            del m_ions
+
+            for m_ion in unique_m_ions:
                 m_ion.apply_combinatorics()
                 # m_ion.report()
-
                 self.env["molecular_ions"].append(m_ion)
             logger.info(f"{self.file_path} parsed successfully.")

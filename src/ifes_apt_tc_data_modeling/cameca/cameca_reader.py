@@ -28,7 +28,10 @@ import numpy as np
 
 from ifes_apt_tc_data_modeling.cameca.cameca_utils import parse_elements
 from ifes_apt_tc_data_modeling.utils.custom_logging import logger
-from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
+from ifes_apt_tc_data_modeling.utils.nx_ion import (
+    NxIon,
+    try_to_reduce_to_unique_definitions,
+)
 from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 from ifes_apt_tc_data_modeling.utils.utils import (
     create_nuclide_hash,
@@ -39,12 +42,13 @@ from ifes_apt_tc_data_modeling.utils.utils import (
 class ReadCamecaHfiveFileFormat:
     """Read Cameca HDF5 files used in this study https://doi.org/10.18126/dqxb-9m77."""
 
-    def __init__(self, file_path: str, verbose: bool = False):
+    def __init__(self, file_path: str, unique: bool = False, verbose: bool = False):
         self.supported = 0  # voting-based
         if not file_path.lower().endswith(".hdf5"):
             logger.warning(f"{file_path} is likely not a HDF5 file")
             return
         self.file_path = file_path
+        self.unique = unique
         self.verbose = verbose
         self.file_size = os.path.getsize(self.file_path)
         self.number_of_events = None
@@ -69,12 +73,13 @@ class ReadCamecaHfiveFileFormat:
         else:
             self.supported = 3
         logger.debug(f"{self.file_path} is a supported Cameca HDF5 file.")
-        self.rng: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
+        self.cameca: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
         self.get_ranging_definitions()
 
     def get_ranging_definitions(self):
         """Read ranging definitions."""
         with h5py.File(self.file_path, "r") as h5r:
+            m_ions = []
             for entry in h5r["ranges"]:
                 # follows the creation order of Cameca but, like it is usual for HDF5,
                 # groups named range_1, range_10, range_2, ... will be processed in that order
@@ -99,13 +104,27 @@ class ReadCamecaHfiveFileFormat:
                     logger.warning(f"Range for {entry} is not significant.")
                     continue
                 m_ion = NxIon(nuclide_hash=create_nuclide_hash(atoms), charge_state=0)
-                m_ion.comment = (
-                    entry  # for debugging above-mentioned issue if order retained
-                )
                 m_ion.add_range(min_mass_to_charge, max_mass_to_charge)
-                m_ion.apply_combinatorics()
+                m_ion.comment = entry
+                # for debugging above-mentioned issue if order retained
+                m_ions.append(m_ions)
 
-                self.rng["molecular_ions"].append(m_ion)
+            if self.unique:
+                unique_m_ions = try_to_reduce_to_unique_definitions(m_ions)
+                logger.info(
+                    f"Found {len(m_ions)} ranging definitions, performed reduction to {len(unique_m_ions)} unique ones."
+                )
+            else:
+                unique_m_ions = m_ions.copy()
+                logger.info(
+                    f"Found {len(m_ions)} ranging definitions, no reduction, {len(unique_m_ions)} remain."
+                )
+            del m_ions
+
+            for m_ion in unique_m_ions:
+                m_ion.apply_combinatorics()
+                # m_ion.report()
+                self.cameca["molecular_ions"].append(m_ion)
             logger.debug(f"{self.file_path} ranging definitions parsed successfully.")
 
     def get_reconstructed_positions(self):
