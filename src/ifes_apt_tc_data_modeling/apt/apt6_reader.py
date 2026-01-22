@@ -122,9 +122,7 @@ class ReadAptFileFormat:
                         self.available_sections[keyword] = metadata_section
                 else:
                     logger.warning(
-                        f"Found an uninterpretable non-registered section."
-                        f"Create an issue to help us fix this!, Parsing continues"
-                        f"llByteCount {found_section['llByteCount'][0]} B"
+                        f"Found uninterpretable non-registered section, create an issue to help us fix this, parsing continues at llByteCount {found_section['llByteCount'][0]} B"
                     )
 
                 self.byte_offsets[keyword] = np.uint64(fp.tell())
@@ -225,7 +223,7 @@ class ReadAptFileFormat:
                             f"{np_uint16_to_string(unit)}",
                         )
                 else:
-                    raise ValueError(f"len(get_ametek_shape()) > 2 is not supported")
+                    raise ValueError("len(get_ametek_shape()) > 2 is not supported")
             else:
                 logger.warning(f"Unable to get_named_quantity {keyword}")
         else:

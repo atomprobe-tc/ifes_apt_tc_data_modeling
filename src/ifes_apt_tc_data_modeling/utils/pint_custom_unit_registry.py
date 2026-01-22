@@ -28,6 +28,8 @@ except ImportError as exc:
 # ureg.formatter.default_format = "D"
 # https://pint.readthedocs.io/en/stable/user/formatting.html
 
+ureg.define("%/100 = 1")
+
 # customizations for NeXus
 ureg.define("nx_unitless = 1")
 ureg.define("nx_dimensionless = 1")
