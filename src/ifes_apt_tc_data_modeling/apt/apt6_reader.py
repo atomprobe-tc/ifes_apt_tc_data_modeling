@@ -208,10 +208,24 @@ class ReadAptFileFormat:
             if data is not None:
                 shape = self.available_sections[keyword].get_ametek_shape()
                 unit = self.available_sections[keyword].meta["wc_data_unit"]
-                return ureg.Quantity(
-                    np.reshape(data, shape=(int(shape[0]), int(shape[1]))),
-                    f"{np_uint16_to_string(unit)}",
-                )
+                # be careful with reshaping, above variable data is a 1d np.ndarray
+                if len(shape) == 2:
+                    if int(shape[1]) == 1:
+                        # e.g. "Mass" section, memory mapping yields (1*n,) should remain (n,)
+                        # do not unnecessarily promote 1d arrays to 2d as this caused
+                        # that previous versions of the library required a flattening
+                        # of the ureg.magnitude return value which is unnecessary
+                        return ureg.Quantity(
+                            np.asarray(data), f"{np_uint16_to_string(unit)}"
+                        )
+                    else:
+                        # e.g. "Position" section, memory mapping yields (3*n,) but needs (n, 3)
+                        return ureg.Quantity(
+                            np.reshape(data, shape=(int(shape[0]), int(shape[1]))),
+                            f"{np_uint16_to_string(unit)}",
+                        )
+                else:
+                    raise ValueError(f"len(get_ametek_shape()) > 2 is not supported")
             else:
                 logger.warning(f"Unable to get_named_quantity {keyword}")
         else:
