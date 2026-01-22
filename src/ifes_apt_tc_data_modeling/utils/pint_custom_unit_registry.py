@@ -29,7 +29,7 @@ except ImportError as exc:
 # https://pint.readthedocs.io/en/stable/user/formatting.html
 
 # evaporation rate
-ureg.define("percent_per_100 = percent / 100 = %_per_100")
+ureg.define("percent_per_100 = percent / 100")
 
 # customizations for NeXus
 ureg.define("nx_unitless = 1")

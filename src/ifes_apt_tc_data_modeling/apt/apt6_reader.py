@@ -200,6 +200,15 @@ class ReadAptFileFormat:
                 self.available_sections[keyword].meta["i_data_type_size"] / 8
             )
             count = self.available_sections[keyword].get_ametek_count()
+            shape = tuple(
+                [
+                    int(extent)
+                    for extent in self.available_sections[keyword].get_ametek_shape()
+                ]
+            )
+            logger.info(
+                f"dtype {dtype}, offset {offset}, stride {stride}, count {count}, shape {shape}, file_size {self.file_size}"
+            )
             data = get_memory_mapped_data(
                 self.file_path, dtype, offset, stride, count
             )  # type ignore
@@ -208,19 +217,21 @@ class ReadAptFileFormat:
                 unit = self.available_sections[keyword].meta["wc_data_unit"]
                 # be careful with reshaping, above variable data is a 1d np.ndarray
                 if len(shape) == 2:
+                    if f"{np_uint16_to_string(unit)}" != "%/100":
+                        clean_unit = f"{np_uint16_to_string(unit)}"
+                    else:
+                        clean_unit = "percent_per_100"
                     if int(shape[1]) == 1:
                         # e.g. "Mass" section, memory mapping yields (1*n,) should remain (n,)
                         # do not unnecessarily promote 1d arrays to 2d as this caused
                         # that previous versions of the library required a flattening
                         # of the ureg.magnitude return value which is unnecessary
-                        return ureg.Quantity(
-                            np.asarray(data), f"{np_uint16_to_string(unit)}"
-                        )
+                        return ureg.Quantity(np.asarray(data), clean_unit)
                     else:
                         # e.g. "Position" section, memory mapping yields (3*n,) but needs (n, 3)
                         return ureg.Quantity(
                             np.reshape(data, shape=(int(shape[0]), int(shape[1]))),
-                            f"{np_uint16_to_string(unit)}",
+                            clean_unit,
                         )
                 else:
                     raise ValueError("len(get_ametek_shape()) > 2 is not supported")
