@@ -18,8 +18,6 @@
 
 """Reader for FAU/Erlangen's HDF5-based formats introduced with the pyccapt library."""
 
-# pylint: disable=fixme
-
 import os
 
 import h5py
@@ -27,7 +25,6 @@ import numpy as np
 import pandas as pd
 from ase.data import atomic_numbers
 
-# from ifes_apt_tc_data_modeling.utils.combinatorics import apply_combinatorics
 from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
 from ifes_apt_tc_data_modeling.utils.nx_ion import (

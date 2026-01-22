@@ -18,8 +18,6 @@
 
 """Reader for Cameca HDF5 files as shared here https://doi.org/10.18126/dqxb-9m77."""
 
-# pylint: disable=fixme
-
 import os
 import re
 
@@ -92,8 +90,8 @@ class ReadCamecaHfiveFileFormat:
                     logger.debug(f"Ignoring {entry} from /ranges")
                     continue
                 # ion_id = int(entry.replace("range_", ""))
-                logger.info(f"{entry}")
-                atoms = parse_elements(f"""{h5r["ranges"][entry].attrs["element"]}""")
+                logger.debug(f"{entry}")
+                atoms = parse_elements(f"{h5r['ranges'][entry].attrs['element']}")
                 min_mass_to_charge = np.float64(
                     h5r["ranges"][entry].attrs["min_da"][()]
                 )  # in examples was already f64
