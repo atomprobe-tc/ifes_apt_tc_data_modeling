@@ -34,13 +34,16 @@ from ifes_apt_tc_data_modeling.utils.molecular_ions import (
     get_chemical_symbols,
     isotope_to_hash,
 )
-from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
+from ifes_apt_tc_data_modeling.utils.nx_ion import (
+    NxIon,
+    try_to_reduce_to_unique_definitions,
+)
 
 
 class ReadFigTxtFileFormat:
     """Read *.fig.txt file format."""
 
-    def __init__(self, file_path: str, verbose: bool = False):
+    def __init__(self, file_path: str, unique: bool = False, verbose: bool = False):
         self.supported = False
         if not file_path.lower().endswith(".fig.txt"):
             logger.warning(
@@ -49,6 +52,7 @@ class ReadFigTxtFileFormat:
             return
         self.supported = True
         self.file_path = file_path
+        self.unique = unique
         self.verbose = verbose
         self.fig: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
         self.read_fig_txt()
@@ -65,6 +69,8 @@ class ReadFigTxtFileFormat:
             for line in txt.split("\n")
             if line.strip() != "" and line.startswith("#") is False
         ]
+
+        m_ions = []
         for molecular_ion in txt_stripped:
             tmp = molecular_ion.split(" ")
             mqmin = np.float64(tmp[len(tmp) - 2 : -1][0])
@@ -116,8 +122,21 @@ class ReadFigTxtFileFormat:
             m_ion = NxIon(nuclide_hash=ivector, charge_state=charge_state)
             m_ion.add_range(mqmin, mqmax)
             m_ion.comment = ion_name
+
+        if self.unique:
+            unique_m_ions = try_to_reduce_to_unique_definitions(m_ions)
+            logger.info(
+                f"Found {len(m_ions)} ranging definitions, performed reduction to {len(unique_m_ions)} unique ones."
+            )
+        else:
+            unique_m_ions = m_ions.copy()
+            logger.info(
+                f"Found {len(m_ions)} ranging definitions, no reduction, {len(unique_m_ions)} remain."
+            )
+        del m_ions
+
+        for m_ion in unique_m_ions:
             m_ion.apply_combinatorics()
             # m_ion.report()
-
             self.fig["molecular_ions"].append(m_ion)
         logger.info(f"{self.file_path} parsed successfully.")

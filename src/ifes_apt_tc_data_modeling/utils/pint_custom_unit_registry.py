@@ -28,6 +28,9 @@ except ImportError as exc:
 # ureg.formatter.default_format = "D"
 # https://pint.readthedocs.io/en/stable/user/formatting.html
 
+# evaporation rate
+ureg.define("percent_per_100 = percent / 100")
+
 # customizations for NeXus
 ureg.define("nx_unitless = 1")
 ureg.define("nx_dimensionless = 1")

@@ -365,14 +365,14 @@ class ReadOpsFileFormat:
             if self.hit_sequence in self.event_data:
                 del self.event_data[self.hit_sequence]
 
-        print(f"Parsed {len(lines)}, now normalizing...")
-        print(f"instrument, {self.instrument}")
-        print(f"len(event_data.keys()), {len(self.event_data.keys())}")
-        print(f"len(voltage_data.keys()), {len(self.voltage_data.keys())}")
-        print(f"len(pulse_number.keys()), {len(self.pulse_number.keys())}")
-        print(f"last_pulse_number, {self.last_pulse_number}")
-        print(f"voltage_sequence, {self.voltage_sequence}")
-        print(f"hit_sequence, {self.hit_sequence}")
+        logger.debug(f"Parsed {len(lines)}, now normalizing...")
+        logger.debug(f"instrument, {self.instrument}")
+        logger.debug(f"len(event_data.keys()), {len(self.event_data.keys())}")
+        logger.debug(f"len(voltage_data.keys()), {len(self.voltage_data.keys())}")
+        logger.debug(f"len(pulse_number.keys()), {len(self.pulse_number.keys())}")
+        logger.debug(f"last_pulse_number, {self.last_pulse_number}")
+        logger.debug(f"voltage_sequence, {self.voltage_sequence}")
+        logger.debug(f"hit_sequence, {self.hit_sequence}")
 
         parameter_names = [
             ("tof", ureg.nanosecond),
@@ -385,7 +385,7 @@ class ReadOpsFileFormat:
             for hit_sequence, event_dict in self.event_data.items():
                 if parameter_name in event_dict:
                     event_data_stats[parameter_name] += len(event_dict[parameter_name])
-            print(
+            logger.info(
                 f"event_data_stats[{parameter_name}], {event_data_stats[parameter_name]}"
             )
 
@@ -399,11 +399,11 @@ class ReadOpsFileFormat:
                     for jdx in range(0, len(event_dict[parameter_name])):
                         numpy_array[idx + jdx] = event_dict[parameter_name][jdx]
                     idx += len(event_dict[parameter_name])
-            print(f"numpy_array.dtype {numpy_array.dtype}")
-            print(f"np.shape(numpy_array) {np.shape(numpy_array)}")
+            logger.debug(f"numpy_array.dtype {numpy_array.dtype}")
+            logger.debug(f"np.shape(numpy_array) {np.shape(numpy_array)}")
             self.events[parameter_name] = ureg.Quantity(numpy_array, unit)
             del numpy_array
-            print(
+            logger.info(
                 f"event_data_flattened {parameter_name}, {self.events[parameter_name]}"
             )
 
@@ -437,11 +437,11 @@ class ReadOpsFileFormat:
                     logger.warning("ValueError during voltage data conversion")
                     return
 
-            print(f"numpy_array.dtype {numpy_array.dtype}")
-            print(f"np.shape(numpy_array) {np.shape(numpy_array)}")
+            logger.debug(f"numpy_array.dtype {numpy_array.dtype}")
+            logger.debug(f"np.shape(numpy_array) {np.shape(numpy_array)}")
             self.voltages[parameter_name] = ureg.Quantity(numpy_array, unit)
             del numpy_array
-            print(
+            logger.info(
                 f"voltage_data_flattened {parameter_name}, {self.voltages[parameter_name]}"
             )
 
@@ -457,7 +457,7 @@ class ReadOpsFileFormat:
                 self.instrument[parameter_name] = ureg.Quantity(
                     self.instrument[parameter_name], unit
                 )
-        print(f"instrument, {self.instrument}")
+        logger.info(f"instrument, {self.instrument}")
 
         # finally only expose flattened event data
         del self.event_data
