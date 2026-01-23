@@ -25,7 +25,8 @@ import os
 import numpy as np
 
 from ifes_apt_tc_data_modeling.utils.custom_logging import logger
-from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
+from ifes_apt_tc_data_modeling.utils.default_config import MAXIMUM_NUMBER_OF_IONS
+from ifes_apt_tc_data_modeling.utils.memory_mapped_io import get_memory_mapped_data
 from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 
 
@@ -37,17 +38,21 @@ class ReadStuttgartApytRawFileFormat:
         if not file_path.lower().endswith(".raw"):
             logger.warning(f"{file_path} is likely not a Stuttgart TAP-style raw file")
             return
-        self.supported = True
-        self.verbose = verbose
         self.file_path = file_path
+        self.verbose = verbose
         self.file_size = os.path.getsize(self.file_path)
         if self.file_size % (8 * 4) != 0:
-            raise ValueError("Stuttgart raw file_size not integer multiple of 8*4B.")
-        if np.uint32(self.file_size / (8 * 4)) >= np.iinfo(np.uint32).max:
-            raise ValueError(
-                "Stuttgart raw file is too large, currently only 2*32 supported."
+            logger.warning(
+                f"{self.file_path} APyT raw file_size not integer multiple of 8 * 4B."
             )
-        self.number_of_events = np.uint32(self.file_size / (8 * 4))
+            return
+        if np.uint32(self.file_size / (8 * 4)) > MAXIMUM_NUMBER_OF_IONS:
+            logger.warning(
+                f"{self.file_path} APyT raw file with more than {MAXIMUM_NUMBER_OF_IONS} events is not supported."
+            )
+            return
+        self.number_of_events = int(self.file_size / (8 * 4))
+        self.supported = True
 
         # https://github.com/sebi-85/apyt/blob/424b33ea5fee2d7e8b3fc0a9af68f382b8da341f/apyt/io/conv.py#L26-33 for file format details
         # Field         Data type  Description
@@ -64,90 +69,150 @@ class ReadStuttgartApytRawFileFormat:
         # raw = np.fromfile( fnm, dtype= {"names": dtype_names,
         # "formats": (, "<f4","<f4","<f4","<f4","<f4","<f4","<i4","<u4") } )
 
-    def get_base_voltage(self):
+    def get_base_voltage(self) -> ureg.Quantity | None:
         """Read (uncorrected) base voltage column."""
-        values = np.zeros((self.number_of_events,), np.float32)
-        data = get_memory_mapped_data(
-            self.file_path, "<f4", 0 * 4, 8 * 4, self.number_of_events
-        )
-        if data is not None:
-            np.copyto(values[:], data, casting="unsafe")
-            return ureg.Quantity(values, ureg.volt)
-        else:
-            logger.warning("Unable to get_base_voltage")
-
-    def get_pulse_voltage(self):
-        """Read (uncorrected) pulse voltage column."""
-        values = np.zeros((self.number_of_events,), np.float32)
-        data = get_memory_mapped_data(
-            self.file_path, "<f4", 1 * 4, 8 * 4, self.number_of_events
-        )
-        if data is not None:
-            np.copyto(values[:], data, casting="unsafe")
-            return ureg.Quantity(values, ureg.volt)
-        else:
-            logger.warning("Unable to get_pulse_voltage")
-
-    def get_reflectron_voltage(self):
-        """Read (uncorrected) reflectron voltage column."""
-        values = np.zeros((self.number_of_events,), np.float32)
-        data = get_memory_mapped_data(
-            self.file_path, "<f4", 2 * 4, 8 * 4, self.number_of_events
-        )
-        if data is not None:
-            np.copyto(values[:], data, casting="unsafe")
-            return ureg.Quantity(values, ureg.volt)
-        else:
-            logger.warning("Unable to get_reflectron_voltage")
-
-    def get_raw_detector_position(self):
-        """Read (uncorrected) detector position columns."""
-        values = np.zeros((self.number_of_events, 2), np.float32)
-        all_values = True
-        for dim in [0, 1]:  # x, y
+        if self.supported:
+            values = np.zeros((self.number_of_events,), np.float32)
+            type_literal = "<f4"
+            item_size = np.dtype(type_literal).itemsize
             data = get_memory_mapped_data(
-                self.file_path, "<f4", (3 + dim) * 4, 8 * 4, self.number_of_events
+                self.file_path,
+                type_literal,
+                0 * item_size,
+                (8 * item_size,),
+                (self.number_of_events,),
             )
             if data is not None:
-                np.copyto(values[:, dim], data, casting="unsafe")
+                np.copyto(values[:], data, casting="unsafe")
+                return ureg.Quantity(values, ureg.volt)
             else:
-                all_values = False
-                logger.warning(f"Unable to get_raw_detector_position dim {dim}")
-        if all_values:
-            return ureg.Quantity(values, ureg.millimeter)
+                logger.warning("Unable to get_base_voltage")
+        return None
 
-    def get_raw_time_of_flight(self):
+    def get_pulse_voltage(self) -> ureg.Quantity | None:
+        """Read (uncorrected) pulse voltage column."""
+        if self.supported:
+            values = np.zeros((self.number_of_events,), np.float32)
+            type_literal = "<f4"
+            item_size = np.dtype(type_literal).itemsize
+            data = get_memory_mapped_data(
+                self.file_path,
+                type_literal,
+                1 * item_size,
+                (8 * item_size,),
+                (self.number_of_events,),
+            )
+            if data is not None:
+                np.copyto(values[:], data, casting="unsafe")
+                return ureg.Quantity(values, ureg.volt)
+            else:
+                logger.warning("Unable to get_pulse_voltage")
+        return None
+
+    def get_reflectron_voltage(self) -> ureg.Quantity | None:
+        """Read (uncorrected) reflectron voltage column."""
+        if self.supported:
+            values = np.zeros((self.number_of_events,), np.float32)
+            type_literal = "<f4"
+            item_size = np.dtype(type_literal).itemsize
+            data = get_memory_mapped_data(
+                self.file_path,
+                type_literal,
+                2 * item_size,
+                (8 * item_size,),
+                (self.number_of_events,),
+            )
+            if data is not None:
+                np.copyto(values[:], data, casting="unsafe")
+                return ureg.Quantity(values, ureg.volt)
+            else:
+                logger.warning("Unable to get_reflectron_voltage")
+        return None
+
+    def get_raw_detector_position(self) -> ureg.Quantity | None:
+        """Read (uncorrected) detector position columns."""
+        if self.supported:
+            values = np.zeros((self.number_of_events, 2), np.float32)
+            type_literal = "<f4"
+            item_size = np.dtype(type_literal).itemsize
+            all_values = True
+            for column_index in [0, 1]:  # x, y
+                data = get_memory_mapped_data(
+                    self.file_path,
+                    type_literal,
+                    (3 + column_index) * item_size,
+                    (8 * item_size,),
+                    (self.number_of_events,),
+                )
+                if data is not None:
+                    np.copyto(values[:, column_index], data, casting="unsafe")
+                else:
+                    all_values = False
+                    logger.warning(
+                        f"Unable to get_raw_detector_position dim {column_index}"
+                    )
+            if all_values:
+                return ureg.Quantity(values, ureg.millimeter)
+            else:
+                logger.warning("Unable to get_raw_detector_position")
+        return None
+
+    def get_raw_time_of_flight(self) -> ureg.Quantity | None:
         """Read (uncorrected) time-of-flight column."""
-        values = np.zeros((self.number_of_events,), np.float32)
-        data = get_memory_mapped_data(
-            self.file_path, "<f4", 5 * 4, 8 * 4, self.number_of_events
-        )
-        if data is not None:
-            np.copyto(values[:], data, casting="unsafe")
-            return ureg.Quantity(values, ureg.nanosecond)
-        else:
-            logger.warning("Unable to get_raw_time_of_flight")
+        if self.supported:
+            values = np.zeros((self.number_of_events,), np.float32)
+            type_literal = "<f4"
+            item_size = np.dtype(type_literal).itemsize
+            data = get_memory_mapped_data(
+                self.file_path,
+                type_literal,
+                5 * item_size,
+                (8 * item_size,),
+                (self.number_of_events,),
+            )
+            if data is not None:
+                np.copyto(values[:], data, casting="unsafe")
+                return ureg.Quantity(values, ureg.nanosecond)
+            else:
+                logger.warning("Unable to get_raw_time_of_flight")
+        return None
 
-    def get_epoch_evaporation_event(self):
+    def get_epoch_evaporation_event(self) -> ureg.Quantity | None:
         """Read epoch of evaporation event column."""
-        values = np.zeros((self.number_of_events,), np.int32)
-        data = get_memory_mapped_data(
-            self.file_path, "<i4", 6 * 4, 8 * 4, self.number_of_events
-        )
-        if data is not None:
-            np.copyto(values[:], data, casting="unsafe")
-            return ureg.Quantity(values)
-        else:
-            logger.warning("Unable to get_epoch_evaporation_event")
+        if self.supported:
+            values = np.zeros((self.number_of_events,), np.int32)
+            type_literal = "<i4"
+            item_size = np.dtype(type_literal).itemsize
+            data = get_memory_mapped_data(
+                self.file_path,
+                type_literal,
+                (6 * item_size),
+                (8 * item_size,),
+                (self.number_of_events,),
+            )
+            if data is not None:
+                np.copyto(values[:], data, casting="unsafe")
+                return ureg.Quantity(values)
+            else:
+                logger.warning("Unable to get_epoch_evaporation_event")
+        return None
 
-    def get_pulse_number_evaporation_event(self):
+    def get_pulse_number_evaporation_event(self) -> ureg.Quantity | None:
         """Read epoch of evaporation event column."""
-        values = np.zeros((self.number_of_events,), np.uint32)
-        data = get_memory_mapped_data(
-            self.file_path, "<u4", 7 * 4, 8 * 4, self.number_of_events
-        )
-        if data is not None:
-            np.copyto(values[:], data, casting="unsafe")
-            return ureg.Quantity(values)
-        else:
-            logger.warning("Unable to get_pulse_number_evaporation_event")
+        if self.supported:
+            values = np.zeros((self.number_of_events,), np.uint32)
+            type_literal = "<u4"
+            item_size = np.dtype(type_literal).itemsize
+            data = get_memory_mapped_data(
+                self.file_path,
+                type_literal,
+                (7 * item_size),
+                (8 * item_size,),
+                (self.number_of_events,),
+            )
+            if data is not None:
+                np.copyto(values[:], data, casting="unsafe")
+                return ureg.Quantity(values)
+            else:
+                logger.warning("Unable to get_pulse_number_evaporation_event")
+        return None

@@ -28,7 +28,7 @@ from ifes_apt_tc_data_modeling.apt.apt6_sections import AptFileSectionMetadata
 from ifes_apt_tc_data_modeling.apt.apt6_sections_branches import EXPECTED_SECTIONS
 from ifes_apt_tc_data_modeling.apt.apt6_utils import np_uint16_to_string
 from ifes_apt_tc_data_modeling.utils.custom_logging import logger
-from ifes_apt_tc_data_modeling.utils.mmapped_io import get_memory_mapped_data
+from ifes_apt_tc_data_modeling.utils.memory_mapped_io import get_memory_mapped_data
 from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 
 
@@ -185,7 +185,7 @@ class ReadAptFileFormat:
         )
         return data_frame
 
-    def get_named_quantity(self, keyword: str):
+    def get_named_quantity(self, keyword: str) -> ureg.Quantity | None:
         """Read quantity with name in keyword from APT file if it exists."""
         if (keyword in self.available_sections) and (keyword in self.byte_offsets):
             byte_position_start = (
@@ -194,11 +194,13 @@ class ReadAptFileFormat:
             )
             logger.info(f"Reading section {keyword} at {byte_position_start}")
 
-            dtype = self.available_sections[keyword].get_ametek_type()
+            type_literal = self.available_sections[keyword].get_ametek_type()
             offset = byte_position_start
-            stride = np.uint64(
-                self.available_sections[keyword].meta["i_data_type_size"] / 8
-            )
+            stride = int(self.available_sections[keyword].meta["i_data_type_size"] / 8)
+            item_size = np.dtype(type_literal).itemsize
+            ##########################
+            assert stride == item_size
+            ##########################
             count = self.available_sections[keyword].get_ametek_count()
             shape = tuple(
                 [
@@ -206,44 +208,71 @@ class ReadAptFileFormat:
                     for extent in self.available_sections[keyword].get_ametek_shape()
                 ]
             )
-            logger.info(
-                f"dtype {dtype}, offset {offset}, stride {stride}, count {count}, shape {shape}, file_size {self.file_size}"
-            )
-            data = get_memory_mapped_data(
-                self.file_path, dtype, offset, stride, count
-            )  # type ignore
-            if data is not None:
-                shape = self.available_sections[keyword].get_ametek_shape()
-                unit = self.available_sections[keyword].meta["wc_data_unit"]
-                # be careful with reshaping, above variable data is a 1d np.ndarray
-                if len(shape) == 2:
-                    if f"{np_uint16_to_string(unit)}" != "%/100":
-                        clean_unit = f"{np_uint16_to_string(unit)}"
-                    else:
-                        clean_unit = "percent_per_100"
-                    if int(shape[1]) == 1:
-                        # e.g. "Mass" section, memory mapping yields (1*n,) should remain (n,)
-                        # do not unnecessarily promote 1d arrays to 2d as this caused
-                        # that previous versions of the library required a flattening
-                        # of the ureg.magnitude return value which is unnecessary
-                        return ureg.Quantity(np.asarray(data), clean_unit)
-                    else:
-                        # e.g. "Position" section, memory mapping yields (3*n,) but needs (n, 3)
-                        return ureg.Quantity(
-                            np.reshape(data, shape=(int(shape[0]), int(shape[1]))),
-                            clean_unit,
-                        )
-                else:
-                    raise ValueError("len(get_ametek_shape()) > 2 is not supported")
+            unit = self.available_sections[keyword].meta["wc_data_unit"]
+            if f"{np_uint16_to_string(unit)}" != "%/100":
+                clean_unit = f"{np_uint16_to_string(unit)}"
             else:
-                logger.warning(f"Unable to get_named_quantity {keyword}")
+                clean_unit = "percent_per_100"
+
+            logger.debug(
+                f"dtype {type_literal}, offset {offset}, stride {item_size}, count {count}, shape {shape}, file_size {self.file_size}, unit {clean_unit}"
+            )
+            if len(shape) == 2:
+                number_of_fast_columns = int(shape[1])
+                if number_of_fast_columns == 1:
+                    # e.g. "Mass" section, memory mapping yields (1*n,) should remain (n,)
+                    # do not unnecessarily promote 1d arrays to 2d as this caused
+                    # that previous versions of the library required a flattening
+                    # of the ureg.magnitude return value which is unnecessary
+                    data = get_memory_mapped_data(
+                        self.file_path,
+                        type_literal,
+                        offset,
+                        (1 * item_size,),
+                        (shape[0],),
+                    )
+                    if data is not None:
+                        return ureg.Quantity(data, clean_unit)
+                    else:
+                        logger.warning(f"Unable to get_named_quantity {keyword}")
+                else:
+                    values = np.zeros(shape, dtype=type_literal)
+                    all_values = True
+                    for column_index in np.arange(0, number_of_fast_columns):
+                        data = get_memory_mapped_data(
+                            self.file_path,
+                            type_literal,
+                            offset + (column_index * item_size),
+                            (3 * item_size,),
+                            (shape[0],),
+                        )
+                        if data is not None:
+                            np.copyto(values[:, column_index], data, casting="unsafe")
+                        else:
+                            all_values = False
+                            logger.warning(
+                                f"Unable to {keyword} for column_index {column_index}"
+                            )
+                    if all_values:
+                        return ureg.Quantity(values, clean_unit)
+                    else:
+                        logger.warning(f"Unable to get_named_quantity {keyword}")
+
+                    # data = get_memory_mapped_data(
+                    #     self.file_path, dtype, offset, (shape[1] * stride, stride), shape
+                    # )
+            else:
+                logger.error(
+                    f"get_named_quantity {keyword}, len(get_ametek_shape()) != 2 is not supported"
+                )
         else:
             logger.warning(f"Unable to get_named_quantity {keyword}")
+        return None
 
-    def get_mass_to_charge_state_ratio(self):
+    def get_mass_to_charge_state_ratio(self) -> ureg.Quantity | None:
         """Read mass-to-charge."""
         return self.get_named_quantity("Mass")
 
-    def get_reconstructed_positions(self):
+    def get_reconstructed_positions(self) -> ureg.Quantity | None:
         """Read reconstructed positions."""
         return self.get_named_quantity("Position")
