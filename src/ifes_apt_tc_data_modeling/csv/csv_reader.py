@@ -62,8 +62,8 @@ class ReadCsvFileFormat:
         # atom probe data than CSV, NeXus is one such, also csv files have
         # no magic number, de facto this works only because users know what
         # to expect in advance but how should a machine know this?
-        for dim in [0, 1, 2]:
-            values[:, dim] = pd.read_csv(self.file_path).iloc[:, dim]
+        for column_index in [0, 1, 2]:
+            values[:, column_index] = pd.read_csv(self.file_path).iloc[:, column_index]
         return ureg.Quantity(values, ureg.nanometer)
 
     def get_mass_to_charge_state_ratio(self):
