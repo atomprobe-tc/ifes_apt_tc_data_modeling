@@ -195,7 +195,7 @@ class ReadAptFileFormat:
             logger.info(f"Reading section {keyword} at {byte_position_start}")
 
             type_literal = self.available_sections[keyword].get_ametek_type()
-            offset = byte_position_start
+            offset = int(byte_position_start)
             stride = int(self.available_sections[keyword].meta["i_data_type_size"] / 8)
             item_size = np.dtype(type_literal).itemsize
             ##########################
