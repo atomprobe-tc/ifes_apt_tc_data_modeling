@@ -28,7 +28,7 @@ dependencies = [
     "pint",
     "numpy",
     "tables",
-    "flatdict",
+    "flatdict==4.0.0",
     "xmltodict",
 ]
 
@@ -75,6 +75,7 @@ git_describe_command = ["git", "describe", "--dirty", "--long", "--tags", "--mat
 
 [tool.ruff]
 include = ["src/*.py", "tests/*.py"]
+exclude = ["src/ifes_apt_tc_data_modeling/_version.py"]
 line-length = 88
 indent-width = 4
 
