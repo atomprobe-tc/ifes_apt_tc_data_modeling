@@ -1,0 +1,29 @@
+#
+# Copyright The NOMAD Authors.
+#
+# This file is part of NOMAD. See https://nomad-lab.eu for further info.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+import importlib.metadata
+
+
+def get_ifes_apt_tc_data_modeling_version() -> str:
+    """Attempt getting the version of ifes_apt_tc_data_modeling at runtime with fallback."""
+    # for a discussion whether to collect at build or runtime see
+    # https://discuss.python.org/t/please-make-package-version-go-away/58501
+    try:
+        return f"{importlib.metadata.version('ifes_apt_tc_data_modeling')}"
+    except importlib.metadata.PackageNotFoundError:
+        return f"unknown_version"
