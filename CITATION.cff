@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 title: 'ifes_apt_tc_data_modeling: A Python Library for reading file formats and working with atom probe data'
-version: 0.3.2
+version: 0.4.1
 message:
   If you use this software, please cite it using the
   metadata from this file.
