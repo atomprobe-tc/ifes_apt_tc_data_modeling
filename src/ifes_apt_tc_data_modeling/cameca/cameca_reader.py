@@ -105,7 +105,7 @@ class ReadCamecaHfiveFileFormat:
                 m_ion.add_range(min_mass_to_charge, max_mass_to_charge)
                 m_ion.comment = entry
                 # for debugging above-mentioned issue if order retained
-                m_ions.append(m_ions)
+                m_ions.append(m_ion)
 
             if self.unique:
                 unique_m_ions = try_to_reduce_to_unique_definitions(m_ions)
