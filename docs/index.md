@@ -32,10 +32,10 @@ Installation guides exist for users and developers.
 
 Background knowledge to specific topics.
 
-- [Exchange](explanation/learn.md)
-- [Provenance](explanation/provenance.md)
-- [Specifications](explanation/suggestions.md)
-- [NeXus NXapm](explanation/nxapm.md)
+- [Exchange](learn/learn.md)
+- [Provenance](learn/provenance.md)
+- [Specifications](learn/suggestions.md)
+- [NeXus NXapm](learn/nxapm.md)
 
 </div>
 <div markdown="block">

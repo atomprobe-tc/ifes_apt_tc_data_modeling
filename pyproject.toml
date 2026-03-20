@@ -25,17 +25,17 @@ dependencies = [
     "radioactivedecay>=0.4.16",
     "ase>=3.19.0",
     "pandas>=2",
+    "flatdict>=4.1.0",
     "pint",
     "numpy",
     "tables",
-    "flatdict==4.0.0",
     "xmltodict",
 ]
 
 [project.optional-dependencies]
 dev = [
     "mypy",
-    "ruff>=0.14.0",
+    "ruff>=0.15.0",
     "types-xmltodict",
     "types-pyyaml",
     "pandas-stubs",
@@ -59,9 +59,6 @@ ipynb = [
 [project.urls]
 "Homepage" = "https://github.com/atomprobe-tc/ifes_apt_tc_data_modeling"
 
-[tool.setuptools.package-data]
-ifes_apt_tc_data_modeling = ["_version.py"]
-
 [tool.setuptools.packages.find]
 where = [
     "src",
@@ -70,12 +67,9 @@ where = [
 [tool.setuptools_scm]
 version_scheme = "no-guess-dev"
 local_scheme = "node-and-date"
-write_to = "src/ifes_apt_tc_data_modeling/_version.py"
-git_describe_command = ["git", "describe", "--dirty", "--long", "--tags", "--match", "*[0-9]*", "--abbrev=8"]
 
 [tool.ruff]
 include = ["src/*.py", "tests/*.py"]
-exclude = ["src/ifes_apt_tc_data_modeling/_version.py"]
 line-length = 88
 indent-width = 4
 

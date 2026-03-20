@@ -38,19 +38,23 @@ from ifes_apt_tc_data_modeling.utils.molecular_ions import (
     get_chemical_symbols,
     isotope_to_hash,
 )
-from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
+from ifes_apt_tc_data_modeling.utils.nx_ion import (
+    NxIon,
+    try_to_reduce_to_unique_definitions,
+)
 
 
 class ReadImagoAnalysisFileFormat:
     """Read *.analysis file (format), extract ranging definitions as an example."""
 
-    def __init__(self, file_path: str, verbose: bool = False):
+    def __init__(self, file_path: str, unique: bool = False, verbose: bool = False):
         self.supported = False
         if not file_path.lower().endswith(".analysis"):
             logger.warning(f"{file_path} is likely not an Imago XML analysis file")
             return
         self.supported = True
         self.file_path = file_path
+        self.unique = unique
         self.verbose = verbose
         self.imago: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
         self.read_imago_analysis_ranging_definitions()
@@ -74,6 +78,7 @@ class ReadImagoAnalysisFileFormat:
         # the main idea behind the example is to show that information can
         # be extracted and to motivate that nowadays one should use data
         # structures that are more conveniently parsable
+        m_ions = []
         with open(self.file_path, encoding="utf-8") as xml_fp:
             xml = xmltodict.parse(xml_fp.read())
             flt = fd.FlatDict(xml, "/")
@@ -197,8 +202,22 @@ class ReadImagoAnalysisFileFormat:
                                 m_ion = NxIon(nuclide_hash=ivector, charge_state=0)
                                 m_ion.add_range(float(mq[0]), float(mq[1]))
                                 m_ion.comment = " ".join(element_symbol)
-                                m_ion.apply_combinatorics()
-                                # m_ion.report()
+                                m_ions.append(m_ion)
 
-                                self.imago["molecular_ions"].append(m_ion)
+        if self.unique:
+            unique_m_ions = try_to_reduce_to_unique_definitions(m_ions)
+            logger.info(
+                f"Found {len(m_ions)} ranging definitions, performed reduction to {len(unique_m_ions)} unique ones."
+            )
+        else:
+            unique_m_ions = m_ions.copy()
+            logger.info(
+                f"Found {len(m_ions)} ranging definitions, no reduction, {len(unique_m_ions)} remain."
+            )
+        del m_ions
+
+        for m_ion in unique_m_ions:
+            m_ion.apply_combinatorics()
+            # m_ion.report()
+            self.imago["molecular_ions"].append(m_ion)
         logger.info(f"{self.file_path} parsed successfully.")

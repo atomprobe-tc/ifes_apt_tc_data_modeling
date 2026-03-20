@@ -18,20 +18,19 @@
 
 """Reader for FAU/Erlangen's HDF5-based formats introduced with the pyccapt library."""
 
-# pylint: disable=fixme
-
 import os
-from typing import Any
 
 import h5py
 import numpy as np
 import pandas as pd
 from ase.data import atomic_numbers
 
-# from ifes_apt_tc_data_modeling.utils.combinatorics import apply_combinatorics
 from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
-from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
+from ifes_apt_tc_data_modeling.utils.nx_ion import (
+    NxIon,
+    try_to_reduce_to_unique_definitions,
+)
 from ifes_apt_tc_data_modeling.utils.pint_custom_unit_registry import ureg
 from ifes_apt_tc_data_modeling.utils.utils import (
     MAX_NUMBER_OF_ATOMS_PER_ION,
@@ -289,7 +288,7 @@ class ReadPyccaptCalibrationFileFormat:
 class ReadPyccaptRangingFileFormat:
     """Read FAU/Erlangen pyccapt (ranging module) HDF5 file format."""
 
-    def __init__(self, file_path: str, verbose: bool = False):
+    def __init__(self, file_path: str, unique: bool = False, verbose: bool = False):
         self.supported = 0  # voting-based
         if not file_path.lower().endswith((".h5", ".hdf5")):
             logger.warning(
@@ -297,6 +296,7 @@ class ReadPyccaptRangingFileFormat:
             )
             return
         self.file_path = file_path
+        self.unique = unique
         self.verbose = verbose
         self.file_size = os.path.getsize(self.file_path)
         self.number_of_events = None
@@ -329,9 +329,10 @@ class ReadPyccaptRangingFileFormat:
                 return
 
         self.df = pd.read_hdf(self.file_path)
-        self.rng: dict[str, Any] = {}
-        self.rng["molecular_ions"] = []
         logger.debug(np.shape(self.df)[0])
+
+        self.pyc: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
+        m_ions = []
         for idx in map(int, np.arange(0, np.shape(self.df)[0])):
             if isinstance(self.df.iat[idx, 6], str):  # type: ignore[index]
                 if self.df.iat[idx, 6] == "unranged":  # type: ignore[index]
@@ -347,7 +348,22 @@ class ReadPyccaptRangingFileFormat:
             m_ion.nuclide_list = nuclide_hash_to_nuclide_list(ivec)
             m_ion.charge_state = np.int8(self.df.iat[idx, 9])  # type: ignore[arg-type,index]
             m_ion.add_range(self.df.iat[idx, 3], self.df.iat[idx, 4])  # type: ignore[arg-type,index]
+            m_ions.append(m_ion)
+
+        if self.unique:
+            unique_m_ions = try_to_reduce_to_unique_definitions(m_ions)
+            logger.info(
+                f"Found {len(m_ions)} ranging definitions, performed reduction to {len(unique_m_ions)} unique ones."
+            )
+        else:
+            unique_m_ions = m_ions.copy()
+            logger.info(
+                f"Found {len(m_ions)} ranging definitions, no reduction, {len(unique_m_ions)} remain."
+            )
+        del m_ions
+
+        for m_ion in unique_m_ions:
             m_ion.apply_combinatorics()
             # m_ion.report()
-            self.rng["molecular_ions"].append(m_ion)
+            self.pyc["molecular_ions"].append(m_ion)
         logger.info(f"{self.file_path} parsed successfully.")

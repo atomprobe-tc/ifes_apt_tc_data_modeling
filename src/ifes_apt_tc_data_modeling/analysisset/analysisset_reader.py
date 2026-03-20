@@ -39,19 +39,23 @@ from ifes_apt_tc_data_modeling.utils.molecular_ions import (
     get_chemical_symbols,
     isotope_to_hash,
 )
-from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
+from ifes_apt_tc_data_modeling.utils.nx_ion import (
+    NxIon,
+    try_to_reduce_to_unique_definitions,
+)
 
 
 class ReadAnalysissetFileFormat:
     """Read *.analysisset file (format), extract ranging definitions as an example."""
 
-    def __init__(self, file_path: str, verbose: bool = False):
+    def __init__(self, file_path: str, unique: bool = False, verbose: bool = False):
         self.supported = False
         if not file_path.lower().endswith(".analysisset"):
             logger.warning(f"{file_path} is likely not an analysisset file")
             return
         self.supported = True
         self.file_path = file_path
+        self.unique = unique
         self.verbose = verbose
         self.analysisset: dict = {"ranges": {}, "ions": {}, "molecular_ions": []}
         self.read_analysisset_ranging_definitions()
@@ -130,6 +134,7 @@ class ReadAnalysissetFileFormat:
                 )
                 return
 
+            m_ions = []
             for idx in range(0, len(ion_type_info_record)):
                 key_name = "Formula/Element/Name"
                 ivec = []  # used for all ranges ion_type_info_range[idx]
@@ -221,9 +226,8 @@ class ReadAnalysissetFileFormat:
                             ]
                             m_ion = NxIon(nuclide_hash=ivector, charge_state=0)
                             m_ion.add_range(mq[0], mq[1])
-                            m_ion.apply_combinatorics()
-                            # m_ion.report()
-                            self.analysisset["molecular_ions"].append(m_ion)
+                            m_ion.comment(f"ion_type_info_range[{idx}]")
+                            m_ions.append(m_ion)
                         else:
                             logger.warning(
                                 f"{self.file_path} idx {idx} ion_type_info_range dictionary malformed"
@@ -241,9 +245,8 @@ class ReadAnalysissetFileFormat:
                                 ]
                                 m_ion = NxIon(nuclide_hash=ivector, charge_state=0)
                                 m_ion.add_range(mq[0], mq[1])
-                                m_ion.apply_combinatorics()
-                                # m_ion.report()
-                                self.analysisset["molecular_ions"].append(m_ion)
+                                m_ion.comment(f"ion_type_info_range[{idx}]")
+                                m_ions.append(m_ion)
                         else:
                             logger.warning(
                                 f"{self.file_path} idx {idx} ion_type_info_range list malformed"
@@ -257,3 +260,21 @@ class ReadAnalysissetFileFormat:
                 else:
                     logger.warning(f"{self.file_path} idx {idx} ivec empty")
                     continue
+
+            if self.unique:
+                unique_m_ions = try_to_reduce_to_unique_definitions(m_ions)
+                logger.info(
+                    f"Found {len(m_ions)} ranging definitions, performed reduction to {len(unique_m_ions)} unique ones."
+                )
+            else:
+                unique_m_ions = m_ions.copy()
+                logger.info(
+                    f"Found {len(m_ions)} ranging definitions, no reduction, {len(unique_m_ions)} remain."
+                )
+            del m_ions
+
+            for m_ion in unique_m_ions:
+                m_ion.apply_combinatorics()
+                # m_ion.report()
+                self.analysisset["molecular_ions"].append(m_ion)
+            logger.info(f"{self.file_path} parsed successfully.")

@@ -47,6 +47,7 @@ iinfo
 iontype
 ipynb
 isect
+itemsize
 ivector
 ixxth
 kaitai

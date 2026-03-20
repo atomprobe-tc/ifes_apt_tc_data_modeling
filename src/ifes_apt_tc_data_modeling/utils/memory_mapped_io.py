@@ -19,28 +19,28 @@
 """Utility for parsing files via memory mapping."""
 
 import mmap
-import typing
 
 import numpy as np
 
 
-@typing.no_type_check
 def get_memory_mapped_data(
-    file_path: str, data_type: str, data_offset: int, data_stride: int, data_shape: int
+    file_path: str,
+    data_type: str,
+    offset_bytes: int,
+    skip_that_many_bytes_stride: tuple[int, ...],
+    data_shape: tuple[int, ...],
 ):
     """Read typed data from memory-mapped file from offset with stride."""
     # https://stackoverflow.com/questions/60493766/ \
     #       read-binary-flatfile-and-skip-bytes for I/O access details
-
     with (
         open(file_path, "rb") as fp,
         mmap.mmap(fp.fileno(), length=0, access=mmap.ACCESS_READ) as memory_mapped,
     ):
         return np.ndarray(
-            buffer=memory_mapped,
-            dtype=data_type,
-            offset=data_offset,
-            strides=data_stride,
             shape=data_shape,
+            dtype=data_type,
+            buffer=memory_mapped,
+            offset=offset_bytes,
+            strides=skip_that_many_bytes_stride,
         ).copy()
-    return None

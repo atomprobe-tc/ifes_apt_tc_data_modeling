@@ -27,7 +27,10 @@ import numpy as np
 from ifes_apt_tc_data_modeling.utils.custom_logging import logger
 from ifes_apt_tc_data_modeling.utils.definitions import MQ_EPSILON
 from ifes_apt_tc_data_modeling.utils.molecular_ions import get_chemical_symbols
-from ifes_apt_tc_data_modeling.utils.nx_ion import NxIon
+from ifes_apt_tc_data_modeling.utils.nx_ion import (
+    NxIon,
+    try_to_reduce_to_unique_definitions,
+)
 from ifes_apt_tc_data_modeling.utils.utils import (
     create_nuclide_hash,
     is_range_significant,
@@ -167,6 +170,7 @@ class ReadRngFileFormat:
         if n_ranges < 0:
             raise ValueError(f"Line {txt_stripped[0]} no ranges defined.")
 
+        m_ions = []
         for idx in np.arange(current_line_id + 1, current_line_id + 1 + n_ranges):
             dct = evaluate_rng_range_line(
                 idx - current_line_id,
@@ -183,8 +187,23 @@ class ReadRngFileFormat:
             )
             m_ion.add_range(dct["range"][0], dct["range"][1])
             m_ion.comment = dct["name"]
+            m_ions.append(m_ion)
+            # this set may contain duplicates or overlapping ranges if ranging definitions are ambiguous like here https://doi.org/10.5281/zenodo.7788883
+
+        if self.unique:
+            unique_m_ions = try_to_reduce_to_unique_definitions(m_ions)
+            logger.info(
+                f"Found {len(m_ions)} ranging definitions, performed reduction to {len(unique_m_ions)} unique ones."
+            )
+        else:
+            unique_m_ions = m_ions.copy()
+            logger.info(
+                f"Found {len(m_ions)} ranging definitions, no reduction, {len(unique_m_ions)} remain."
+            )
+        del m_ions
+
+        for m_ion in unique_m_ions:
             m_ion.apply_combinatorics()
             # m_ion.report()
-
             self.rng["molecular_ions"].append(m_ion)
         logger.info(f"{self.file_path} parsed successfully.")
