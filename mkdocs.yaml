@@ -11,11 +11,11 @@ nav:
       - tutorial/install_user.md
       - tutorial/install_devs.md
       - tutorial/compile_docs.md
-  - Explanation:
-      - explanation/learn.md
-      - explanation/provenance.md
-      - explanation/suggestions.md
-      - explanation/nxapm.md
+  - Learn:
+      - learn/learn.md
+      - learn/provenance.md
+      - learn/suggestions.md
+      - learn/nxapm.md
 
 plugins:
   - search
