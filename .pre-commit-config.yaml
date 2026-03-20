@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.5
+    rev: v0.15.7
     hooks:
       - id: ruff-check  # linting
         files: ^(src/ifes_apt_tc_data_modeling|tests)/.*\.py$
@@ -16,10 +16,10 @@ repos:
     rev: v3.21.2
     hooks:
       - id: pyupgrade
-        args: [--py36-plus]  # modernizes syntax for Python 3.6+
+        args: [--py310-plus]  # modernizes syntax for Python 3.10+
 
   # - repo: https://github.com/kynan/nbstripout
-  #   rev: 0.9.0
+  #   rev: 0.9.1
   #   hooks:
   #     - id: nbstripout  # removes notebook outputs before committing
 

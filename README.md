@@ -1,3 +1,13 @@
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+![](https://github.com/atomprobe-tc/ifes_apt_tc_data_modelingactions/workflows/pytest.yml/badge.svg)
+![](https://github.com/atomprobe-tc/ifes_apt_tc_data_modelingactions/workflows/pylint.yml/badge.svg)
+![](https://github.com/atomprobe-tc/ifes_apt_tc_data_modelingactions/workflows/publish.yml/badge.svg)
+![](https://img.shields.io/pypi/pyversions/ifes_apt_tc_data_modeling)
+![](https://img.shields.io/pypi/l/ifes_apt_tc_data_modeling)
+![](https://img.shields.io/pypi/v/ifes_apt_tc_data_modeling)
+![](https://coveralls.io/repos/github/atomprobe-tc/ifes_apt_tc_data_modelingbadge.svg?branch=main)
+[![DOI](https://zenodo.org/badge/759916501.svg)](https://doi.org/10.5281/zenodo.14263076)
+
 # ifes_apt_tc_data_modeling
 
 ## Context:

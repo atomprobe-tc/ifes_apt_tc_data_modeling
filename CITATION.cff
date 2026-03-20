@@ -9,9 +9,9 @@ authors:
   - given-names: Markus
     family-names: Kühbach
     orcid: 'https://orcid.org/0000-0002-7117-5196'
-# doi: 10.5281/zenodo.13862041
+doi: 10.5281/zenodo.14263076
 repository-code: 'https://github.com/atomprobe-tc/ifes_apt_tc_data_modeling'
-# url: https://doi.org/10.5281/zenodo.13862042
+url: https://doi.org/10.5281/zenodo.14263076
 keywords:
   - Atom probe tomography
   - Field-ion microscopy
